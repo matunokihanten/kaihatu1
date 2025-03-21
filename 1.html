@@ -1,1 +1,128 @@
-1
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>数字記憶ゲーム</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #display {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    #message, #result {
+      font-size: 20px;
+      margin: 10px;
+    }
+    input {
+      font-size: 20px;
+      padding: 5px;
+      width: 120px;
+      text-align: center;
+    }
+    button {
+      font-size: 20px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>数字記憶ゲーム</h1>
+  
+  <!-- 表示する数字 -->
+  <div id="display"></div>
+  
+  <!-- 状況を案内するメッセージ -->
+  <div id="message"></div>
+  
+  <!-- ユーザー入力部 -->
+  <input type="text" id="answer" placeholder="数字を入力" disabled />
+  <button id="submit" disabled>送信</button>
+  
+  <!-- 結果・スコア表示 -->
+  <div id="result"></div>
+  
+  <script>
+    // グローバル変数：前回の数字、現在の数字、スコア
+    let previousNumber, currentNumber, score = 0;
+
+    // 10～99のランダムな2桁の数字を生成する関数
+    function generateRandomTwoDigit() {
+      return Math.floor(Math.random() * 90) + 10;
+    }
+
+    // ゲーム開始時の初期設定
+    function startGame() {
+      // 最初の数字を生成して表示
+      currentNumber = generateRandomTwoDigit();
+      document.getElementById("display").innerText = currentNumber;
+      // ここでは解答入力は不可―数字を覚えるために
+      document.getElementById("message").innerText = "数字を覚えてね！3秒後に次の数字が出ます。";
+      document.getElementById("answer").value = "";
+      document.getElementById("answer").disabled = true;
+      document.getElementById("submit").disabled = true;
+      document.getElementById("result").innerText = "スコア: " + score;
+      
+      // 3秒後に最初のラウンドへ進む
+      setTimeout(nextRound, 3000);
+    }
+
+    // 各ラウンドで実行する関数
+    function nextRound() {
+      // 現在表示していた数字を「前の数字」として保存
+      previousNumber = currentNumber;
+      // 新たな数字を生成して表示（これが次の数字）
+      currentNumber = generateRandomTwoDigit();
+      document.getElementById("display").innerText = currentNumber;
+      
+      // ユーザーに前の数字（previousNumber）を入力するよう促す
+      document.getElementById("message").innerText = "前に表示されていた数字を入力してください！";
+      
+      // 入力部を有効にして、フォーカスを合わせる
+      document.getElementById("answer").disabled = false;
+      document.getElementById("submit").disabled = false;
+      document.getElementById("answer").focus();
+    }
+
+    // ユーザーの解答をチェックする関数
+    function checkAnswer() {
+      // 入力内容を取得（前後の不要な空白を除去）
+      let userAnswer = document.getElementById("answer").value.trim();
+
+      // 値が未入力なら何もしない
+      if (userAnswer === "") return;
+
+      // 入力された値と前の数字を数値として比較
+      if (parseInt(userAnswer, 10) === previousNumber) {
+        score++;
+        document.getElementById("result").innerText = "正解！ スコア: " + score;
+      } else {
+        document.getElementById("result").innerText = "不正解！ 正しい答えは " + previousNumber + " でした。 スコア: " + score;
+      }
+      
+      // 入力欄をリセットし、すぐには入力できないようにする
+      document.getElementById("answer").value = "";
+      document.getElementById("answer").disabled = true;
+      document.getElementById("submit").disabled = true;
+      
+      // 次のラウンドへ進むまで3秒待つ
+      setTimeout(nextRound, 3000);
+    }
+
+    // ボタンのクリックやEnterキー入力で解答チェックを実行
+    document.getElementById("submit").addEventListener("click", checkAnswer);
+    document.getElementById("answer").addEventListener("keydown", function(event) {
+      // Enterキー（keyCode 13）で送信
+      if (event.key === "Enter") {
+        checkAnswer();
+      }
+    });
+
+    // ページ読み込み完了後にゲーム開始
+    window.onload = startGame;
+  </script>
+</body>
+</html>
