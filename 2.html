@@ -6,7 +6,7 @@
   <!-- Google Fonts の Montserrat を使用 -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* 基本のリセット */
+    /* 基本リセット */
     html, body {
       margin: 0;
       padding: 0;
@@ -157,7 +157,7 @@
     const startGameBtn = document.getElementById("startGameBtn");
     const historyList = document.getElementById("historyList");
 
-    // 指定桁数のランダムな数字を生成する
+    // 指定桁数のランダムな数字を生成
     function generateRandomNumber(digits) {
       const lower = Math.pow(10, digits - 1);
       const upper = Math.pow(10, digits) - 1;
@@ -186,11 +186,11 @@
       settingsDiv.classList.add("hidden");
       gameDiv.classList.remove("hidden");
       
-      // 初ラウンド：数字を覚えるための表示
+      // 初ラウンドは覚えるために数字だけ表示
       setTimeout(nextRound, waitTime);
     }
 
-    // 各ラウンドの開始
+    // 各ラウンドの開始（フェードイン終了後に入力欄を有効化）
     function nextRound() {
       // 入力欄のリセットと無効化
       answerInput.value = "";
@@ -202,31 +202,31 @@
       const newNumber = generateRandomNumber(digitCount);
       historyNumbers.push(newNumber);
       updateHistory();
-
-      // フェードインの効果付きで表示
+      
+      // フェードインの効果付きで数字を表示
       displayDiv.style.opacity = 0;
       setTimeout(() => {
         displayDiv.innerText = newNumber;
         displayDiv.style.opacity = 1;
+        
+        // 2回目以降は直前の数字を答えるフェーズへ
+        if (historyNumbers.length > 1) {
+          messageDiv.innerText = "前の数字を入力してください！";
+          answerInput.disabled = false;
+          submitBtn.disabled = false;
+          answerInput.focus();
+        } else {
+          messageDiv.innerText = "数字を覚えてね！";
+        }
       }, 300);
-      
-      // 2回目以降は、直前の数字を聞く
-      if (historyNumbers.length > 1) {
-        messageDiv.innerText = "前の数字を入力してください！";
-        answerInput.disabled = false;
-        submitBtn.disabled = false;
-        answerInput.focus();
-      } else {
-        messageDiv.innerText = "数字を覚えてね！";
-      }
     }
 
-    // ユーザー入力のチェック
+    // ユーザー入力をチェック
     function checkAnswer() {
       if (historyNumbers.length > 1) {
         const targetNumber = historyNumbers[historyNumbers.length - 2]; // 直前の数字
         const userAnswer = answerInput.value.trim();
-        if (userAnswer === "") return; // 未入力なら処理せず
+        if (userAnswer === "") return; // 入力がない場合は処理を中断
         
         if (parseInt(userAnswer, 10) === targetNumber) {
           score++;
@@ -236,13 +236,14 @@
         }
       }
       
-      // 回答欄を無効にして次のラウンドへ
+      // 次のラウンドまで入力欄を無効化
       answerInput.disabled = true;
       submitBtn.disabled = true;
       
       setTimeout(nextRound, waitTime);
     }
 
+    // イベントリスナーの登録
     startGameBtn.addEventListener("click", startGame);
     submitBtn.addEventListener("click", checkAnswer);
     answerInput.addEventListener("keydown", function(event) {
