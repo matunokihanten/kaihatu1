@@ -1,1 +1,179 @@
-2.
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>数字記憶ゲーム - カスタムレベル版</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+    }
+    #display {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    #message, #result {
+      font-size: 20px;
+      margin: 10px;
+    }
+    input[type="text"], input[type="number"] {
+      font-size: 20px;
+      padding: 5px;
+      width: 200px;
+      text-align: center;
+    }
+    button {
+      font-size: 20px;
+      padding: 5px 10px;
+      margin-top: 10px;
+    }
+    #settings, #game {
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>数字記憶ゲーム - カスタムレベル版</h1>
+
+  <!-- 設定用セクション -->
+  <div id="settings">
+    <h2>ゲーム設定</h2>
+    <div>
+      <label for="digitCount">桁数 (数字の大きさ): </label>
+      <input type="number" id="digitCount" min="1" value="2">
+    </div>
+    <div>
+      <label for="targetOffset">何個前の数字を答えるか: </label>
+      <input type="number" id="targetOffset" min="1" value="1">
+    </div>
+    <div>
+      <label for="waitTime">待ち時間 (秒): </label>
+      <input type="number" id="waitTime" min="1" value="3">
+    </div>
+    <button id="startGameBtn">ゲーム開始</button>
+  </div>
+  
+  <!-- ゲーム用セクション（初期は非表示） -->
+  <div id="game" style="display:none;">
+    <div id="display"></div>
+    <div id="message"></div>
+    <input type="text" id="answer" placeholder="数字を入力" disabled />
+    <button id="submit" disabled>送信</button>
+    <div id="result"></div>
+    <button id="restart" style="margin-top:20px;">設定に戻る</button>
+  </div>
+  
+  <script>
+    // グローバル変数
+    let digitCount, targetOffset, waitTime;
+    let score = 0;
+    let historyNumbers = [];  // 表示された数字の履歴
+
+    // 各DOM要素の取得
+    const settingsDiv = document.getElementById("settings");
+    const gameDiv = document.getElementById("game");
+    const displayDiv = document.getElementById("display");
+    const messageDiv = document.getElementById("message");
+    const resultDiv = document.getElementById("result");
+    const answerInput = document.getElementById("answer");
+    const submitBtn = document.getElementById("submit");
+    const restartBtn = document.getElementById("restart");
+    const startGameBtn = document.getElementById("startGameBtn");
+    
+    // 指定した桁数のランダムな数字を生成する関数
+    function generateRandomNumber(digits) {
+      const lower = Math.pow(10, digits - 1);
+      const upper = Math.pow(10, digits) - 1;
+      return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+    }
+    
+    // ゲーム開始：設定値の読み込みと初期化
+    function startGame() {
+      // 設定値を取得
+      digitCount = parseInt(document.getElementById("digitCount").value, 10);
+      targetOffset = parseInt(document.getElementById("targetOffset").value, 10);
+      waitTime = parseInt(document.getElementById("waitTime").value, 10) * 1000; // 秒をミリ秒に
+       
+      // 変数の初期化
+      score = 0;
+      historyNumbers = [];
+      resultDiv.innerText = "スコア: " + score;
+      
+      // 設定画面を隠してゲーム画面を表示
+      settingsDiv.style.display = "none";
+      gameDiv.style.display = "block";
+      
+      // 最初のラウンドを待ち時間後に開始
+      setTimeout(nextRound, waitTime);
+    }
+    
+    // 次のラウンドへ進む関数
+    function nextRound() {
+      // 回答欄をリセット・無効化
+      answerInput.value = "";
+      answerInput.disabled = true;
+      submitBtn.disabled = true;
+      
+      // 新たな数字を生成して履歴に追加
+      const newNumber = generateRandomNumber(digitCount);
+      historyNumbers.push(newNumber);
+      displayDiv.innerText = newNumber;
+      
+      // 履歴の個数が十分なら回答フェーズへ
+      // （現在表示されている数字は historyNumbers の最後なので、
+      //  その targetOffset 先頭にある数字を回答対象とします）
+      if (historyNumbers.length > targetOffset) {
+        const targetNumber = historyNumbers[historyNumbers.length - targetOffset - 1];
+        messageDiv.innerText = targetOffset + "個前の数字を入力してください！";
+        answerInput.disabled = false;
+        submitBtn.disabled = false;
+        answerInput.focus();
+      } else {
+        // 初回など、まだ覚えるだけのラウンドの場合
+        messageDiv.innerText = "数字を覚えてね！";
+      }
+    }
+    
+    // ユーザーの入力をチェックする関数
+    function checkAnswer() {
+      // 履歴が十分にあれば、求めるべき数字を取得
+      if (historyNumbers.length > targetOffset) {
+        const targetNumber = historyNumbers[historyNumbers.length - targetOffset - 1];
+        const userAnswer = answerInput.value.trim();
+        if (userAnswer === "") return; // 入力が空なら何もしない
+        
+        if (parseInt(userAnswer, 10) === targetNumber) {
+          score++;
+          resultDiv.innerText = "正解！ スコア: " + score;
+        } else {
+          resultDiv.innerText = "不正解！ 正しい答えは " + targetNumber + " でした。 スコア: " + score;
+        }
+      }
+      
+      // 回答禁止にして、次のラウンドまで待つ
+      answerInput.disabled = true;
+      submitBtn.disabled = true;
+      
+      setTimeout(nextRound, waitTime);
+    }
+    
+    // イベントリスナー
+    startGameBtn.addEventListener("click", startGame);
+    
+    submitBtn.addEventListener("click", checkAnswer);
+    
+    answerInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        checkAnswer();
+      }
+    });
+    
+    // 設定画面に戻るボタン
+    restartBtn.addEventListener("click", function() {
+      settingsDiv.style.display = "block";
+      gameDiv.style.display = "none";
+    });
+  </script>
+</body>
+</html>
