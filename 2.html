@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>数字記憶ゲーム - シンプル＆クール版</title>
+  <title>数字記憶ゲーム - 拡張機能付き</title>
   <!-- Google Fonts の Montserrat を使用 -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -38,7 +38,8 @@
       margin-bottom: 8px;
     }
     input[type="number"],
-    input[type="text"] {
+    input[type="text"],
+    select {
       width: 100%;
       padding: 10px;
       margin-bottom: 20px;
@@ -46,7 +47,8 @@
       border-radius: 6px;
       font-size: 18px;
     }
-    input[type="number"] {
+    input[type="number"],
+    select {
       background: #fff;
       color: #333;
     }
@@ -64,6 +66,7 @@
       color: #fff;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      margin-bottom: 10px;
     }
     button:hover {
       background-color: #e64a19;
@@ -110,26 +113,35 @@
 </head>
 <body>
   <div class="container">
+    <h1>数字記憶ゲーム</h1>
     <!-- 設定用セクション -->
     <div id="settings">
       <h2>ゲーム設定</h2>
       <label for="digitCount">桁数 (数字の大きさ):</label>
       <input type="number" id="digitCount" min="1" value="2">
-
+      
       <label for="waitTime">待ち時間 (秒):</label>
       <input type="number" id="waitTime" min="1" value="3">
+
+      <label for="themeSelect">テーマ:</label>
+      <select id="themeSelect">
+        <option value="dark">クール (Dark)</option>
+        <option value="light">ライト (Light)</option>
+      </select>
 
       <button id="startGameBtn">ゲーム開始</button>
     </div>
     
-    <!-- ゲーム画面 -->
+    <!-- ゲーム用セクション -->
     <div id="game" class="hidden">
       <div id="display">--</div>
       <div id="message"></div>
       <input type="text" id="answer" placeholder="前の数字を入力" disabled>
       <button id="submit" disabled>送信</button>
+      <!-- パワーアップ：ヒントボタン -->
+      <button id="hintBtn" disabled>ヒント</button>
       <div id="result"></div>
-      <button id="restart" style="margin-top:15px;">設定に戻る</button>
+      <button id="restart">設定に戻る</button>
       
       <!-- 履歴表示 -->
       <div id="historyContainer">
@@ -137,6 +149,11 @@
         <ul id="historyList"></ul>
       </div>
     </div>
+    
+    <!-- サウンド用オーディオ要素（音声ファイルは各自用意） -->
+    <audio id="correctSound" src="correct-sound.mp3"></audio>
+    <audio id="incorrectSound" src="incorrect-sound.mp3"></audio>
+    <audio id="nextSound" src="next-sound.mp3"></audio>
   </div>
   
   <script>
@@ -153,24 +170,47 @@
     const resultDiv = document.getElementById("result");
     const answerInput = document.getElementById("answer");
     const submitBtn = document.getElementById("submit");
+    const hintBtn = document.getElementById("hintBtn");
     const restartBtn = document.getElementById("restart");
     const startGameBtn = document.getElementById("startGameBtn");
     const historyList = document.getElementById("historyList");
+    const themeSelect = document.getElementById("themeSelect");
+    
+    // オーディオ要素
+    const correctSound = document.getElementById("correctSound");
+    const incorrectSound = document.getElementById("incorrectSound");
+    const nextSound = document.getElementById("nextSound");
 
-    // 指定桁数のランダムな数字を生成
+    // 指定桁数のランダムな数字を生成する関数
     function generateRandomNumber(digits) {
       const lower = Math.pow(10, digits - 1);
       const upper = Math.pow(10, digits) - 1;
       return Math.floor(Math.random() * (upper - lower + 1)) + lower;
     }
 
-    // 履歴更新
+    // 履歴表示の更新
     function updateHistory() {
       let html = "";
       historyNumbers.forEach((num, index) => {
         html += `<li>Round ${index + 1}: ${num}</li>`;
       });
       historyList.innerHTML = html;
+    }
+
+    // テーマ設定（背景・コンテナの色などを切り替え）
+    function setTheme(theme) {
+      const container = document.querySelector(".container");
+      if (theme === "light") {
+        document.body.style.background = "linear-gradient(135deg, #f6f9fc, #e9eff5)";
+        document.body.style.color = "#333";
+        container.style.background = "rgba(255,255,255,0.8)";
+        container.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
+      } else {
+        document.body.style.background = "linear-gradient(135deg, #1e3c72, #2a5298)";
+        document.body.style.color = "#fff";
+        container.style.background = "rgba(0, 0, 0, 0.6)";
+        container.style.boxShadow = "0 4px 20px rgba(0,0,0,0.5)";
+      }
     }
 
     // ゲーム開始時の初期設定
@@ -183,37 +223,43 @@
       resultDiv.innerText = "スコア: " + score;
       updateHistory();
       
+      // テーマ設定（ユーザー選択に応じて切替）
+      setTheme(themeSelect.value);
+      
       settingsDiv.classList.add("hidden");
       gameDiv.classList.remove("hidden");
       
-      // 初ラウンドは覚えるために数字だけ表示
+      // 初ラウンド：数字を覚えるだけのフェーズ
       setTimeout(nextRound, waitTime);
     }
 
-    // 各ラウンドの開始（フェードイン終了後に入力欄を有効化）
+    // 次のラウンド開始
     function nextRound() {
-      // 入力欄のリセットと無効化
+      // 入力欄・ボタンのリセット
       answerInput.value = "";
       answerInput.disabled = true;
       submitBtn.disabled = true;
+      hintBtn.disabled = true;
       resultDiv.innerText = "スコア: " + score;
       
-      // 新たな数字を生成して履歴に追加
+      // 新たな数字生成と履歴に追加
       const newNumber = generateRandomNumber(digitCount);
       historyNumbers.push(newNumber);
       updateHistory();
       
-      // フェードインの効果付きで数字を表示
+      // フェードイン効果付きで数字を表示
       displayDiv.style.opacity = 0;
       setTimeout(() => {
         displayDiv.innerText = newNumber;
         displayDiv.style.opacity = 1;
+        if(nextSound) nextSound.play().catch(() => {});
         
-        // 2回目以降は直前の数字を答えるフェーズへ
+        // 2回目以降は、前の数字を入力するフェーズ
         if (historyNumbers.length > 1) {
           messageDiv.innerText = "前の数字を入力してください！";
           answerInput.disabled = false;
           submitBtn.disabled = false;
+          hintBtn.disabled = false;   // ヒントボタンを有効化
           answerInput.focus();
         } else {
           messageDiv.innerText = "数字を覚えてね！";
@@ -221,29 +267,45 @@
       }, 300);
     }
 
-    // ユーザー入力をチェック
+    // ユーザーの回答チェック
     function checkAnswer() {
       if (historyNumbers.length > 1) {
         const targetNumber = historyNumbers[historyNumbers.length - 2]; // 直前の数字
         const userAnswer = answerInput.value.trim();
-        if (userAnswer === "") return; // 入力がない場合は処理を中断
+        if (userAnswer === "") return;
         
         if (parseInt(userAnswer, 10) === targetNumber) {
           score++;
           resultDiv.innerText = "正解！ スコア: " + score;
+          if(correctSound) correctSound.play().catch(() => {});
         } else {
           resultDiv.innerText = "不正解！ 正しい答えは " + targetNumber + " でした。 スコア: " + score;
+          if(incorrectSound) incorrectSound.play().catch(() => {});
         }
       }
       
-      // 次のラウンドまで入力欄を無効化
+      // 回答フェーズ終了後、入力欄とヒントボタンを無効化
       answerInput.disabled = true;
       submitBtn.disabled = true;
+      hintBtn.disabled = true;
       
       setTimeout(nextRound, waitTime);
     }
 
-    // イベントリスナーの登録
+    // ヒント機能: ボタン押下時、直前の数字を2秒間表示
+    hintBtn.addEventListener("click", function() {
+      if (historyNumbers.length > 1) {
+        const targetNumber = historyNumbers[historyNumbers.length - 2];
+        const originalMessage = messageDiv.innerText;
+        messageDiv.innerText = "ヒント: 正解は " + targetNumber + " です！";
+        hintBtn.disabled = true;
+        setTimeout(() => {
+          messageDiv.innerText = originalMessage;
+        }, 2000);
+      }
+    });
+    
+    // 各イベントリスナーの登録
     startGameBtn.addEventListener("click", startGame);
     submitBtn.addEventListener("click", checkAnswer);
     answerInput.addEventListener("keydown", function(event) {
