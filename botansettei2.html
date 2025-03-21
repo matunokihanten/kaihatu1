@@ -2,463 +2,115 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ファイル実行ボタン設定ツール</title>
+  <title>万華鏡アニメーション</title>
   <style>
-    html, body {
-      margin: 0; padding: 0; height: 100vh; overflow: hidden; 
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    /* 余白なく全画面表示 */
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
     }
-    #wrapper {
-      display: flex; flex-direction: column; height: 100vh;
+    canvas {
+      display: block;
     }
-    header {
-      height: 50px; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.3); color: #fff; font-size: 1.5em;
-    }
-    main {
-      flex: 1; overflow: auto; padding: 5px;
-    }
-    footer {
-      height: 40px; display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.1); font-size: 0.9em;
-    }
-    /* ボタン表示エリア */
-    #button-container {
-      width: 100%; max-width: 1000px;
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
-    }
-    .button-wrapper { position: relative; }
-    .custom-button {
-      box-sizing: border-box; cursor: pointer; padding: 5px; font-size: 0.9em;
-    }
-    /* 削除・編集ボタン：transform を -150% に変更 */
-    .delete-button, .edit-button {
-      position: absolute; top: 0; border: none; border-radius: 50%;
-      width: 20px; height: 20px; cursor: pointer; font-size: 12px; z-index: 2;
-      transform: translate(-150%, 0%);
-    }
-    .delete-button { right: 0; background: #ff5656; color: white; }
-    .edit-button { right: 22px; background: #00bfff; color: white; }
-    /* フォーム */
-    form { margin: 5px; }
-    form label { display: inline-block; width: 100px; font-size: 0.9em; }
-    form input, form select { font-size: 0.9em; padding: 3px; margin: 2px; }
-    /* プレビュー・アクション */
-    #preview-area { font-size: 0.9em; padding: 5px; border: 1px dashed #aaa; margin: 5px 0; }
-    #action-buttons button { font-size: 0.9em; padding: 5px 10px; margin: 2px; }
-    /* ホームページURL入力フィールド（リンク自動作成用） */
-    #homepage-url-field {
-      margin: 5px;
-      font-size: 0.9em;
-    }
-    /* 操作方法パネル（右横固定、初期は非表示） */
-    #instructions {
-      display: none; position: fixed; right: 10px; top: 70px;
-      width: 250px; background: rgba(255,255,255,0.95); border: 1px solid #ccc;
-      padding: 10px; font-size: 0.9em; line-height: 1.4;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.3); z-index: 1000;
-    }
-    /* スマホ向け調整 */
-    @media (max-width: 600px) {
-      form input, form select, button { font-size: 1em; padding: 5px; }
-      .delete-button, .edit-button { width: 30px; height: 30px; font-size: 14px; transform: translate(-150%, 0%); }
-    }
-  </style>
-  <!-- SheetJSライブラリ（Excel用） -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-</head>
-<body>
-  <div id="wrapper">
-    <header><h1>ファイル実行ボタン設定ツール</h1></header>
-    <main>
-      <div id="button-container"></div>
-      <div id="col-settings">
-        <label for="columns-input">列数:</label>
-        <input type="number" id="columns-input" value="5" min="1">
-        <button id="update-columns">更新</button>
-      </div>
-      <div id="form-area">
-        <h2>新規追加／編集</h2>
-        <form id="add-button-form">
-          <label for="text">テキスト:</label>
-          <input type="text" name="text" id="text" placeholder="（空なら『テスト』）"><br>
-          <label for="file">実行ファイル:</label>
-          <input type="text" name="file" id="file" placeholder="（空なら『t.html』）"><br>
-          <label for="width">幅:</label>
-          <input type="text" name="width" id="width" value="150px"><br>
-          <label for="height">高さ:</label>
-          <input type="text" name="height" id="height" value="50px"><br>
-          <label for="textColor">文字色:</label>
-          <select name="textColor" id="textColor">
-            <option value="black" selected>黒</option>
-            <option value="white">白</option>
-            <option value="red">赤</option>
-            <option value="yellow">黄</option>
-            <option value="blue">青</option>
-            <option value="purple">紫</option>
-            <option value="yellowgreen">黄緑</option>
-          </select><br>
-          <label for="bgColor">背景色:</label>
-          <select name="bgColor" id="bgColor">
-            <option value="black">黒</option>
-            <option value="white">白</option>
-            <option value="red">赤</option>
-            <option value="yellow">黄</option>
-            <option value="blue">青</option>
-            <option value="purple">紫</option>
-            <option value="yellowgreen" selected>黄緑</option>
-          </select><br>
-          <label for="fontSize">フォントサイズ:</label>
-          <input type="text" name="fontSize" id="fontSize" value="16px"><br>
-          <label for="borderRadius">角丸:</label>
-          <input type="text" name="borderRadius" id="borderRadius" value="30px"><br>
-          <label for="borderColor">枠線色:</label>
-          <input type="color" name="borderColor" id="borderColor" value="#cccccc"><br>
-          <button type="submit" id="submit-btn">追加</button>
-          <button type="button" id="cancel-edit" style="display:none;">編集キャンセル</button>
-        </form>
-        <div id="preview-area">
-          <span>プレビュー: </span>
-          <button id="preview-button" class="custom-button">サンプル</button>
-        </div>
-      </div>
-      <div id="action-buttons">
-        <button id="save-config">HTML保存</button>
-        <button id="export-json">JSONエクスポート</button>
-        <button id="import-json">JSONインポート</button>
-        <input type="file" id="import-file" accept=".json" style="display:none;">
-        <button id="export-excel">Excelエクスポート</button>
-        <button id="import-excel">Excelインポート</button>
-        <input type="file" id="import-excel-file" accept=".xlsx,.xls" style="display:none;">
-        <button id="toggle-instructions">操作方法</button>
-        <!-- ホームページURL入力欄とリンク自動作成ボタン -->
-        <div id="homepage-url-field">
-          <label for="homepage-url">ホームページURL:</label>
-          <input type="text" id="homepage-url" placeholder="http://example.com">
-          <button id="auto-create-links">リンク自動作成</button>
-        </div>
-      </div>
-      <!-- 操作方法説明パネル -->
-      <div id="instructions">
-        <h3>【操作方法】</h3>
-        <ul>
-          <li>フォームに必要な情報を入力し「追加」または「更新する」を押してください。</li>
-          <li>テキストや実行ファイルが空の場合、デフォルトで「テスト」と「t.html」が採用されます。</li>
-          <li>各ボタンの削除は右上の「✖」、編集は右横の「✎」を押してください。</li>
-          <li>ボタンはタッチ操作にも対応し、ダブルタップまたはタップで実行されます。</li>
-          <li>列数は上部の入力欄で変更できます。</li>
-          <li>HTML保存、JSON/Excelエクスポート／インポートもご利用いただけます。</li>
-          <li>ホームページURLを入力し「リンク自動作成」ボタンを押すと、そのページ内の全リンクが検出され、ボタン化されます。</li>
-        </ul>
-        <button id="close-instructions">閉じる</button>
-      </div>
-    </main>
-    <footer>&copy; 2023 Beautiful Config</footer>
-  </div>
-  <script>
-    const allowedExtensions = ['exe','bat','sh','html','htm'];
-    let buttonsConfig = [], nextId = 0, currentEditId = null;
-    const buttonContainer = document.getElementById("button-container"),
-          previewButton = document.getElementById("preview-button"),
-          submitBtn = document.getElementById("submit-btn"),
-          cancelEditBtn = document.getElementById("cancel-edit");
-
-    // 操作方法パネルの表示切替
-    document.getElementById("toggle-instructions").addEventListener("click", function() {
-      const instr = document.getElementById("instructions");
-      instr.style.display = (instr.style.display === "block") ? "none" : "block";
-    });
-    document.getElementById("close-instructions").addEventListener("click", () => {
-      document.getElementById("instructions").style.display = "none";
-    });
-
-    // リンク自動作成：指定されたURLのHTMLを取得し、<a>タグからリンク名とリンクURLを抽出
-    document.getElementById("auto-create-links").addEventListener("click", () => {
-      const homepageUrl = document.getElementById("homepage-url").value.trim();
-      if(homepageUrl === ""){
-        alert("ホームページURLを入力してください。");
-        return;
-      }
-      fetch(homepageUrl)
-        .then(response => response.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
-          const anchors = doc.querySelectorAll("a");
-          anchors.forEach(a => {
-            let linkText = a.innerText.trim();
-            if(linkText === "") linkText = a.getAttribute("href");
-            let linkHref = a.getAttribute("href");
-            if(linkHref) {
-              buttonsConfig.push({
-                id: nextId++,
-                text: linkText,
-                file: linkHref,
-                width: document.getElementById("width").value || "150px",
-                height: document.getElementById("height").value || "50px",
-                textColor: document.getElementById("textColor").value || "black",
-                bgColor: document.getElementById("bgColor").value || "yellowgreen",
-                fontSize: document.getElementById("fontSize").value || "16px",
-                borderRadius: document.getElementById("borderRadius").value || "30px",
-                borderColor: document.getElementById("borderColor").value || "#cccccc",
-                order: buttonsConfig.length
-              });
-            }
-          });
-          updateButtons();
-          alert("リンクが自動作成されました。");
-        })
-        .catch(err => {
-          console.error(err);
-          alert("リンク自動作成に失敗しました。");
-        });
-    });
-
-    function updatePreview() {
-      const t = document.getElementById("text").value || "サンプル",
-            w = document.getElementById("width").value || "150px",
-            h = document.getElementById("height").value || "50px",
-            tc = document.getElementById("textColor").value || "black",
-            bg = document.getElementById("bgColor").value || "yellowgreen",
-            fs = document.getElementById("fontSize").value || "16px",
-            br = document.getElementById("borderRadius").value || "30px",
-            bc = document.getElementById("borderColor").value || "#cccccc";
-      previewButton.textContent = t;
-      Object.assign(previewButton.style, { width: w, height: h, color: tc, backgroundColor: bg, fontSize: fs, borderRadius: br, border: "1px solid " + bc });
-    }
-    document.querySelectorAll("#add-button-form input, #add-button-form select").forEach(el => el.addEventListener("input", updatePreview));
-    updatePreview();
-
-    function updateButtons() {
-      buttonContainer.innerHTML = "";
-      buttonsConfig.slice().sort((a, b) => (a.order || 0) - (b.order || 0)).forEach(btnObj => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "button-wrapper";
-        wrapper.dataset.id = btnObj.id;
-        const btn = document.createElement("button");
-        btn.textContent = btnObj.text;
-        btn.className = "custom-button";
-        Object.assign(btn.style, {
-          width: btnObj.width, height: btnObj.height, color: btnObj.textColor,
-          backgroundColor: btnObj.bgColor, fontSize: btnObj.fontSize, borderRadius: btnObj.borderRadius,
-          border: "1px solid " + btnObj.borderColor
-        });
-        btn.addEventListener("pointerup", () => {
-          const ext = btnObj.file.split('.').pop().toLowerCase();
-          if (!allowedExtensions.includes(ext)) { alert("実行できないファイル形式です: " + ext); return; }
-          window.open(btnObj.file);
-        });
-        wrapper.appendChild(btn);
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "✎"; editBtn.className = "edit-button";
-        editBtn.addEventListener("pointerup", e => {
-          e.stopPropagation();
-          currentEditId = btnObj.id;
-          document.getElementById("text").value = btnObj.text;
-          document.getElementById("file").value = btnObj.file;
-          document.getElementById("width").value = btnObj.width;
-          document.getElementById("height").value = btnObj.height;
-          document.getElementById("textColor").value = btnObj.textColor;
-          document.getElementById("bgColor").value = btnObj.bgColor;
-          document.getElementById("fontSize").value = btnObj.fontSize;
-          document.getElementById("borderRadius").value = btnObj.borderRadius;
-          document.getElementById("borderColor").value = btnObj.borderColor;
-          updatePreview();
-          submitBtn.textContent = "更新する"; 
-          cancelEditBtn.style.display = "inline";
-        });
-        wrapper.appendChild(editBtn);
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "✖"; delBtn.className = "delete-button";
-        delBtn.addEventListener("pointerup", e => { e.stopPropagation(); buttonsConfig = buttonsConfig.filter(b => b.id !== btnObj.id); updateButtons(); });
-        wrapper.appendChild(delBtn);
-        buttonContainer.appendChild(wrapper);
-      });
-      if (buttonContainer.sortable) { buttonContainer.sortable.destroy(); }
-      Sortable.create(buttonContainer, {
-        animation: 150,
-        onEnd: evt => {
-          Array.from(buttonContainer.children).forEach((child, newOrder) => {
-            const id = parseInt(child.dataset.id);
-            let btn = buttonsConfig.find(b => b.id === id);
-            if (btn) btn.order = newOrder;
-          });
-        }
-      });
-    }
-
-    document.getElementById("add-button-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const form = e.target;
-      let t = form.elements["text"].value.trim() || "テスト";
-      let f = form.elements["file"].value.trim() || "t.html";
-      let w = form.elements["width"].value.trim();
-      if(w && !/(px|em|rem|%|vh|vw)$/.test(w)) w += "px"; w = w || "150px";
-      let h = form.elements["height"].value.trim();
-      if(h && !/(px|em|rem|%|vh|vw)$/.test(h)) h += "px"; h = h || "50px";
-      const tc = form.elements["textColor"].value,
-            bg = form.elements["bgColor"].value,
-            fs = form.elements["fontSize"].value || "16px",
-            br = form.elements["borderRadius"].value || "30px",
-            bc = form.elements["borderColor"].value || "#cccccc";
-      if(currentEditId !== null) {
-        let btn = buttonsConfig.find(b => b.id === currentEditId);
-        if(btn){ Object.assign(btn, { text: t, file: f, width: w, height: h, textColor: tc, bgColor: bg, fontSize: fs, borderRadius: br, borderColor: bc }); }
-        currentEditId = null; 
-        submitBtn.textContent = "ボタンを追加"; 
-        cancelEditBtn.style.display = "none";
-      } else {
-        buttonsConfig.push({ id: nextId++, text: t, file: f, width: w, height: h, textColor: tc, bgColor: bg, fontSize: fs, borderRadius: br, borderColor: bc, order: buttonsConfig.length });
-      }
-      updateButtons();
-      form.elements["text"].value = ""; form.elements["file"].value = "";
-      updatePreview();
-    });
-
-    document.getElementById("update-columns").addEventListener("click", () => {
-      const cols = parseInt(document.getElementById("columns-input").value, 10);
-      if(isNaN(cols) || cols < 1)return;
-      buttonContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    });
-
-    document.getElementById("save-config").addEventListener("click", () => {
-      const cols = parseInt(document.getElementById("columns-input").value,10)||5;
-      const savedHtml = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>保存されたファイル実行ボタン</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body{font-family:'Montserrat',sans-serif;background:linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%);margin:0;padding:0;display:flex;flex-direction:column;align-items:center;color:#333}
-    header{background:rgba(0,0,0,0.3);width:100%;padding:20px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
-    header h1{margin:0;font-size:2.5em;letter-spacing:2px;color:#fff;text-shadow:2px 2px 4px rgba(0,0,0,0.5)}
-    #button-container{display:grid;grid-template-columns:repeat(${cols},1fr);gap:20px;width:90%;max-width:1000px;margin-top:40px;padding:20px;background-color:#ffffffcc;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,0.15);justify-items:center}
-    .custom-button{font-size:1.2em;border:none;border-radius:12px;padding:15px;cursor:pointer;transition:transform 0.3s,box-shadow 0.3s}
-    .custom-button:hover{transform:translateY(-5px);box-shadow:0 10px 20px rgba(0,0,0,0.25)}
-    footer{text-align:center;width:100%;margin-top:40px;padding:10px;background:rgba(0,0,0,0.1);font-size:0.9em;color:#333}
   </style>
 </head>
 <body>
-  <header><h1>カラフルファイル実行ボタン</h1></header>
-  <div id="button-container"></div>
-  <footer>&copy; 2023 Beautiful Config</footer>
+  <canvas id="kaleido"></canvas>
   <script>
-    const allowedExtensions = ${JSON.stringify(allowedExtensions)};
-    const buttonsConfig = ${JSON.stringify(buttonsConfig)};
-    const container = document.getElementById("button-container");
-    function createButton(button){
-      const btn = document.createElement("button");
-      btn.textContent = button.text;
-      btn.className="custom-button";
-      Object.assign(btn.style, {
-        width: button.width, height: button.height, color: button.textColor,
-        backgroundColor: button.bgColor, fontSize: button.fontSize, borderRadius: button.borderRadius,
-        border:"1px solid " + button.borderColor
-      });
-      btn.addEventListener("dblclick", ()=>{
-        const ext = button.file.split('.').pop().toLowerCase();
-        if(!allowedExtensions.includes(ext)){ alert("実行できないファイル形式です: " + ext); return; }
-        window.open(button.file);
-      });
-      container.appendChild(btn);
+    // キャンバスの設定
+    const canvas = document.getElementById("kaleido");
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext("2d");
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // 万華鏡のセグメント数と各くさびの角度
+    const segments = 12;
+    const stepAngle = (2 * Math.PI) / segments;
+    
+    // 全体の回転用（ゆったりと回転する）
+    let globalAngle = 0;
+
+    // オフスクリーンキャンバスでパターン描画
+    const patternCanvas = document.createElement("canvas");
+    patternCanvas.width = 400;
+    patternCanvas.height = 400;
+    const pCtx = patternCanvas.getContext("2d");
+
+    function createPattern() {
+      // 背景を黒に
+      pCtx.fillStyle = "#000";
+      pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+
+      // ランダムな円やラインを100個ほど描画
+      for (let i = 0; i < 100; i++){
+        pCtx.beginPath();
+        const hue = Math.floor(Math.random() * 360);
+        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+        const x = Math.random() * patternCanvas.width;
+        const y = Math.random() * patternCanvas.height;
+        const radius = Math.random() * 20;
+        pCtx.arc(x, y, radius, 0, Math.PI * 2);
+        pCtx.fill();
+      }
     }
-    buttonsConfig.forEach(b=> createButton(b));
-  <\/script>
-</body>
-</html>`;
-      const blob = new Blob([savedHtml], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "index.html";
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
-    });
+    createPattern();
 
-    document.getElementById("export-json").addEventListener("click", () => {
-      const json = JSON.stringify(buttonsConfig);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "config.json";
-      document.body.appendChild(a); a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
-    });
+    // 毎フレームの描画処理
+    function animate() {
+      // キャンバス全体をクリア
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    document.getElementById("import-json").addEventListener("click", () => {
-      document.getElementById("import-file").click();
-    });
-    document.getElementById("import-file").addEventListener("change", e => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = event => {
-        try { 
-          buttonsConfig = JSON.parse(event.target.result);
-          nextId = buttonsConfig.reduce((max, btn) => Math.max(max, btn.id), 0) + 1;
-          updateButtons();
-        } catch(err){ alert("JSON読み込みエラー"); }
-      };
-      reader.readAsText(file);
-    });
+      ctx.save();
+      // 中心に移動
+      ctx.translate(centerX, centerY);
+      // 全体をゆっくり回転
+      ctx.rotate(globalAngle);
 
-    document.getElementById("export-excel").addEventListener("click", () => {
-      const header = ["ボタンテキスト","実行ファイル","幅","高さ","背景色","フォントサイズ","角丸","枠線色"];
-      const ws_data = [ header ];
-      buttonsConfig.forEach(btn => {
-        ws_data.push([ btn.text, btn.file, btn.width, btn.height, btn.bgColor, btn.fontSize, btn.borderRadius, btn.borderColor ]);
-      });
-      const ws = XLSX.utils.aoa_to_sheet(ws_data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Buttons");
-      XLSX.writeFile(wb, "buttons_config.xlsx");
-    });
+      // 各セグメントごとに描画
+      for(let i = 0; i < segments; i++){
+        ctx.save();
+        // セグメントの回転
+        ctx.rotate(i * stepAngle);
 
-    document.getElementById("import-excel").addEventListener("click", () => {
-      document.getElementById("import-excel-file").click();
-    });
-    document.getElementById("import-excel-file").addEventListener("change", e => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = event => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, {type:"array"});
-        const wsname = workbook.SheetNames[0];
-        const ws = workbook.Sheets[wsname];
-        const jsonData = XLSX.utils.sheet_to_json(ws, {header:1});
-        if(jsonData.length < 2) return;
-        const headerRow = jsonData[0], mapping = {
-          "ボタンテキスト": "text", "実行ファイル": "file", "幅": "width",
-          "高さ": "height", "背景色": "bgColor", "フォントサイズ": "fontSize",
-          "角丸": "borderRadius", "枠線色": "borderColor"
-        };
-        buttonsConfig = [];
-        for(let i = 1; i < jsonData.length; i++){
-          const row = jsonData[i];
-          if(row.length === 0) continue;
-          let btnObj = {};
-          headerRow.forEach((colName,index)=>{
-            const prop = mapping[colName];
-            if(prop) btnObj[prop] = row[index];
-          });
-          btnObj.id = nextId++;
-          btnObj.order = buttonsConfig.length;
-          if(!btnObj.text) btnObj.text = "テスト";
-          if(!btnObj.file) btnObj.file = "t.html";
-          if(!btnObj.width) btnObj.width = "150px";
-          if(!btnObj.height) btnObj.height = "50px";
-          if(!btnObj.fontSize) btnObj.fontSize = "16px";
-          if(!btnObj.borderRadius) btnObj.borderRadius = "30px";
-          if(!btnObj.borderColor) btnObj.borderColor = "#cccccc";
-          if(!btnObj.bgColor) btnObj.bgColor = "yellowgreen";
-          buttonsConfig.push(btnObj);
+        // 偶数番目で左右反転
+        if (i % 2 === 0) {
+          ctx.scale(1, -1);
         }
-        updateButtons();
-      };
-      reader.readAsArrayBuffer(file);
+
+        // くさび状のパスを定義し、クリッピング
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        // 画面外まで届くよう、十分大きな円弧を設定
+        const radius = Math.sqrt(centerX * centerX + centerY * centerY);
+        ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // オフスクリーンキャンバスのパターンを描画
+        ctx.drawImage(
+          patternCanvas,
+          -patternCanvas.width / 2,
+          -patternCanvas.height / 2
+        );
+        ctx.restore();
+      }
+      ctx.restore();
+
+      // ゆっくり全体を回転させる
+      globalAngle += 0.005;
+      
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // 画面サイズ変更に対応
+    window.addEventListener("resize", () => {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
     });
   </script>
 </body>
