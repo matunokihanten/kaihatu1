@@ -2,9 +2,9 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>万華鏡アニメーション</title>
+  <title>豪華な立体万華鏡アニメーション</title>
   <style>
-    /* 余白なく全画面表示 */
+    /* ブラウザ全体に表示 */
     body, html {
       margin: 0;
       padding: 0;
@@ -19,7 +19,7 @@
 <body>
   <canvas id="kaleido"></canvas>
   <script>
-    // キャンバスの設定
+    // メインキャンバスの設定
     const canvas = document.getElementById("kaleido");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -27,70 +27,105 @@
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // 万華鏡のセグメント数と各くさびの角度
-    const segments = 12;
+    // 万華鏡のセグメント数を以前より増やして16に
+    const segments = 16;
     const stepAngle = (2 * Math.PI) / segments;
     
-    // 全体の回転用（ゆったりと回転する）
+    // 緩やかな全体回転用
     let globalAngle = 0;
 
-    // オフスクリーンキャンバスでパターン描画
+    // 豪華なパターンのためにオフスクリーンキャンバスを拡大（800x800）
     const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = 400;
-    patternCanvas.height = 400;
+    patternCanvas.width = 800;
+    patternCanvas.height = 800;
     const pCtx = patternCanvas.getContext("2d");
 
-    function createPattern() {
-      // 背景を黒に
+    function createLuxuryPattern() {
+      // オフスクリーン背景（黒）を描画
       pCtx.fillStyle = "#000";
       pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
 
-      // ランダムな円やラインを100個ほど描画
-      for (let i = 0; i < 100; i++){
+      // キャンバス中央から放射状のグラデーションで奥行きを演出
+      const radialGradient = pCtx.createRadialGradient(
+        patternCanvas.width / 2, patternCanvas.height / 2, 100,
+        patternCanvas.width / 2, patternCanvas.height / 2, patternCanvas.width / 2
+      );
+      radialGradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
+      radialGradient.addColorStop(1, "rgba(0, 0, 0, 0.7)");
+      pCtx.fillStyle = radialGradient;
+      pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+
+      // 複数のランダムな形状やエフェクトを描画して豪華さと立体感を増幅
+      for (let i = 0; i < 150; i++) {
+        pCtx.save();
+        // 中心から放たれる輝きをシュミレーション
+        pCtx.shadowColor = `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 0.8)`;
+        pCtx.shadowBlur = Math.random() * 10 + 10;
+        // 中心付近に集まるように変換
+        pCtx.translate(patternCanvas.width / 2, patternCanvas.height / 2);
+        pCtx.rotate(Math.random() * 2 * Math.PI);
+        const shapeSize = Math.random() * 80 + 20;
+        // 円形グラデーションで柔らかい輝きを生成
+        const grad = pCtx.createRadialGradient(0, 0, shapeSize * 0.3, 0, 0, shapeSize);
+        grad.addColorStop(0, "rgba(255,255,255,0.5)");
+        grad.addColorStop(1, "rgba(0,0,0,0.0)");
+        pCtx.fillStyle = grad;
         pCtx.beginPath();
-        const hue = Math.floor(Math.random() * 360);
-        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-        const x = Math.random() * patternCanvas.width;
-        const y = Math.random() * patternCanvas.height;
-        const radius = Math.random() * 20;
-        pCtx.arc(x, y, radius, 0, Math.PI * 2);
+        // 楕円形を描いて変化をつける
+        pCtx.ellipse(0, 0, shapeSize, shapeSize / 2, 0, 0, Math.PI * 2);
         pCtx.fill();
+        pCtx.restore();
+      }
+      
+      // 星の瞬きを模した輝く線を追加
+      for (let i = 0; i < 100; i++) {
+        pCtx.save();
+        pCtx.translate(Math.random() * patternCanvas.width, Math.random() * patternCanvas.height);
+        pCtx.rotate(Math.random() * 2 * Math.PI);
+        const rayLength = Math.random() * 50 + 20;
+        pCtx.beginPath();
+        pCtx.moveTo(0, 0);
+        pCtx.lineTo(rayLength, 0);
+        pCtx.lineWidth = Math.random() * 2 + 1;
+        pCtx.strokeStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.2})`;
+        pCtx.stroke();
+        pCtx.restore();
       }
     }
-    createPattern();
+    createLuxuryPattern();
 
-    // 毎フレームの描画処理
+    // アニメーション描画
     function animate() {
       // キャンバス全体をクリア
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
-      // 中心に移動
+      // 中心に移動して全体を回転
       ctx.translate(centerX, centerY);
-      // 全体をゆっくり回転
       ctx.rotate(globalAngle);
 
       // 各セグメントごとに描画
-      for(let i = 0; i < segments; i++){
+      for (let i = 0; i < segments; i++) {
         ctx.save();
-        // セグメントの回転
         ctx.rotate(i * stepAngle);
 
-        // 偶数番目で左右反転
+        // セグメント交互に左右反転で鏡面効果
         if (i % 2 === 0) {
           ctx.scale(1, -1);
         }
 
-        // くさび状のパスを定義し、クリッピング
+        // くさび状のパスを定義してクリップ（立体感のベース）
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        // 画面外まで届くよう、十分大きな円弧を設定
         const radius = Math.sqrt(centerX * centerX + centerY * centerY);
         ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
         ctx.closePath();
         ctx.clip();
 
-        // オフスクリーンキャンバスのパターンを描画
+        // 各セグメントにシャドウエフェクトを追加
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 20;
+
+        // オフスクリーンキャンバスの豪華パターンを描画
         ctx.drawImage(
           patternCanvas,
           -patternCanvas.width / 2,
@@ -100,14 +135,14 @@
       }
       ctx.restore();
 
-      // ゆっくり全体を回転させる
-      globalAngle += 0.005;
+      // 緩やかに全体を回転（豪華さを引き立たせるゆったり感）
+      globalAngle += 0.002;
       
       requestAnimationFrame(animate);
     }
     animate();
 
-    // 画面サイズ変更に対応
+    // サイズ変更時にキャンバスを再調整
     window.addEventListener("resize", () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
