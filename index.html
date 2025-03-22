@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>万華鏡ブーム式アニメーション</title>
+  <title>ズーム式万華鏡アニメーション</title>
   <style>
     body, html {
       margin: 0;
@@ -19,67 +19,60 @@
   <canvas id="kaleido"></canvas>
   <script>
     const canvas = document.getElementById("kaleido");
-    canvas.width  = window.innerWidth;
+    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    const segments = 16;
+    const segments = 12; // セグメント数
     const stepAngle = (2 * Math.PI) / segments;
 
-    let globalAngle = 0;
+    let globalAngle = 0; // 回転角度
     let rotationSpeed = 0.01; // 初期速度
-    const maxSpeed = 6000;    // 最大速度
-    let time = 0;             // 時間管理用
+    const maxSpeed = 6000; // 最大速度
+    const acceleration = 1.05; // 加速率
+    const zoomFactor = 1.002; // ズーム倍率
+    let currentZoom = 1; // 現在のズーム値
 
     const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = 800;
-    patternCanvas.height = 800;
+    patternCanvas.width = 400;
+    patternCanvas.height = 400;
     const pCtx = patternCanvas.getContext("2d");
 
-    function createDynamicPattern(hue) {
-      pCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
-
-      const radialGradient = pCtx.createRadialGradient(
-        patternCanvas.width / 2, patternCanvas.height / 2, 100,
-        patternCanvas.width / 2, patternCanvas.height / 2, patternCanvas.width / 2
-      );
-      radialGradient.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
-      radialGradient.addColorStop(1, `hsl(${(hue + 180) % 360}, 80%, 20%)`);
-      pCtx.fillStyle = radialGradient;
+    function createPattern() {
+      pCtx.fillStyle = "#000";
       pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
 
-      for (let i = 0; i < 150; i++) {
-        pCtx.save();
-        pCtx.translate(patternCanvas.width / 2, patternCanvas.height / 2);
-        pCtx.rotate(Math.random() * 2 * Math.PI);
-        const size = Math.random() * 100 + 20;
-        pCtx.fillStyle = `hsla(${hue + Math.random() * 60}, 80%, 50%, 0.5)`;
+      for (let i = 0; i < 100; i++) {
         pCtx.beginPath();
-        pCtx.arc(Math.random() * 200 - 100, Math.random() * 200 - 100, size, 0, Math.PI * 2);
+        const hue = Math.floor(Math.random() * 360);
+        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+        const x = Math.random() * patternCanvas.width;
+        const y = Math.random() * patternCanvas.height;
+        const radius = Math.random() * 20;
+        pCtx.arc(x, y, radius, 0, Math.PI * 2);
         pCtx.fill();
-        pCtx.restore();
       }
     }
+    createPattern();
 
     function animate() {
-      time++;
-      const hue = (time % 360); // 色相を時間経過で変更
-      createDynamicPattern(hue);
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
       ctx.translate(centerX, centerY);
+      ctx.scale(currentZoom, currentZoom); // ズーム演出を追加
       ctx.rotate(globalAngle);
 
       for (let i = 0; i < segments; i++) {
         ctx.save();
         ctx.rotate(i * stepAngle);
+
         if (i % 2 === 0) {
           ctx.scale(1, -1);
         }
+
         ctx.beginPath();
         const radius = Math.sqrt(centerX * centerX + centerY * centerY);
         ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
@@ -95,18 +88,20 @@
       }
       ctx.restore();
 
-      // ブーム式でスピードを上げる（最大値 maxSpeed を制限）
+      // 回転速度とズーム倍率を調整
       if (rotationSpeed < maxSpeed) {
-        rotationSpeed *= 1.01; // 徐々に加速
+        rotationSpeed *= acceleration; // 徐々に加速
       }
-      globalAngle += rotationSpeed / 1000; // スピード反映
+      currentZoom *= zoomFactor; // 徐々にズームアップ
+
+      globalAngle += rotationSpeed / 1000; // 回転スピードに基づいて角度を調整
 
       requestAnimationFrame(animate);
     }
     animate();
 
     window.addEventListener("resize", () => {
-      canvas.width  = window.innerWidth;
+      canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     });
   </script>
