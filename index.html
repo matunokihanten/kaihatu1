@@ -2,9 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>万華鏡アニメーション</title>
+  <title>万華鏡ブーム式アニメーション</title>
   <style>
-    /* 余白なく全画面表示 */
     body, html {
       margin: 0;
       padding: 0;
@@ -19,7 +18,6 @@
 <body>
   <canvas id="kaleido"></canvas>
   <script>
-    // キャンバスの設定
     const canvas = document.getElementById("kaleido");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -27,70 +25,67 @@
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // 万華鏡のセグメント数と各くさびの角度
-    const segments = 12;
+    const segments = 16;
     const stepAngle = (2 * Math.PI) / segments;
-    
-    // 全体の回転用（ゆったりと回転する）
-    let globalAngle = 0;
 
-    // オフスクリーンキャンバスでパターン描画
+    let globalAngle = 0;
+    let rotationSpeed = 0.01; // 初期速度
+    const maxSpeed = 6000;    // 最大速度
+    let time = 0;             // 時間管理用
+
     const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = 400;
-    patternCanvas.height = 400;
+    patternCanvas.width = 800;
+    patternCanvas.height = 800;
     const pCtx = patternCanvas.getContext("2d");
 
-    function createPattern() {
-      // 背景を黒に
-      pCtx.fillStyle = "#000";
+    function createDynamicPattern(hue) {
+      pCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
+
+      const radialGradient = pCtx.createRadialGradient(
+        patternCanvas.width / 2, patternCanvas.height / 2, 100,
+        patternCanvas.width / 2, patternCanvas.height / 2, patternCanvas.width / 2
+      );
+      radialGradient.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
+      radialGradient.addColorStop(1, `hsl(${(hue + 180) % 360}, 80%, 20%)`);
+      pCtx.fillStyle = radialGradient;
       pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
 
-      // ランダムな円やラインを100個ほど描画
-      for (let i = 0; i < 100; i++){
+      for (let i = 0; i < 150; i++) {
+        pCtx.save();
+        pCtx.translate(patternCanvas.width / 2, patternCanvas.height / 2);
+        pCtx.rotate(Math.random() * 2 * Math.PI);
+        const size = Math.random() * 100 + 20;
+        pCtx.fillStyle = `hsla(${hue + Math.random() * 60}, 80%, 50%, 0.5)`;
         pCtx.beginPath();
-        const hue = Math.floor(Math.random() * 360);
-        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-        const x = Math.random() * patternCanvas.width;
-        const y = Math.random() * patternCanvas.height;
-        const radius = Math.random() * 20;
-        pCtx.arc(x, y, radius, 0, Math.PI * 2);
+        pCtx.arc(Math.random() * 200 - 100, Math.random() * 200 - 100, size, 0, Math.PI * 2);
         pCtx.fill();
+        pCtx.restore();
       }
     }
-    createPattern();
 
-    // 毎フレームの描画処理
     function animate() {
-      // キャンバス全体をクリア
+      time++;
+      const hue = (time % 360); // 色相を時間経過で変更
+      createDynamicPattern(hue);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
-      // 中心に移動
       ctx.translate(centerX, centerY);
-      // 全体をゆっくり回転
       ctx.rotate(globalAngle);
 
-      // 各セグメントごとに描画
-      for(let i = 0; i < segments; i++){
+      for (let i = 0; i < segments; i++) {
         ctx.save();
-        // セグメントの回転
         ctx.rotate(i * stepAngle);
-
-        // 偶数番目で左右反転
         if (i % 2 === 0) {
           ctx.scale(1, -1);
         }
-
-        // くさび状のパスを定義し、クリッピング
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        // 画面外まで届くよう、十分大きな円弧を設定
         const radius = Math.sqrt(centerX * centerX + centerY * centerY);
         ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
         ctx.closePath();
         ctx.clip();
 
-        // オフスクリーンキャンバスのパターンを描画
         ctx.drawImage(
           patternCanvas,
           -patternCanvas.width / 2,
@@ -100,14 +95,16 @@
       }
       ctx.restore();
 
-      // ゆっくり全体を回転させる
-      globalAngle += 0.005;
-      
+      // ブーム式でスピードを上げる（最大値 maxSpeed を制限）
+      if (rotationSpeed < maxSpeed) {
+        rotationSpeed *= 1.01; // 徐々に加速
+      }
+      globalAngle += rotationSpeed / 1000; // スピード反映
+
       requestAnimationFrame(animate);
     }
     animate();
 
-    // 画面サイズ変更に対応
     window.addEventListener("resize", () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
