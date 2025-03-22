@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ズーム式万華鏡アニメーション</title>
+  <title>万華鏡アニメーション（表示版）</title>
   <style>
     body, html {
       margin: 0;
@@ -10,6 +10,7 @@
       overflow: hidden;
       background: #000;
     }
+    /* canvas を非表示にしていた設定を削除（display: block; で表示） */
     canvas {
       display: block;
     }
@@ -19,32 +20,29 @@
   <canvas id="kaleido"></canvas>
   <script>
     const canvas = document.getElementById("kaleido");
-    canvas.width = window.innerWidth;
+    canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext("2d");
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-
-    const segments = 12; // セグメント数
+    
+    // 万華鏡のセグメント数と1セグメントあたりの角度
+    const segments = 12;
     const stepAngle = (2 * Math.PI) / segments;
-
-    let globalAngle = 0; // 回転角度
-    let rotationSpeed = 0.01; // 初期速度
-    const maxSpeed = 6000; // 最大速度
-    const acceleration = 1.05; // 加速率
-    const zoomFactor = 1.002; // ズーム倍率
-    let currentZoom = 1; // 現在のズーム値
-
+    
+    let globalAngle = 0;
+    
+    // オフスクリーンキャンバスによるパターン作成
     const patternCanvas = document.createElement("canvas");
     patternCanvas.width = 400;
     patternCanvas.height = 400;
     const pCtx = patternCanvas.getContext("2d");
-
+    
     function createPattern() {
       pCtx.fillStyle = "#000";
       pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
-
-      for (let i = 0; i < 100; i++) {
+    
+      for (let i = 0; i < 100; i++){
         pCtx.beginPath();
         const hue = Math.floor(Math.random() * 360);
         pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
@@ -56,29 +54,28 @@
       }
     }
     createPattern();
-
+    
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    
       ctx.save();
       ctx.translate(centerX, centerY);
-      ctx.scale(currentZoom, currentZoom); // ズーム演出を追加
       ctx.rotate(globalAngle);
-
+    
       for (let i = 0; i < segments; i++) {
         ctx.save();
         ctx.rotate(i * stepAngle);
-
+    
         if (i % 2 === 0) {
           ctx.scale(1, -1);
         }
-
+    
         ctx.beginPath();
         const radius = Math.sqrt(centerX * centerX + centerY * centerY);
         ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
         ctx.closePath();
         ctx.clip();
-
+    
         ctx.drawImage(
           patternCanvas,
           -patternCanvas.width / 2,
@@ -87,21 +84,14 @@
         ctx.restore();
       }
       ctx.restore();
-
-      // 回転速度とズーム倍率を調整
-      if (rotationSpeed < maxSpeed) {
-        rotationSpeed *= acceleration; // 徐々に加速
-      }
-      currentZoom *= zoomFactor; // 徐々にズームアップ
-
-      globalAngle += rotationSpeed / 1000; // 回転スピードに基づいて角度を調整
-
+    
+      globalAngle += 0.005;
       requestAnimationFrame(animate);
     }
     animate();
-
+    
     window.addEventListener("resize", () => {
-      canvas.width = window.innerWidth;
+      canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
     });
   </script>
