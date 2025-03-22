@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>数字記憶ゲーム - 電卓入力版</title>
+  <title>数字記憶ゲーム - 電卓入力版 (修正版)</title>
   <!-- Google FontsでMontserratを利用 -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* 全体のリセット＆基本レイアウト */
+    /* 全体のリセット＆レイアウト */
     html, body {
       margin: 0;
       padding: 0;
@@ -49,6 +49,7 @@
       background: #fff;
       color: #333;
     }
+    /* ※ここではreadonly属性を外し、ユーザーが直接編集できるように */
     input[type="text"] {
       text-align: center;
       background: #ddd;
@@ -72,7 +73,7 @@
     .hidden {
       display: none;
     }
-    /* 出題数字とメッセージ */
+    /* 出題数字の表示 */
     #display {
       font-size: 60px;
       font-weight: bold;
@@ -87,7 +88,7 @@
       text-align: center;
       margin: 10px 0;
     }
-    /* キーパッド（電卓）レイアウト */
+    /* キーパッド（電卓）のレイアウト */
     #keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -155,8 +156,8 @@
       <div id="display">--</div>
       <!-- 状況メッセージ -->
       <div id="message"></div>
-      <!-- 答え入力（読み取り専用） -->
-      <input type="text" id="answerDisplay" placeholder="答え" readonly>
+      <!-- 答え入力（ユーザーが直接編集可能） -->
+      <input type="text" id="answerDisplay" placeholder="答え">
       <!-- 電卓風キーパッド -->
       <div id="keypad">
         <button class="key" data-val="7">7</button>
@@ -176,26 +177,26 @@
       <div id="result"></div>
       <!-- 設定画面へ戻る -->
       <button id="restart">設定に戻る</button>
-      <!-- 数字履歴 -->
+      <!-- 数字の履歴 -->
       <div id="historyContainer">
         <h3>履歴</h3>
         <ul id="historyList"></ul>
       </div>
     </div>
     
-    <!-- サウンド (各自用意) -->
+    <!-- サウンド要素 (正解、不正解、次出題時の効果音：各自用意) -->
     <audio id="correctSound" src="correct-sound.mp3"></audio>
     <audio id="incorrectSound" src="incorrect-sound.mp3"></audio>
     <audio id="nextSound" src="next-sound.mp3"></audio>
   </div>
   
   <script>
-    // グローバル変数の定義
+    // グローバル変数
     let digitCount, waitTime;
     let score = 0;
     let historyNumbers = [];
     
-    // DOM要素の参照
+    // DOM要素の取得
     const settingsDiv = document.getElementById("settings");
     const gameDiv = document.getElementById("game");
     const displayDiv = document.getElementById("display");
@@ -212,7 +213,7 @@
     const incorrectSound = document.getElementById("incorrectSound");
     const nextSound = document.getElementById("nextSound");
     
-    // テーマの設定（ライト／ダーク）
+    // テーマ設定（ライト／ダーク）
     function setTheme(theme) {
       const container = document.querySelector(".container");
       if (theme === "light") {
@@ -228,23 +229,23 @@
       }
     }
     
-    // 数字をランダムに生成（指定桁数）
+    // 指定桁数のランダムな数字を生成
     function generateRandomNumber(digits) {
       const lower = Math.pow(10, digits - 1);
       const upper = Math.pow(10, digits) - 1;
       return Math.floor(Math.random() * (upper - lower + 1)) + lower;
     }
     
-    // 履歴リストの更新
+    // 履歴の更新
     function updateHistory() {
       let html = "";
       historyNumbers.forEach((num, i) => {
-        html += `<li>Round ${i + 1}: ${num}</li>`;
+        html += `<li>Round ${i+1}: ${num}</li>`;
       });
       historyList.innerHTML = html;
     }
     
-    // キーパッドの有効／無効設定
+    // キーパッドの有効／無効を設定
     function setKeypad(enabled) {
       const keys = keypad.querySelectorAll("button");
       keys.forEach(key => key.disabled = !enabled);
@@ -252,7 +253,6 @@
     
     // ゲーム開始処理
     function startGame() {
-      // 設定値の取得
       digitCount = parseInt(document.getElementById("digitCount").value, 10);
       waitTime = parseInt(document.getElementById("waitTime").value, 10) * 1000;
       score = 0;
@@ -261,65 +261,58 @@
       document.getElementById("result").innerText = "スコア: " + score;
       updateHistory();
       
-      // テーマ適用
       setTheme(themeSelect.value);
-      
-      // 設定画面非表示、ゲーム画面表示
       settingsDiv.classList.add("hidden");
       gameDiv.classList.remove("hidden");
       
-      // 初回ラウンド（数字を覚えるだけ）
+      // 初回は覚えるフェーズ
       setTimeout(nextRound, waitTime);
     }
     
-    // 次のラウンドを開始（新たな数字を表示）
+    // 次のラウンド開始：新たな数字を出題
     function nextRound() {
-      // クリア処理：入力欄、結果表示、キーパッド無効化
+      // 入力欄クリア、結果表示更新、キーパッド無効
       answerDisplay.value = "";
       setKeypad(false);
       document.getElementById("result").innerText = "スコア: " + score;
       
-      // 新たな数字生成＆履歴に追加
       const newNum = generateRandomNumber(digitCount);
       historyNumbers.push(newNum);
       updateHistory();
       
-      // フェードインアニメーション（500ms待って表示更新）
+      // フェードインで数字表示
       displayDiv.style.opacity = 0;
       setTimeout(() => {
         displayDiv.innerText = newNum;
         displayDiv.style.opacity = 1;
-        if (nextSound) {
-          nextSound.play().catch(() => {});
-        }
+        if (nextSound) nextSound.play().catch(() => {});
         
-        // 2回目以降は、前ラウンドの数字を答えるフェーズ
+        // 2回目以降なら、前ラウンドの数字を答えるフェーズ
         if(historyNumbers.length > 1) {
           messageDiv.innerText = "前の数字を入力してください！";
           answerDisplay.value = "";
           setKeypad(true);
+          // ※入力欄は直接編集可能になっているので、キーボード入力もOKです。
         } else {
           messageDiv.innerText = "数字を覚えてね！";
         }
       }, 500);
     }
     
-    // 回答チェック（Enter押下時）
+    // 回答のチェック
     function checkAnswer() {
       if (historyNumbers.length > 1) {
-        const target = historyNumbers[historyNumbers.length - 2]; // 直前の数字
+        const target = historyNumbers[historyNumbers.length - 2];
         const userAns = answerDisplay.value.trim();
         if (userAns === "") return;
         
         if (parseInt(userAns, 10) === target) {
-          // 正解処理
           score++;
           document.getElementById("result").innerText = "正解！ スコア: " + score;
           if (correctSound) correctSound.play().catch(() => {});
           setKeypad(false);
           setTimeout(nextRound, waitTime);
         } else {
-          // 不正解：リセット処理
           document.getElementById("result").innerText = "不正解！ 正しい答えは " + target + " でした。初めからやり直します。";
           if (incorrectSound) incorrectSound.play().catch(() => {});
           setKeypad(false);
@@ -328,13 +321,13 @@
       }
     }
     
-    // ゲームリスタート（設定画面に戻る）
+    // ゲームのリスタート：設定画面へ戻る
     function restartGame() {
       settingsDiv.classList.remove("hidden");
       gameDiv.classList.add("hidden");
     }
     
-    // キーパッドイベント（クリックハンドラ）
+    // キーパッドのクリックイベント処理
     keypad.addEventListener("click", function(e) {
       const target = e.target;
       if (!target.matches("button") || target.disabled) return;
@@ -344,14 +337,13 @@
       } else if (target.id === "enterBtn") {
         checkAnswer();
       } else {
-        // 数字ボタン：指定桁数まで追記
-        if (answerDisplay.value.length < digitCount) {
+        if(answerDisplay.value.length < digitCount) {
           answerDisplay.value += target.getAttribute("data-val");
         }
       }
     });
     
-    // 各種イベントリスナー
+    // イベントリスナーの登録
     startGameBtn.addEventListener("click", startGame);
     restartBtn.addEventListener("click", restartGame);
   </script>
