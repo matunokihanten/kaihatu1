@@ -1,26 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="utf-8">
-    <title>脳トレ部屋 | 松乃木飯店</title>
-    <meta name="description" content="ホームページ管理者が一生懸命作りました">
-    
-    <style>
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #333;
-            color: #fff<!DOCTYPE html>
-<html lang="ja">
-<head>
   <meta charset="UTF-8">
-  <title>豪華な立体万華鏡アニメーション</title>
+  <title>万華鏡アニメーション</title>
   <style>
-    /* ブラウザ全体に表示 */
+    /* 余白なく全画面表示 */
     body, html {
       margin: 0;
       padding: 0;
@@ -35,7 +19,7 @@
 <body>
   <canvas id="kaleido"></canvas>
   <script>
-    // メインキャンバスの設定
+    // キャンバスの設定
     const canvas = document.getElementById("kaleido");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -43,105 +27,70 @@
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    // 万華鏡のセグメント数を以前より増やして16に
-    const segments = 16;
+    // 万華鏡のセグメント数と各くさびの角度
+    const segments = 12;
     const stepAngle = (2 * Math.PI) / segments;
     
-    // 緩やかな全体回転用
+    // 全体の回転用（ゆったりと回転する）
     let globalAngle = 0;
 
-    // 豪華なパターンのためにオフスクリーンキャンバスを拡大（800x800）
+    // オフスクリーンキャンバスでパターン描画
     const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = 800;
-    patternCanvas.height = 800;
+    patternCanvas.width = 400;
+    patternCanvas.height = 400;
     const pCtx = patternCanvas.getContext("2d");
 
-    function createLuxuryPattern() {
-      // オフスクリーン背景（黒）を描画
+    function createPattern() {
+      // 背景を黒に
       pCtx.fillStyle = "#000";
       pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
 
-      // キャンバス中央から放射状のグラデーションで奥行きを演出
-      const radialGradient = pCtx.createRadialGradient(
-        patternCanvas.width / 2, patternCanvas.height / 2, 100,
-        patternCanvas.width / 2, patternCanvas.height / 2, patternCanvas.width / 2
-      );
-      radialGradient.addColorStop(0, "rgba(255, 255, 255, 0.1)");
-      radialGradient.addColorStop(1, "rgba(0, 0, 0, 0.7)");
-      pCtx.fillStyle = radialGradient;
-      pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
-
-      // 複数のランダムな形状やエフェクトを描画して豪華さと立体感を増幅
-      for (let i = 0; i < 150; i++) {
-        pCtx.save();
-        // 中心から放たれる輝きをシュミレーション
-        pCtx.shadowColor = `rgba(${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, ${Math.floor(Math.random()*255)}, 0.8)`;
-        pCtx.shadowBlur = Math.random() * 10 + 10;
-        // 中心付近に集まるように変換
-        pCtx.translate(patternCanvas.width / 2, patternCanvas.height / 2);
-        pCtx.rotate(Math.random() * 2 * Math.PI);
-        const shapeSize = Math.random() * 80 + 20;
-        // 円形グラデーションで柔らかい輝きを生成
-        const grad = pCtx.createRadialGradient(0, 0, shapeSize * 0.3, 0, 0, shapeSize);
-        grad.addColorStop(0, "rgba(255,255,255,0.5)");
-        grad.addColorStop(1, "rgba(0,0,0,0.0)");
-        pCtx.fillStyle = grad;
+      // ランダムな円やラインを100個ほど描画
+      for (let i = 0; i < 100; i++){
         pCtx.beginPath();
-        // 楕円形を描いて変化をつける
-        pCtx.ellipse(0, 0, shapeSize, shapeSize / 2, 0, 0, Math.PI * 2);
+        const hue = Math.floor(Math.random() * 360);
+        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
+        const x = Math.random() * patternCanvas.width;
+        const y = Math.random() * patternCanvas.height;
+        const radius = Math.random() * 20;
+        pCtx.arc(x, y, radius, 0, Math.PI * 2);
         pCtx.fill();
-        pCtx.restore();
-      }
-      
-      // 星の瞬きを模した輝く線を追加
-      for (let i = 0; i < 100; i++) {
-        pCtx.save();
-        pCtx.translate(Math.random() * patternCanvas.width, Math.random() * patternCanvas.height);
-        pCtx.rotate(Math.random() * 2 * Math.PI);
-        const rayLength = Math.random() * 50 + 20;
-        pCtx.beginPath();
-        pCtx.moveTo(0, 0);
-        pCtx.lineTo(rayLength, 0);
-        pCtx.lineWidth = Math.random() * 2 + 1;
-        pCtx.strokeStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.2})`;
-        pCtx.stroke();
-        pCtx.restore();
       }
     }
-    createLuxuryPattern();
+    createPattern();
 
-    // アニメーション描画
+    // 毎フレームの描画処理
     function animate() {
       // キャンバス全体をクリア
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.save();
-      // 中心に移動して全体を回転
+      // 中心に移動
       ctx.translate(centerX, centerY);
+      // 全体をゆっくり回転
       ctx.rotate(globalAngle);
 
       // 各セグメントごとに描画
-      for (let i = 0; i < segments; i++) {
+      for(let i = 0; i < segments; i++){
         ctx.save();
+        // セグメントの回転
         ctx.rotate(i * stepAngle);
 
-        // セグメント交互に左右反転で鏡面効果
+        // 偶数番目で左右反転
         if (i % 2 === 0) {
           ctx.scale(1, -1);
         }
 
-        // くさび状のパスを定義してクリップ（立体感のベース）
+        // くさび状のパスを定義し、クリッピング
         ctx.beginPath();
+        ctx.moveTo(0, 0);
+        // 画面外まで届くよう、十分大きな円弧を設定
         const radius = Math.sqrt(centerX * centerX + centerY * centerY);
         ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
         ctx.closePath();
         ctx.clip();
 
-        // 各セグメントにシャドウエフェクトを追加
-        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-        ctx.shadowBlur = 20;
-
-        // オフスクリーンキャンバスの豪華パターンを描画
+        // オフスクリーンキャンバスのパターンを描画
         ctx.drawImage(
           patternCanvas,
           -patternCanvas.width / 2,
@@ -151,131 +100,18 @@
       }
       ctx.restore();
 
-      // 緩やかに全体を回転（豪華さを引き立たせるゆったり感）
-      globalAngle += 0.002;
+      // ゆっくり全体を回転させる
+      globalAngle += 0.005;
       
       requestAnimationFrame(animate);
     }
     animate();
 
-    // サイズ変更時にキャンバスを再調整
+    // 画面サイズ変更に対応
     window.addEventListener("resize", () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
     });
   </script>
-</body>
-</html>;
-            padding: 10px 0;
-            text-align: center;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin: 0 15px;
-        }
-        nav a {
-            color: #fff;
-            text-decoration: none;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px;
-        }
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        .articleBox {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .list_area {
-            margin-top: 20px;
-        }
-        .list_area ul {
-            list-style: none;
-            padding: 0;
-            display: flex; /* Flexboxを使用 */
-            flex-wrap: wrap; /* 折り返しを有効 */
-        }
-        .list_area li {
-            width: 25%; /* 4列にするために幅を25%に設定 */
-            margin: 10px 0;
-            padding: 0 10px; /* 左右に余白を追加 */
-            box-sizing: border-box; /* paddingを含めて幅を計算 */
-        }
-        .list_area a {
-            text-decoration: none;
-            color: #333;
-            display: block; /* ブロック要素に変更 */
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            height: 100%; /* 高さをliに合わせる */
-        }
-        .list_area a:hover {
-            background-color: #f0f0f0;
-        }
-        footer {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 20px 0;
-            position: relative;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>松乃木飯店</h1>
-        <nav>
-            <ul>
-                <li><a href="https://ldbyq.crayonsite.com/">トップ</a></li>
-                <li><a href="https://ldbyq.crayonsite.com/p/61/">脳トレ部屋</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div class="container">
-        <div class="articleBox">
-            <h2>脳トレなど</h2>
-            <div class="list_area">
-                <ul>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/kioku2" target="_blank">追跡漢字記憶ゲーム</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/men2.html">担々麺作りゲーム</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/sinkei.html">神経衰弱</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html">玉点滅</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html">玉点滅設定可能</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html">移動する赤玉※触ると玉が消えるよ</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/dotukado">ドッツカード</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/irosagasi">色探しゲーム　※少しずつ難しくなります</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/irosagasi2">色探しゲーム　レベル選択式</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/syunnkann">瞬間記憶ゲーム</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/suujikioku">数字記憶ゲーム</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/kiriperin">クリペリン検査</a></li>
-                    <li><a href="https://matunokihanten.github.io/mojikioku/sutereo" target="_blank">ステレオグラムゲーム</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <footer>
-        <p>静岡県袋井市山科3224-2</p>
-        <p>電話: <a href="tel:0538-43-3398">0538-43-3398</a></p>
-        <p>メール: <a href="mailto:matunokihanten@ybb.ne.jp">matunokihanten@ybb.ne.jp</a></p>
-    </footer>
-    <script src="//accaii.com/matunoki/script.js" async></script>
-    <noscript><img src="//accaii.com/matunoki/script?guid=on" alt="アクセスカウンター"></noscript>
-    <a href="//accaii.com/matunoki/"><img src="//accaii.com/matunoki/counter.png" style="width:80px;height:15px;vertical-align:middle;" alt="アクセスカウンター" /></a>
 </body>
 </html>
