@@ -2,98 +2,103 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>万華鏡アニメーション（表示版）</title>
+  <title>万華鏡アニメーション</title>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000;
+      background: black;
     }
-    /* canvas を非表示にしていた設定を削除（display: block; で表示） */
     canvas {
       display: block;
+    }
+    /* スライダーなどのコントロールを画面上に配置 */
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      color: white;
+      font-family: Arial, sans-serif;
     }
   </style>
 </head>
 <body>
-  <canvas id="kaleido"></canvas>
+  <!-- スピードを調整するスライダー -->
+  <div id="controls">
+    <label for="speedRange">Speed:</label>
+    <input type="range" id="speedRange" min="1" max="6000" value="3000">
+  </div>
+  <canvas id="canvas"></canvas>
+  
   <script>
-    const canvas = document.getElementById("kaleido");
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const ctx = canvas.getContext("2d");
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
     
-    // 万華鏡のセグメント数と1セグメントあたりの角度
-    const segments = 12;
-    const stepAngle = (2 * Math.PI) / segments;
-    
-    let globalAngle = 0;
-    
-    // オフスクリーンキャンバスによるパターン作成
-    const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = 400;
-    patternCanvas.height = 400;
-    const pCtx = patternCanvas.getContext("2d");
-    
-    function createPattern() {
-      pCtx.fillStyle = "#000";
-      pCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
-    
-      for (let i = 0; i < 100; i++){
-        pCtx.beginPath();
-        const hue = Math.floor(Math.random() * 360);
-        pCtx.fillStyle = `hsl(${hue}, 80%, 60%)`;
-        const x = Math.random() * patternCanvas.width;
-        const y = Math.random() * patternCanvas.height;
-        const radius = Math.random() * 20;
-        pCtx.arc(x, y, radius, 0, Math.PI * 2);
-        pCtx.fill();
-      }
+    // キャンバスが常に画面全体にフィットするようにリサイズ
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-    createPattern();
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // スライダーで調整する回転スピード
+    const speedSlider = document.getElementById('speedRange');
+    let speed = parseFloat(speedSlider.value);
+    speedSlider.addEventListener('input', () => {
+      speed = parseFloat(speedSlider.value);
+    });
+    
+    let angle = 0;
+    let colorOffset = 0;
     
     function animate() {
+      // キャンバスをクリア
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+      
+      // 画面中央を原点に
       ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(globalAngle);
-    
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      
+      // 万華鏡効果のために複数のセグメント（ここでは12個）に分ける
+      const segments = 12;
+      const segmentAngle = (Math.PI * 2) / segments;
+      // キャンバス上に十分な大きさで描画するため、対角線の長さを半径とする
+      const radius = Math.hypot(canvas.width, canvas.height);
+      
       for (let i = 0; i < segments; i++) {
         ctx.save();
-        ctx.rotate(i * stepAngle);
-    
-        if (i % 2 === 0) {
-          ctx.scale(1, -1);
-        }
-    
+        // 各セグメントごとに回転
+        ctx.rotate(i * segmentAngle + angle);
+        // 奇数番目のセグメントは左右反転して対称効果を追加
+        if (i % 2 === 1) ctx.scale(1, -1);
+        
+        // セグメントごとに三角形のパス（扇形に近い形）を描く
         ctx.beginPath();
-        const radius = Math.sqrt(centerX * centerX + centerY * centerY);
-        ctx.arc(0, 0, radius, -stepAngle / 2, stepAngle / 2);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(radius * Math.cos(-segmentAngle / 2), radius * Math.sin(-segmentAngle / 2));
+        ctx.lineTo(radius * Math.cos(segmentAngle / 2), radius * Math.sin(segmentAngle / 2));
         ctx.closePath();
-        ctx.clip();
-    
-        ctx.drawImage(
-          patternCanvas,
-          -patternCanvas.width / 2,
-          -patternCanvas.height / 2
-        );
+        
+        // HSLを使用して色相を連続的に変化させる
+        ctx.fillStyle = `hsl(${(colorOffset + i * 30) % 360}, 100%, 50%)`;
+        ctx.fill();
         ctx.restore();
       }
+      
       ctx.restore();
-    
-      globalAngle += 0.005;
+      
+      // 回転のスピードはスライダーの値に応じて変化
+      angle += (speed / 6000) * 0.05;
+      // 色相のオフセットを変化させることで、色が連続的に変わるようにする
+      colorOffset += 0.5;
+      
       requestAnimationFrame(animate);
     }
-    animate();
     
-    window.addEventListener("resize", () => {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    animate();
   </script>
 </body>
 </html>
