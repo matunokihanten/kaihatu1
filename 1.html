@@ -2,127 +2,167 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>数字記憶ゲーム</title>
+  <title>高機能掲示板</title>
   <style>
+    /* Basic styling for the bulletin board */
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
     }
-    #display {
-      font-size: 48px;
+    #board-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    #messages {
+      border: 1px solid #ddd;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
       margin-bottom: 20px;
     }
-    #message, #result {
-      font-size: 20px;
-      margin: 10px;
+    .message {
+      border-bottom: 1px solid #eee;
+      padding: 8px 0;
     }
-    input {
-      font-size: 20px;
-      padding: 5px;
-      width: 120px;
-      text-align: center;
+    .message:last-child {
+      border-bottom: none;
     }
-    button {
-      font-size: 20px;
-      padding: 5px 10px;
+    #input-area {
+      display: flex;
+      gap: 10px;
+    }
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
+    }
+    #send-button {
+      padding: 10px 16px;
+      font-size: 1em;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>数字記憶ゲーム</h1>
-  
-  <!-- 表示する数字 -->
-  <div id="display"></div>
-  
-  <!-- 状況を案内するメッセージ -->
-  <div id="message"></div>
-  
-  <!-- ユーザー入力部 -->
-  <input type="text" id="answer" placeholder="数字を入力" disabled />
-  <button id="submit" disabled>送信</button>
-  
-  <!-- 結果・スコア表示 -->
-  <div id="result"></div>
-  
-  <script>
-    // グローバル変数：前回の数字、現在の数字、スコア
-    let previousNumber, currentNumber, score = 0;
+  <div id="board-container">
+    <h2>高機能掲示板</h2>
+    <div id="messages">
+      <!-- メッセージがここに表示されます -->
+    </div>
+    <div id="input-area">
+      <input type="text" id="message-input" placeholder="メッセージを入力してください">
+      <button id="send-button">投稿</button>
+    </div>
+  </div>
 
-    // 10～99のランダムな2桁の数字を生成する関数
-    function generateRandomTwoDigit() {
-      return Math.floor(Math.random() * 90) + 10;
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      onSnapshot, 
+      orderBy, 
+      query 
+    } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+    
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAk_I5nBbccP5CO6aUoKXu19urq_7B9jm0",
+      authDomain: "my-chat-room-75025.firebaseapp.com",
+      projectId: "my-chat-room-75025",
+      storageBucket: "my-chat-room-75025.firebasestorage.app",
+      messagingSenderId: "778251776207",
+      appId: "1:778251776207:web:86b21d6af5bc40f1ba07ba",
+      measurementId: "G-1W7HQ8J1EL"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // Initialize Firestore
+    const db = getFirestore(app);
+
+    // DOM elements
+    const messagesContainer = document.getElementById("messages");
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-button");
+
+    /**
+     * Renders one message into the message container.
+     * @param {string} id - The document id.
+     * @param {object} data - The document data.
+     */
+    function renderMessage(id, data) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message";
+      messageDiv.setAttribute("data-id", id);
+
+      const user = data.user || "Anonymous";
+      // Use a timestamp if available (Firestore timestamps need conversion)
+      const time = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+      const timeString = time.toLocaleString();
+
+      messageDiv.innerHTML = `<strong>${user}</strong>: ${data.text} <span style="font-size: 0.8em; color: #666;">[${timeString}]</span>`;
+      messagesContainer.appendChild(messageDiv);
     }
 
-    // ゲーム開始時の初期設定
-    function startGame() {
-      // 最初の数字を生成して表示
-      currentNumber = generateRandomTwoDigit();
-      document.getElementById("display").innerText = currentNumber;
-      // ここでは解答入力は不可―数字を覚えるために
-      document.getElementById("message").innerText = "数字を覚えてね！3秒後に次の数字が出ます。";
-      document.getElementById("answer").value = "";
-      document.getElementById("answer").disabled = true;
-      document.getElementById("submit").disabled = true;
-      document.getElementById("result").innerText = "スコア: " + score;
-      
-      // 3秒後に最初のラウンドへ進む
-      setTimeout(nextRound, 3000);
-    }
+    // Create a query against the collection.
+    const messagesQuery = query(
+      collection(db, "messages"),
+      orderBy("timestamp", "asc")
+    );
 
-    // 各ラウンドで実行する関数
-    function nextRound() {
-      // 現在表示していた数字を「前の数字」として保存
-      previousNumber = currentNumber;
-      // 新たな数字を生成して表示（これが次の数字）
-      currentNumber = generateRandomTwoDigit();
-      document.getElementById("display").innerText = currentNumber;
-      
-      // ユーザーに前の数字（previousNumber）を入力するよう促す
-      document.getElementById("message").innerText = "前に表示されていた数字を入力してください！";
-      
-      // 入力部を有効にして、フォーカスを合わせる
-      document.getElementById("answer").disabled = false;
-      document.getElementById("submit").disabled = false;
-      document.getElementById("answer").focus();
-    }
+    // Real-time updates: listen for new messages
+    onSnapshot(messagesQuery, (snapshot) => {
+      // Clear current messages to reduce duplicate entries
+      messagesContainer.innerHTML = '';
+      snapshot.forEach((doc) => {
+        renderMessage(doc.id, doc.data());
+      });
+      // Auto-scroll to the bottom of the messages container
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
 
-    // ユーザーの解答をチェックする関数
-    function checkAnswer() {
-      // 入力内容を取得（前後の不要な空白を除去）
-      let userAnswer = document.getElementById("answer").value.trim();
-
-      // 値が未入力なら何もしない
-      if (userAnswer === "") return;
-
-      // 入力された値と前の数字を数値として比較
-      if (parseInt(userAnswer, 10) === previousNumber) {
-        score++;
-        document.getElementById("result").innerText = "正解！ スコア: " + score;
-      } else {
-        document.getElementById("result").innerText = "不正解！ 正しい答えは " + previousNumber + " でした。 スコア: " + score;
+    // Function to post a new message
+    async function postMessage(text) {
+      try {
+        await addDoc(collection(db, "messages"), {
+          text: text,
+          user: "Guest", // You can later extend this with Firebase Authentication for custom users
+          timestamp: new Date()
+        });
+      } catch (err) {
+        console.error("ドキュメント追加エラー:", err);
       }
-      
-      // 入力欄をリセットし、すぐには入力できないようにする
-      document.getElementById("answer").value = "";
-      document.getElementById("answer").disabled = true;
-      document.getElementById("submit").disabled = true;
-      
-      // 次のラウンドへ進むまで3秒待つ
-      setTimeout(nextRound, 3000);
     }
 
-    // ボタンのクリックやEnterキー入力で解答チェックを実行
-    document.getElementById("submit").addEventListener("click", checkAnswer);
-    document.getElementById("answer").addEventListener("keydown", function(event) {
-      // Enterキー（keyCode 13）で送信
-      if (event.key === "Enter") {
-        checkAnswer();
+    // Event listener for the send button
+    sendButton.addEventListener("click", () => {
+      const text = messageInput.value.trim();
+      if (text) {
+        postMessage(text);
+        messageInput.value = '';
       }
     });
 
-    // ページ読み込み完了後にゲーム開始
-    window.onload = startGame;
+    // Allow posting with the Enter key
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendButton.click();
+      }
+    });
   </script>
 </body>
 </html>
