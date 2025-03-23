@@ -2,213 +2,166 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>数字記憶ゲーム シンプル版</title>
+  <title>高機能掲示板</title>
   <style>
-    /* シンプルなレイアウト */
+    /* Basic styling for the bulletin board */
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 20px;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
     }
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
+    #board-container {
+      max-width: 600px;
+      margin: 40px auto;
       background: #fff;
-      border: 1px solid #ccc;
       padding: 20px;
-      border-radius: 4px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
     }
-    h1, h2 {
+    h2 {
       text-align: center;
-      margin-bottom: 15px;
     }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input, select, button {
-      width: 100%;
+    #messages {
+      border: 1px solid #ddd;
       padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+      height: 300px;
+      overflow-y: scroll;
+      margin-bottom: 20px;
     }
-    /* 出題数字・メッセージ・結果 */
-    #display {
-      text-align: center;
-      font-size: 48px;
-      margin-bottom: 10px;
+    .message {
+      border-bottom: 1px solid #eee;
+      padding: 8px 0;
     }
-    #message, #result {
-      text-align: center;
-      font-size: 20px;
-      margin-bottom: 10px;
+    .message:last-child {
+      border-bottom: none;
     }
-    /* キーパッドのレイアウト（3列グリッド） */
-    #keypad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 5px;
-      margin-bottom: 15px;
+    #input-area {
+      display: flex;
+      gap: 10px;
     }
-    #keypad button {
-      padding: 15px;
-      font-size: 18px;
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
     }
-    .hidden {
-      display: none;
+    #send-button {
+      padding: 10px 16px;
+      font-size: 1em;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>数字記憶ゲーム</h1>
-    
-    <!-- 設定画面 -->
-    <div id="settings">
-      <h2>設定</h2>
-      <label for="digitCount">桁数 (例: 2 → 10～99)</label>
-      <input type="number" id="digitCount" min="1" value="2">
-      <label for="waitTime">待ち時間 (秒)</label>
-      <input type="number" id="waitTime" min="1" value="3">
-      <button id="startGameBtn">ゲーム開始</button>
+  <div id="board-container">
+    <h2>高機能掲示板</h2>
+    <div id="messages">
+      <!-- メッセージがここに表示されます -->
     </div>
-    
-    <!-- ゲーム画面 -->
-    <div id="game" class="hidden">
-      <!-- 表示する数字 -->
-      <div id="display">--</div>
-      <!-- 状況メッセージ -->
-      <div id="message">数字を覚えてください</div>
-      <!-- 答え入力欄（readonlyでシステムキーボードは出ません） -->
-      <input type="text" id="answerDisplay" placeholder="答えを入力" readonly style="text-align: center;">
-      <!-- 電卓風キーパッド -->
-      <div id="keypad">
-        <button class="key" data-val="7">7</button>
-        <button class="key" data-val="8">8</button>
-        <button class="key" data-val="9">9</button>
-        <button class="key" data-val="4">4</button>
-        <button class="key" data-val="5">5</button>
-        <button class="key" data-val="6">6</button>
-        <button class="key" data-val="1">1</button>
-        <button class="key" data-val="2">2</button>
-        <button class="key" data-val="3">3</button>
-        <button class="key" id="clearBtn">Clear</button>
-        <button class="key" data-val="0">0</button>
-        <button class="key" id="enterBtn">Enter</button>
-      </div>
-      <!-- 結果表示 -->
-      <div id="result">スコア: 0</div>
-      <!-- 再スタート用ボタン（ゲーム終了時に表示） -->
-      <button id="restart" class="hidden">設定に戻る</button>
+    <div id="input-area">
+      <input type="text" id="message-input" placeholder="メッセージを入力してください">
+      <button id="send-button">投稿</button>
     </div>
   </div>
-  
-  <script>
-    // グローバル変数
-    let digitCount, waitTime;
-    let score = 0;
-    let currentNumber, previousNumber;
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      onSnapshot, 
+      orderBy, 
+      query 
+    } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
     
-    const settingsDiv = document.getElementById("settings");
-    const gameDiv = document.getElementById("game");
-    const displayDiv = document.getElementById("display");
-    const messageDiv = document.getElementById("message");
-    const answerDisplay = document.getElementById("answerDisplay");
-    const resultDiv = document.getElementById("result");
-    const startGameBtn = document.getElementById("startGameBtn");
-    const restartBtn = document.getElementById("restart");
-    const keypad = document.getElementById("keypad");
-    
-    // 指定桁数に合わせたランダムな数字を生成（例：2桁なら10～99）
-    function generateRandomNumber(digits) {
-      const lower = Math.pow(10, digits - 1);
-      const upper = Math.pow(10, digits) - 1;
-      return Math.floor(Math.random() * (upper - lower + 1)) + lower;
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAk_I5nBbccP5CO6aUoKXu19urq_7B9jm0",
+      authDomain: "my-chat-room-75025.firebaseapp.com",
+      projectId: "my-chat-room-75025",
+      storageBucket: "my-chat-room-75025.firebasestorage.app",
+      messagingSenderId: "778251776207",
+      appId: "1:778251776207:web:86b21d6af5bc40f1ba07ba",
+      measurementId: "G-1W7HQ8J1EL"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    // Initialize Firestore
+    const db = getFirestore(app);
+
+    // DOM elements
+    const messagesContainer = document.getElementById("messages");
+    const messageInput = document.getElementById("message-input");
+    const sendButton = document.getElementById("send-button");
+
+    /**
+     * Renders one message into the message container.
+     * @param {string} id - The document id.
+     * @param {object} data - The document data.
+     */
+    function renderMessage(id, data) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message";
+      messageDiv.setAttribute("data-id", id);
+
+      const user = data.user || "Anonymous";
+      // Use a timestamp if available (Firestore timestamps need conversion)
+      const time = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+      const timeString = time.toLocaleString();
+
+      messageDiv.innerHTML = `<strong>${user}</strong>: ${data.text} <span style="font-size: 0.8em; color: #666;">[${timeString}]</span>`;
+      messagesContainer.appendChild(messageDiv);
     }
-    
-    // ゲーム開始処理
-    function startGame() {
-      digitCount = parseInt(document.getElementById("digitCount").value, 10);
-      waitTime = parseInt(document.getElementById("waitTime").value, 10) * 1000;
-      score = 0;
-      resultDiv.innerText = "スコア: " + score;
-      answerDisplay.value = "";
-      
-      settingsDiv.classList.add("hidden");
-      gameDiv.classList.remove("hidden");
-      restartBtn.classList.add("hidden");
-      
-      // 初回は数字を覚えるフェーズ
-      currentNumber = generateRandomNumber(digitCount);
-      displayDiv.innerText = currentNumber;
-      messageDiv.innerText = "数字を覚えてください";
-      
-      setKeypad(false);
-      
-      // 待ち時間終了後、入力フェーズへ移行
-      setTimeout(nextRound, waitTime);
-    }
-    
-    // 次のラウンドへ進む（直前の数字を正解とする）
-    function nextRound() {
-      previousNumber = currentNumber;
-      currentNumber = generateRandomNumber(digitCount);
-      displayDiv.innerText = currentNumber;
-      messageDiv.innerText = "前の数字を入力してください";
-      answerDisplay.value = "";
-      setKeypad(true);
-    }
-    
-    // 回答チェック（Enter押下時に実行）
-    function checkAnswer() {
-      const userInput = answerDisplay.value.trim();
-      if (userInput === "") return;
-      
-      if (parseInt(userInput, 10) === previousNumber) {
-        // 正解ならスコアを加算し、すぐに次のラウンドへ進む
-        score++;
-        resultDiv.innerText = "正解！ スコア: " + score;
-        setKeypad(false);
-        nextRound();
-      } else {
-        // 不正解ならゲーム終了
-        resultDiv.innerText = "不正解！ 正しい答えは " + previousNumber + " でした。ゲーム終了";
-        setKeypad(false);
-        restartBtn.classList.remove("hidden");
+
+    // Create a query against the collection.
+    const messagesQuery = query(
+      collection(db, "messages"),
+      orderBy("timestamp", "asc")
+    );
+
+    // Real-time updates: listen for new messages
+    onSnapshot(messagesQuery, (snapshot) => {
+      // Clear current messages to reduce duplicate entries
+      messagesContainer.innerHTML = '';
+      snapshot.forEach((doc) => {
+        renderMessage(doc.id, doc.data());
+      });
+      // Auto-scroll to the bottom of the messages container
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    // Function to post a new message
+    async function postMessage(text) {
+      try {
+        await addDoc(collection(db, "messages"), {
+          text: text,
+          user: "Guest", // You can later extend this with Firebase Authentication for custom users
+          timestamp: new Date()
+        });
+      } catch (err) {
+        console.error("ドキュメント追加エラー:", err);
       }
     }
-    
-    // キーパッドの有効／無効を設定
-    function setKeypad(enabled) {
-      const buttons = keypad.querySelectorAll("button");
-      buttons.forEach(btn => btn.disabled = !enabled);
-    }
-    
-    // キーパッドのクリックイベント
-    keypad.addEventListener("click", function(e) {
-      const target = e.target;
-      if (!target.matches("button") || target.disabled) return;
-      
-      if (target.id === "clearBtn") {
-        answerDisplay.value = "";
-      } else if (target.id === "enterBtn") {
-        checkAnswer();
-      } else {
-        // 数字ボタン：入力欄に追記（桁数未満なら）
-        if (answerDisplay.value.length < digitCount) {
-          answerDisplay.value += target.getAttribute("data-val");
-        }
+
+    // Event listener for the send button
+    sendButton.addEventListener("click", () => {
+      const text = messageInput.value.trim();
+      if (text) {
+        postMessage(text);
+        messageInput.value = '';
       }
     });
-    
-    // イベントリスナーの登録
-    startGameBtn.addEventListener("click", startGame);
-    restartBtn.addEventListener("click", function() {
-      settingsDiv.classList.remove("hidden");
-      gameDiv.classList.add("hidden");
+
+    // Allow posting with the Enter key
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendButton.click();
+      }
     });
   </script>
 </body>
