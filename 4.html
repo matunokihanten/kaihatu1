@@ -1,1 +1,74 @@
-4
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>バイノーラルビート - ガンマ波の音</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>バイノーラルビート：ガンマ波の音</h1>
+  <p>ヘッドホンを着用し、以下の「開始」ボタンをクリックしてください。</p>
+  <button id="startButton">開始</button>
+
+  <script>
+    document.getElementById('startButton').addEventListener('click', function() {
+      // ユーザーのクリックによりオーディオコンテキストを作成します。
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext();
+
+      // --- 設定パラメータ ---
+      const carrierFreq = 400;  // 基本のキャリア周波数 (Hz)
+      const beatFreq = 40;      // ビート差分 (Hz) → 400Hz + 40Hz = 440Hz（右チャンネル）
+      const duration = 10;      // 再生時間（秒）
+
+      // --- 左右のオシレーター（正弦波）生成 ---
+      // 左チャンネル：キャリア周波数のみ（400Hz）
+      const oscillatorLeft = audioCtx.createOscillator();
+      oscillatorLeft.type = 'sine';
+      oscillatorLeft.frequency.value = carrierFreq;
+
+      // 右チャンネル：キャリア周波数にビート分（40Hz）を加えた 440Hz
+      const oscillatorRight = audioCtx.createOscillator();
+      oscillatorRight.type = 'sine';
+      oscillatorRight.frequency.value = carrierFreq + beatFreq;
+
+      // --- StereoPannerNode で左右にパンする ---
+      const pannerLeft = audioCtx.createStereoPanner();
+      pannerLeft.pan.value = -1;  // 左側へパン
+
+      const pannerRight = audioCtx.createStereoPanner();
+      pannerRight.pan.value = 1;  // 右側へパン
+
+      // --- オシレーターをそれぞれのパンナーに接続し、出力にルーティング ---
+      oscillatorLeft.connect(pannerLeft).connect(audioCtx.destination);
+      oscillatorRight.connect(pannerRight).connect(audioCtx.destination);
+
+      // --- オシレーター開始 & 停止 ---
+      oscillatorLeft.start();
+      oscillatorRight.start();
+
+      // 指定された再生時間後に停止します
+      oscillatorLeft.stop(audioCtx.currentTime + duration);
+      oscillatorRight.stop(audioCtx.currentTime + duration);
+
+      // 再生終了後、AudioContext を閉じる（必要に応じて）
+      oscillatorLeft.onended = function() {
+        audioCtx.close();
+      };
+
+      // ボタンを無効化（複数回の再生を防止）
+      this.disabled = true;
+    });
+  </script>
+</body>
+</html>
