@@ -2,38 +2,65 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>高機能掲示板</title>
+  <title>豪華掲示板</title>
+  <!-- Google Fonts をインポート -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    /* Basic styling for the bulletin board */
+    /* 全体のリッチなスタイル設定 */
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 2em;
+      font-weight: 700;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     #board-container {
-      max-width: 600px;
-      margin: 40px auto;
+      max-width: 800px;
+      margin: 30px auto;
       background: #fff;
-      padding: 20px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      text-align: center;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     #messages {
-      border: 1px solid #ddd;
-      padding: 10px;
-      height: 300px;
-      overflow-y: scroll;
+      background: #fafafa;
+      border-radius: 6px;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
       margin-bottom: 20px;
+      transition: background 0.5s ease;
     }
     .message {
-      border-bottom: 1px solid #eee;
-      padding: 8px 0;
+      background: #fff;
+      border-left: 4px solid #5563DE;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-out;
     }
-    .message:last-child {
-      border-bottom: none;
+    .message strong {
+      color: #5563DE;
+    }
+    .message span.time {
+      font-size: 0.8em;
+      color: #999;
+      float: right;
     }
     #input-area {
       display: flex;
@@ -41,30 +68,51 @@
     }
     #message-input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       font-size: 1em;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      transition: border-color 0.3s;
+    }
+    #message-input:focus {
+      border-color: #5563DE;
+      outline: none;
     }
     #send-button {
-      padding: 10px 16px;
+      padding: 12px 20px;
+      background: #5563DE;
+      color: #fff;
+      border: none;
       font-size: 1em;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+    #send-button:hover {
+      background: #4453b3;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
+  <header>
+    豪華掲示板
+  </header>
   <div id="board-container">
-    <h2>高機能掲示板</h2>
     <div id="messages">
-      <!-- メッセージがここに表示されます -->
+      <!-- メッセージがここに動的にロードされます -->
     </div>
     <div id="input-area">
-      <input type="text" id="message-input" placeholder="メッセージを入力してください">
-      <button id="send-button">投稿</button>
+      <input type="text" id="message-input" placeholder="ここにメッセージを入力...">
+      <button id="send-button">送信</button>
     </div>
   </div>
 
   <script type="module">
-    // Import the functions you need from the SDKs you need
+    // 必要な Firebase モジュールをインポート
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
     import { 
@@ -75,8 +123,8 @@
       orderBy, 
       query 
     } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-    
-    // Your web app's Firebase configuration
+
+    // Firebase の設定
     const firebaseConfig = {
       apiKey: "AIzaSyAk_I5nBbccP5CO6aUoKXu19urq_7B9jm0",
       authDomain: "my-chat-room-75025.firebaseapp.com",
@@ -87,68 +135,67 @@
       measurementId: "G-1W7HQ8J1EL"
     };
 
-    // Initialize Firebase
+    // Firebase, Analytics, Firestore の初期化
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-
-    // Initialize Firestore
     const db = getFirestore(app);
 
-    // DOM elements
+    // DOM 要素を取得
     const messagesContainer = document.getElementById("messages");
     const messageInput = document.getElementById("message-input");
     const sendButton = document.getElementById("send-button");
 
     /**
-     * Renders one message into the message container.
-     * @param {string} id - The document id.
-     * @param {object} data - The document data.
+     * メッセージを描画する関数
+     * @param {string} id - ドキュメントID
+     * @param {object} data - { text, user, timestamp } の各種データ
      */
     function renderMessage(id, data) {
       const messageDiv = document.createElement("div");
       messageDiv.className = "message";
       messageDiv.setAttribute("data-id", id);
 
-      const user = data.user || "Anonymous";
-      // Use a timestamp if available (Firestore timestamps need conversion)
-      const time = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
-      const timeString = time.toLocaleString();
-
-      messageDiv.innerHTML = `<strong>${user}</strong>: ${data.text} <span style="font-size: 0.8em; color: #666;">[${timeString}]</span>`;
+      const user = data.user || "Guest";
+      const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+      const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      messageDiv.innerHTML = `
+        <strong>${user}</strong>
+        <span class="time">${timeString}</span>
+        <div>${data.text}</div>
+      `;
       messagesContainer.appendChild(messageDiv);
     }
 
-    // Create a query against the collection.
+    // Firestore の "messages" コレクションからリアルタイムでデータを取得
     const messagesQuery = query(
       collection(db, "messages"),
       orderBy("timestamp", "asc")
     );
 
-    // Real-time updates: listen for new messages
     onSnapshot(messagesQuery, (snapshot) => {
-      // Clear current messages to reduce duplicate entries
-      messagesContainer.innerHTML = '';
+      messagesContainer.innerHTML = '';  // 描画前にクリア
       snapshot.forEach((doc) => {
         renderMessage(doc.id, doc.data());
       });
-      // Auto-scroll to the bottom of the messages container
+      // 新しいメッセージが表示されたら自動スクロール
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
-    // Function to post a new message
+    // 新規メッセージを Firestore に投稿する関数
     async function postMessage(text) {
       try {
         await addDoc(collection(db, "messages"), {
           text: text,
-          user: "Guest", // You can later extend this with Firebase Authentication for custom users
+          user: "Guest", // 認証機能と連携すればユーザ名を反映できます
           timestamp: new Date()
         });
-      } catch (err) {
-        console.error("ドキュメント追加エラー:", err);
+      } catch (error) {
+        console.error("メッセージ投稿エラー:", error);
       }
     }
 
-    // Event listener for the send button
+    // 送信ボタンのクリックイベント
     sendButton.addEventListener("click", () => {
       const text = messageInput.value.trim();
       if (text) {
@@ -157,7 +204,7 @@
       }
     });
 
-    // Allow posting with the Enter key
+    // Enter キーでの投稿も対応
     messageInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
         sendButton.click();
