@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>逆算チャレンジ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      line-height: 1.6;
+    }
+    .number-item {
+      margin: 0.5rem 0;
+    }
+    .number-item span {
+      display: inline-block;
+      width: 40px;
+    }
+    button, input[type="button"] {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>逆算チャレンジ</h1>
+  <p id="target-number"></p>
+  <form id="challengeForm">
+    <div id="numbers-container">
+      <!-- 数字とラジオボタンがここに表示されます -->
+    </div>
+    <input type="button" id="submitButton" value="答えをチェックする">
+  </form>
+  <p id="result"></p>
+  <button id="newChallenge">新しいチャレンジ</button>
+
+  <script>
+    // グローバル変数 puzzle にパズル情報を保持
+    let puzzle = {};
+
+    // 配列を Fisher-Yates アルゴリズムでシャッフル
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // パズル生成関数
+    function generatePuzzle() {
+      let numbersWithSigns, total;
+      // 達成可能な目標（10～90）になるまで生成
+      do {
+        numbersWithSigns = [];
+        total = 0;
+        for (let i = 0; i < 10; i++) {
+          // 1～9 の数字を生成
+          let num = Math.floor(Math.random() * 9) + 1;
+          // ランダムに符号 + (1) か - (-1) を割り当て
+          let sign = Math.random() < 0.5 ? 1 : -1;
+          numbersWithSigns.push({ value: num, solutionSign: sign });
+          total += sign * num;
+        }
+      } while (total < 10 || total > 90);  // 目標が1桁の場合は再生成
+
+      // 得られた解（目標値）と数字群をグローバル puzzle にセット
+      puzzle.numbers = shuffleArray(numbersWithSigns);  // 表示順はランダムに
+      puzzle.target = total;
+    }
+
+    // HTML 上にパズル内容を描画する
+    function displayPuzzle() {
+      const container = document.getElementById("numbers-container");
+      container.innerHTML = "";
+      puzzle.numbers.forEach((item, index) => {
+        // 各数字に対して + / − 選択用ラジオボタンを表示（デフォルトは +）
+        container.innerHTML += `
+          <div class="number-item">
+            <span>${item.value}</span>
+            <label>
+              <input type="radio" name="choice${index}" value="+" checked> +
+            </label>
+            <label>
+              <input type="radio" name="choice${index}" value="-"> −
+            </label>
+          </div>
+        `;
+      });
+      document.getElementById("target-number").innerText = "目標: " + puzzle.target;
+      document.getElementById("result").innerText = "";
+    }
+
+    // ユーザーの選択結果を計算してチェック
+    function checkAnswer() {
+      let userSum = 0;
+      for (let i = 0; i < puzzle.numbers.length; i++) {
+        const radios = document.getElementsByName("choice" + i);
+        let selected;
+        for (let radio of radios) {
+          if (radio.checked) {
+            selected = radio.value;
+            break;
+          }
+        }
+        // ユーザーが選んだ記号に合わせて計算
+        if (selected === "+") {
+          userSum += puzzle.numbers[i].value;
+        } else {
+          userSum -= puzzle.numbers[i].value;
+        }
+      }
+      const resultElem = document.getElementById("result");
+      if (userSum === puzzle.target) {
+        resultElem.innerText = "正解！素晴らしいですね。";
+      } else {
+        resultElem.innerText = "不正解。計算結果は " + userSum + " です。再挑戦してください。";
+      }
+    }
+
+    // 各ボタンへのイベントリスナー設定
+    document.getElementById("submitButton").addEventListener("click", checkAnswer);
+    document.getElementById("newChallenge").addEventListener("click", () => {
+      generatePuzzle();
+      displayPuzzle();
+    });
+
+    // ページ読み込み時に初期パズルを生成
+    generatePuzzle();
+    displayPuzzle();
+  </script>
+</body>
+</html>
