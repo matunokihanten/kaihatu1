@@ -3,52 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>反応速度チャレンジ - 豪華版</title>
+  <title>反応速度チャレンジ - 自動進行版</title>
   <style>
     /* 全体のレイアウト */
     body {
       background: linear-gradient(45deg, #e3e3e3, #ffffff);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
       margin: 0;
       padding: 20px;
-      text-align: center;
       color: #333;
     }
     h1 {
       font-size: 36px;
-      margin-bottom: 10px;
-    }
-    p {
-      font-size: 18px;
-    }
-    /* スタートボタン */
-    #startButton {
-      font-size: 20px;
-      padding: 12px 24px;
-      background: #4CAF50;
-      border: none;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-    #startButton:hover {
-      transform: scale(1.05);
-    }
-    #startButton:disabled {
-      background: #9E9E9E;
-      cursor: not-allowed;
+      margin-bottom: 20px;
     }
     /* ゲームエリア */
     #gameArea {
       width: 300px;
       height: 300px;
-      margin: 30px auto;
+      margin: 0 auto;
       border-radius: 15px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       font-size: 24px;
       color: #fff;
       background-color: #e53935; /* 初期は赤 */
@@ -57,7 +35,7 @@
       transition: background-color 0.5s, transform 0.2s;
       box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-    /* エリアが反応待ちのときのスタイル */
+    /* 緑色状態用 */
     #gameArea.ready {
       background-color: #43A047; /* 緑 */
     }
@@ -72,11 +50,12 @@
       75% { transform: translateX(-10px); }
       100% { transform: translateX(0); }
     }
-    /* スコア表示エリア */
+    /* 結果／スコア表示エリア */
     #scoreDisplay {
       margin-top: 30px;
     }
-    #scoreDisplay h2, #scoreDisplay h3 {
+    #scoreDisplay h2,
+    #scoreDisplay h3 {
       margin: 10px 0;
     }
     #result {
@@ -100,43 +79,39 @@
 </head>
 <body>
   <h1>反応速度チャレンジ</h1>
-  <p>色が変わったらできるだけ早くクリックしてください！</p>
-  <button id="startButton">スタート</button>
-  <div id="gameArea">準備中...</div>
-
+  <div id="gameArea">準備中…</div>
+  
   <div id="scoreDisplay">
     <h2>結果</h2>
     <p id="result">まだスコアはありません</p>
     <h3>スコア履歴</h3>
     <ul id="scoreBoard"></ul>
   </div>
-
+  
   <script>
-    const startButton = document.getElementById('startButton');
     const gameArea = document.getElementById('gameArea');
     const result = document.getElementById('result');
     const scoreBoard = document.getElementById('scoreBoard');
 
     let startTime;
     let timeoutId;
-    let readyToClick = false; // 緑色になったらtrueに
+    let readyToClick = false;  // 緑に変わったらtrueに
+    let trialCount = 0;
+    const totalTrials = 5;
     const scores = [];
 
-    startButton.addEventListener('click', startGame);
-
-    function startGame() {
-      // 初期化
-      result.textContent = '';
-      gameArea.textContent = '待機中...';
+    // 各試行を開始する関数
+    function startTrial() {
+      // ゲームエリアの初期設定
+      gameArea.textContent = '待機中…';
       gameArea.style.backgroundColor = '#e53935';
       gameArea.classList.remove('ready');
-      startButton.disabled = true;
       readyToClick = false;
-
-      // 2～5秒のランダムな遅延
+      
+      // ランダムな遅延（2～5秒）
       const delay = Math.random() * 3000 + 2000;
       timeoutId = setTimeout(() => {
-        gameArea.style.backgroundColor = '#43A047';
+        gameArea.style.backgroundColor = '#43A047'; // 緑に
         gameArea.classList.add('ready');
         gameArea.textContent = '今すぐクリック！';
         startTime = Date.now();
@@ -144,42 +119,68 @@
       }, delay);
     }
 
+    // 試行終了後、次の試行または終了処理へ移行
+    function nextTrial() {
+      trialCount++;
+      if (trialCount < totalTrials) {
+        setTimeout(() => {
+          startTrial();
+          result.textContent = ''; // 結果表示をクリア
+        }, 1000); // 1秒待機してから次の試行
+      } else {
+        setTimeout(() => {
+          gameArea.textContent = '終了';
+          result.textContent = '全ての記録が完了しました。';
+        }, 1000);
+      }
+    }
+
+    // クリック時の処理
     gameArea.addEventListener('click', () => {
+      // もし色が緑になっていない状態（早クリック）の場合
       if (!readyToClick) {
-        // 早すぎるクリックの場合、シェイクアニメーションを付与
+        clearTimeout(timeoutId);
         gameArea.classList.add('shake');
         setTimeout(() => {
           gameArea.classList.remove('shake');
         }, 300);
-        clearTimeout(timeoutId);
         result.textContent = 'フライング！早すぎます。';
-        startButton.disabled = false;
+        scores.push('フライング');
+        updateScoreBoard();
+        nextTrial();
         return;
       }
-
-      // 正常なクリックの場合は反応時間を計算
+      // 正常なクリックの場合、反応時間を計測
       const reactionTime = Date.now() - startTime;
       result.textContent = `反応速度: ${reactionTime} ミリ秒`;
       scores.push(reactionTime);
       updateScoreBoard();
 
       readyToClick = false;
-      startButton.disabled = false;
-      // 状態をリセット
+      // 結果を一瞬表示
       gameArea.style.backgroundColor = '#e53935';
       gameArea.classList.remove('ready');
-      gameArea.textContent = '準備中...';
+      gameArea.textContent = '結果表示中…';
+      
+      nextTrial();
     });
 
+    // スコア履歴の更新
     function updateScoreBoard() {
-      // 新しいスコアが上に追加されるように表示
       scoreBoard.innerHTML = '';
-      scores.slice().reverse().forEach((score, index) => {
+      scores.forEach((score, index) => {
         const li = document.createElement('li');
-        li.textContent = `${scores.length - index}: ${score} ミリ秒`;
+        li.textContent = `試行 ${index + 1}: ${score} ${typeof score === 'number' ? 'ミリ秒' : ''}`;
         scoreBoard.appendChild(li);
       });
     }
+
+    // ページロード後、1秒後に最初の試行を開始
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        startTrial();
+      }, 1000);
+    });
   </script>
 </body>
 </html>
