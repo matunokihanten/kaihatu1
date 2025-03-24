@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>反応速度チャレンジ</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+    }
+    #gameArea {
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+      background-color: #ff0000; /* ゲーム開始前は赤 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 20px;
+      color: #fff;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      background-color: #8bc34a;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>反応速度チャレンジ</h1>
+  <button id="startButton">開始</button>
+  <div id="gameArea">待機中...</div>
+  <p id="result"></p>
+
+  <script>
+    const startButton = document.getElementById('startButton');
+    const gameArea = document.getElementById('gameArea');
+    const result = document.getElementById('result');
+    let startTime;
+    let timeoutId;
+
+    // 「開始」ボタンが押されたらゲームスタート
+    startButton.addEventListener('click', startGame);
+
+    function startGame() {
+      result.textContent = '';
+      gameArea.style.backgroundColor = '#ff0000';  // 赤に戻す
+      gameArea.textContent = '待機中...';
+      startButton.disabled = true;
+
+      // 2～5秒（2000～5000ミリ秒）のランダムな遅延を設定
+      const delay = Math.random() * 3000 + 2000;
+      timeoutId = setTimeout(() => {
+        gameArea.style.backgroundColor = '#00ff00';  // 色を緑に変更
+        gameArea.textContent = '今すぐクリック！';
+        startTime = Date.now();  // 色が変わった瞬間の時刻を保持
+      }, delay);
+    }
+
+    // ゲームエリアがクリックされたときの処理
+    gameArea.addEventListener('click', () => {
+      if (gameArea.style.backgroundColor === 'rgb(0, 255, 0)') {
+        // 背景が緑色なら、正しく反応しているので反応時間を表示
+        const reactionTime = Date.now() - startTime;
+        result.textContent = `反応速度: ${reactionTime} ミリ秒`;
+      } else {
+        // まだ赤の場合は早すぎるクリック（フライング）としてエラー表示
+        result.textContent = 'フライング！まだ色が変わっていません。';
+        clearTimeout(timeoutId);
+      }
+      startButton.disabled = false;
+      // クリック後にリセット
+      gameArea.style.backgroundColor = '#ff0000';
+      gameArea.textContent = '待機中...';
+    });
+  </script>
+</body>
+</html>
