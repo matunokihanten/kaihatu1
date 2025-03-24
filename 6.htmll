@@ -2,89 +2,202 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>簡単な逆算チャレンジ</title>
+  <title>豪華な逆算チャレンジ</title>
   <style>
+    /* 背景＆フォント */
     body {
-      font-family: sans-serif;
-      max-width: 600px;
+      background: linear-gradient(to right, #ece9e6, #ffffff);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
       margin: 2rem auto;
+      padding: 1rem;
       text-align: center;
+      color: #333;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    /* ゲーム全体のコンテナ */
+    #game-container {
+      background: #fdfdfd;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+    /* レベル設定パネル */
+    #level-panel {
+      margin: 1rem 0;
+      font-size: 1.2rem;
+    }
+    #level-panel button {
+      margin: 0 0.5rem;
+      padding: 0.4rem 0.8rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #level-panel button:hover {
+      background-color: #45a049;
+    }
+    /* 目標＆合計の表示 */
+    #target, #current-sum {
+      font-size: 1.5rem;
+      margin: 0.8rem 0;
+    }
+    /* 数字表示 */
+    #numbers-container {
+      margin: 1rem 0;
     }
     #numbers-container > span {
       display: inline-block;
       margin: 0.5rem;
-      font-size: 1.5rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      font-size: 1.8rem;
+      padding: 0.5rem 1rem;
+      border: 2px solid #888;
+      border-radius: 8px;
       cursor: pointer;
-      user-select: none;
+      transition: transform 0.2s, border-color 0.2s;
     }
-    button {
-      margin-top: 1rem;
+    #numbers-container > span:hover {
+      transform: scale(1.1);
+      border-color: #555;
+    }
+    /* コントロールボタン */
+    .control-buttons {
+      margin: 1rem;
+    } 
+    .control-buttons button {
+      margin: 0.5rem;
       padding: 0.5rem 1rem;
       font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #2196F3;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .control-buttons button:hover {
+      background-color: #0b7dda;
+    }
+    /* メッセージ表示 */
+    #message {
+      font-size: 1.3rem;
+      margin-top: 0.8rem;
+      color: #d9534f;
     }
   </style>
 </head>
 <body>
-  <h1>簡単な逆算チャレンジ</h1>
-  <p id="target">目標: ?</p>
-  <p id="current-sum">現在の合計: ?</p>
-  <div id="numbers-container"></div>
-  <p id="message"></p>
-  <button id="new-challenge">新しいチャレンジ</button>
-
+  <h1>豪華な逆算チャレンジ</h1>
+  <div id="game-container">
+    <div id="level-panel">
+      <button id="level-down">レベルダウン</button>
+      <span id="current-level">レベル: 2</span>
+      <button id="level-up">レベルアップ</button>
+    </div>
+    <p id="target">目標: ?</p>
+    <p id="current-sum">現在の合計: ?</p>
+    <div id="numbers-container"></div>
+    <p id="message"></p>
+    <div class="control-buttons">
+      <button id="new-challenge">新しいチャレンジ</button>
+    </div>
+  </div>
+  
   <script>
-    // グローバル変数 puzzle に現在のパズル情報を保持
+    // グローバル変数
     let puzzle = {};
+    let currentLevel = 2; // 初期レベル
+    const minLevel = 1;
+    const maxLevel = 5;
+
+    // レベルに応じたパズル設定を取得
+    function getLevelSettings(level) {
+      let settings = {};
+      switch (level) {
+        case 1:
+          settings.count = 3;
+          settings.maxNumber = 5;
+          break;
+        case 2:
+          settings.count = 5;
+          settings.maxNumber = 9;
+          break;
+        case 3:
+          settings.count = 7;
+          settings.maxNumber = 9;
+          break;
+        case 4:
+          settings.count = 9;
+          settings.maxNumber = 12;
+          break;
+        case 5:
+          settings.count = 11;
+          settings.maxNumber = 15;
+          break;
+        default:
+          settings.count = 5;
+          settings.maxNumber = 9;
+      }
+      return settings;
+    }
+    
+    // Fisher-Yates アルゴリズムでシャッフル
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
 
     // パズル生成関数
-    // 5つの数字を生成し、各数字には「解答用の符号」（+ または -）をランダムに割り当て、
-    // その合計を「目標」として設定します。
-    // 初期状態はすべてが + なので、初期合計と目標が同じにならないようにします。
     function generatePuzzle() {
+      const { count, maxNumber } = getLevelSettings(currentLevel);
       let numbers = [];
       let initialSum = 0;
       let target = 0;
+      // すべてが + の場合、初期合計と目標が同じになってしまうので再生成
       do {
         numbers = [];
         initialSum = 0;
         target = 0;
-        for (let i = 0; i < 5; i++) {
-          // 数字は 1～9 の範囲
-          const num = Math.floor(Math.random() * 9) + 1;
-          // 解答用の符号：ランダムに + (1) か - (-1) を割り当てる
+        for (let i = 0; i < count; i++) {
+          // 1～maxNumber の数字を生成
+          const num = Math.floor(Math.random() * maxNumber) + 1;
+          // ランダムに解答用の符号 + (1) か - (-1) を設定
           const solSign = Math.random() < 0.5 ? 1 : -1;
           numbers.push({
             value: num,
-            solutionSign: solSign,  // ※内部情報（今回は使用しませんが、拡張のヒントに）
-            currentSign: 1          // 初期状態は全て+1
+            solutionSign: solSign,  // 内部利用
+            currentSign: 1          // 現在の符号はすべて +1 からスタート
           });
           initialSum += num;
           target += solSign * num;
         }
-        // すべてが + の場合、初期合計と目標が同じになってしまうので再生成
       } while (target === initialSum || target <= 0);
+      
       puzzle.numbers = numbers;
       puzzle.initialSum = initialSum;
       puzzle.target = target;
     }
 
-    // パズル内容を HTML 上に表示
+    // パズルの内容を画面に表示
     function displayPuzzle() {
-      const targetElem = document.getElementById("target");
-      const currentSumElem = document.getElementById("current-sum");
-      const numbersContainer = document.getElementById("numbers-container");
-      const messageElem = document.getElementById("message");
-      
-      numbersContainer.innerHTML = "";
-      messageElem.innerText = "";
-      
-      targetElem.innerText = "目標: " + puzzle.target;
-      currentSumElem.innerText = "現在の合計: " + puzzle.initialSum;
-      
-      // 各数字は span 要素として表示し、クリックで符号が切り替わる
+      document.getElementById("current-level").innerText = "レベル: " + currentLevel;
+      document.getElementById("target").innerText = "目標: " + puzzle.target;
+      document.getElementById("current-sum").innerText = "現在の合計: " + puzzle.initialSum;
+      const container = document.getElementById("numbers-container");
+      container.innerHTML = "";
+      document.getElementById("message").innerText = "";
       puzzle.numbers.forEach((item, index) => {
         const span = document.createElement("span");
         span.innerText = "+" + item.value;
@@ -92,16 +205,15 @@
         span.addEventListener("click", function() {
           toggleNumber(index);
         });
-        numbersContainer.appendChild(span);
+        container.appendChild(span);
       });
     }
 
-    // 現在の合計を計算し、画面に表示する。目標と一致したら「正解！」のメッセージも表示。
+    // 現在の合計を計算し、正解かチェックする
     function updateCurrentSumAndCheck() {
-      const currentSumElem = document.getElementById("current-sum");
-      const messageElem = document.getElementById("message");
       let currentSum = puzzle.numbers.reduce((acc, item) => acc + item.currentSign * item.value, 0);
-      currentSumElem.innerText = "現在の合計: " + currentSum;
+      document.getElementById("current-sum").innerText = "現在の合計: " + currentSum;
+      const messageElem = document.getElementById("message");
       if (currentSum === puzzle.target) {
         messageElem.innerText = "正解！";
       } else {
@@ -109,27 +221,45 @@
       }
     }
 
-    // 数字の符号を切り替える関数
-    // クリックされた数字が + なら - に、- なら + に変更し、現在の合計を更新する
+    // 数字の符号を切り替える（+ ⇔ -）
     function toggleNumber(index) {
       puzzle.numbers[index].currentSign *= -1;
-      const numbersContainer = document.getElementById("numbers-container");
-      const span = numbersContainer.querySelector('span[data-index="' + index + '"]');
-      if (puzzle.numbers[index].currentSign === 1) {
-        span.innerText = "+" + puzzle.numbers[index].value;
-      } else {
-        span.innerText = "-" + puzzle.numbers[index].value;
-      }
+      const span = document.querySelector('span[data-index="' + index + '"]');
+      span.innerText = (puzzle.numbers[index].currentSign === 1 ? "+" : "-") + puzzle.numbers[index].value;
       updateCurrentSumAndCheck();
     }
 
-    // ボタンのイベント
+    // レベルアップ処理
+    function levelUp() {
+      if (currentLevel < maxLevel) {
+        currentLevel++;
+        generatePuzzle();
+        displayPuzzle();
+      } else {
+        alert("最高レベルに到達しています！");
+      }
+    }
+
+    // レベルダウン処理
+    function levelDown() {
+      if (currentLevel > minLevel) {
+        currentLevel--;
+        generatePuzzle();
+        displayPuzzle();
+      } else {
+        alert("これ以上レベルを下げられません！");
+      }
+    }
+
+    // ボタンへのイベント設定
+    document.getElementById("level-up").addEventListener("click", levelUp);
+    document.getElementById("level-down").addEventListener("click", levelDown);
     document.getElementById("new-challenge").addEventListener("click", function() {
       generatePuzzle();
       displayPuzzle();
     });
 
-    // ページ読み込み時に初期パズルを生成
+    // ページ読み込み時に初期パズル生成
     window.onload = function() {
       generatePuzzle();
       displayPuzzle();
