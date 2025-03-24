@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>反応速度チャレンジ - 自動進行＋初期画面復帰版</title>
+  <title>反応速度チャレンジ - 集計＆リセット版</title>
   <style>
-    /* 全体のレイアウト */
+    /* 全体レイアウト */
     body {
       background: linear-gradient(45deg, #e3e3e3, #ffffff);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,11 +35,11 @@
       transition: background-color 0.5s, transform 0.2s;
       box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-    /* 緑色状態 */
+    /* 緑状態 */
     #gameArea.ready {
       background-color: #43A047;
     }
-    /* 早すぎるクリック時のシェイクアニメーション */
+    /* 早すぎるクリック時のシェイク */
     #gameArea.shake {
       animation: shake 0.3s;
     }
@@ -50,7 +50,7 @@
       75% { transform: translateX(-10px); }
       100% { transform: translateX(0); }
     }
-    /* 結果／スコア表示エリア */
+    /* スコア／結果表示エリア */
     #scoreDisplay {
       margin-top: 30px;
     }
@@ -71,7 +71,7 @@
     #scoreBoard li {
       font-size: 20px;
       margin: 6px 0;
-      background: rgba(76, 175, 80, 0.1);
+      background: rgba(76,175,80,0.1);
       padding: 8px 12px;
       border-radius: 6px;
     }
@@ -95,8 +95,8 @@
 
     let startTime;
     let timeoutId;
-    let readyToClick = false; // 緑に変わったらtrue
-    let trialActive = false;  // 現在試行中かどうか
+    let readyToClick = false; // 緑になったら true
+    let trialActive = false;  // 現在の試行中かどうか
     let trialCount = 0;
     const totalTrials = 5;
     let scores = [];
@@ -123,16 +123,16 @@
       scores = [];
       updateScoreBoard();
       result.textContent = "";
-      // 「準備中…」と表示し、1秒後に最初の試行開始
       gameArea.textContent = "準備中…";
       gameArea.style.backgroundColor = "#e53935";
       gameArea.classList.remove("ready");
+      // 1秒後に第1試行を開始
       setTimeout(() => {
         startTrial();
       }, 1000);
     }
 
-    // 各試行の開始
+    // 各試行開始
     function startTrial() {
       trialActive = true;
       readyToClick = false;
@@ -140,7 +140,7 @@
       gameArea.style.backgroundColor = "#e53935";
       gameArea.classList.remove("ready");
 
-      // 2～5秒のランダムな遅延を用意
+      // 2～5秒のランダムな遅延
       const delay = Math.random() * 3000 + 2000;
       timeoutId = setTimeout(() => {
         gameArea.style.backgroundColor = "#43A047";
@@ -151,7 +151,7 @@
       }, delay);
     }
 
-    // 試行終了後の次の処理
+    // 次の試行またはゲーム終了へ
     function nextTrial() {
       trialCount++;
       if (trialCount < totalTrials) {
@@ -164,18 +164,24 @@
       }
     }
 
-    // ゲーム終了処理と初期画面へのリセット
+    // ゲーム終了時に合計タイムと平均タイムを表示し、5秒後に初期状態へリセット
     function finishGame() {
+      // 数値でない (フライング) は 0 として計算
+      const totalTime = scores.reduce((sum, score) => {
+        return sum + (typeof score === 'number' ? score : 0);
+      }, 0);
+      const averageTime = totalTime / totalTrials;
+
+      gameArea.textContent = "ゲーム終了";
+      result.textContent = `合計タイム: ${totalTime} ミリ秒　｜　平均タイム: ${averageTime.toFixed(2)} ミリ秒`;
+      
+      // 5秒間結果表示した後、初期状態に戻す
       setTimeout(() => {
-        gameArea.textContent = "終了";
-        result.textContent = "全ての記録が完了しました。";
-        setTimeout(() => {
-          resetGame();
-        }, 1000);
-      }, 1000);
+        resetGame();
+      }, 5000);
     }
 
-    // スコア履歴の更新
+    // スコア履歴を更新
     function updateScoreBoard() {
       scoreBoard.innerHTML = "";
       scores.forEach((score, index) => {
@@ -185,17 +191,17 @@
       });
     }
 
-    // ゲームエリアをクリックしたときの処理
+    // ゲームエリアのクリックイベント
     gameArea.addEventListener("click", () => {
-      // ゲームが開始していなければ、初期画面からゲーム開始
+      // ゲーム未開始なら、クリックでゲームスタート
       if (!isGameActive) {
         startGame();
         return;
       }
-      // 現在試行中でなければ、クリックは無視
+      // 現在試行中でなければクリック無視
       if (!trialActive) return;
 
-      // ※緑に変わる前のクリックはフライングとみなす
+      // 緑色（クリック可能状態）に至らずクリック→フライング
       if (!readyToClick) {
         clearTimeout(timeoutId);
         gameArea.classList.add("shake");
@@ -210,7 +216,7 @@
         return;
       }
 
-      // 正常にクリックされた場合：反応速度を計測
+      // 正常にクリックされたときの反応速度計測
       const reactionTime = Date.now() - startTime;
       result.textContent = `反応速度: ${reactionTime} ミリ秒`;
       scores.push(reactionTime);
