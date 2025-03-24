@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>反応速度チャレンジ - 自動進行版</title>
+  <title>反応速度チャレンジ - 自動進行＋初期画面復帰版</title>
   <style>
     /* 全体のレイアウト */
     body {
@@ -35,9 +35,9 @@
       transition: background-color 0.5s, transform 0.2s;
       box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-    /* 緑色状態用 */
+    /* 緑色状態 */
     #gameArea.ready {
-      background-color: #43A047; /* 緑 */
+      background-color: #43A047;
     }
     /* 早すぎるクリック時のシェイクアニメーション */
     #gameArea.shake {
@@ -79,7 +79,7 @@
 </head>
 <body>
   <h1>反応速度チャレンジ</h1>
-  <div id="gameArea">準備中…</div>
+  <div id="gameArea">クリックして開始</div>
   
   <div id="scoreDisplay">
     <h2>結果</h2>
@@ -95,92 +95,132 @@
 
     let startTime;
     let timeoutId;
-    let readyToClick = false;  // 緑に変わったらtrueに
+    let readyToClick = false; // 緑に変わったらtrue
+    let trialActive = false;  // 現在試行中かどうか
     let trialCount = 0;
     const totalTrials = 5;
-    const scores = [];
+    let scores = [];
+    let isGameActive = false; // ゲーム全体が進行中かどうか
 
-    // 各試行を開始する関数
-    function startTrial() {
-      // ゲームエリアの初期設定
-      gameArea.textContent = '待機中…';
-      gameArea.style.backgroundColor = '#e53935';
-      gameArea.classList.remove('ready');
+    // 初期状態にリセット
+    function resetGame() {
+      trialCount = 0;
+      scores = [];
+      updateScoreBoard();
+      result.textContent = "まだスコアはありません";
+      gameArea.textContent = "クリックして開始";
+      gameArea.style.backgroundColor = "#e53935";
+      gameArea.classList.remove("ready");
       readyToClick = false;
-      
-      // ランダムな遅延（2～5秒）
+      trialActive = false;
+      isGameActive = false;
+    }
+
+    // ゲーム開始（初期画面からクリックでスタート）
+    function startGame() {
+      isGameActive = true;
+      trialCount = 0;
+      scores = [];
+      updateScoreBoard();
+      result.textContent = "";
+      // 「準備中…」と表示し、1秒後に最初の試行開始
+      gameArea.textContent = "準備中…";
+      gameArea.style.backgroundColor = "#e53935";
+      gameArea.classList.remove("ready");
+      setTimeout(() => {
+        startTrial();
+      }, 1000);
+    }
+
+    // 各試行の開始
+    function startTrial() {
+      trialActive = true;
+      readyToClick = false;
+      gameArea.textContent = "待機中…";
+      gameArea.style.backgroundColor = "#e53935";
+      gameArea.classList.remove("ready");
+
+      // 2～5秒のランダムな遅延を用意
       const delay = Math.random() * 3000 + 2000;
       timeoutId = setTimeout(() => {
-        gameArea.style.backgroundColor = '#43A047'; // 緑に
-        gameArea.classList.add('ready');
-        gameArea.textContent = '今すぐクリック！';
+        gameArea.style.backgroundColor = "#43A047";
+        gameArea.classList.add("ready");
+        gameArea.textContent = "今すぐクリック！";
         startTime = Date.now();
         readyToClick = true;
       }, delay);
     }
 
-    // 試行終了後、次の試行または終了処理へ移行
+    // 試行終了後の次の処理
     function nextTrial() {
       trialCount++;
       if (trialCount < totalTrials) {
         setTimeout(() => {
+          result.textContent = "";
           startTrial();
-          result.textContent = ''; // 結果表示をクリア
-        }, 1000); // 1秒待機してから次の試行
-      } else {
-        setTimeout(() => {
-          gameArea.textContent = '終了';
-          result.textContent = '全ての記録が完了しました。';
         }, 1000);
+      } else {
+        finishGame();
       }
     }
 
-    // クリック時の処理
-    gameArea.addEventListener('click', () => {
-      // もし色が緑になっていない状態（早クリック）の場合
-      if (!readyToClick) {
-        clearTimeout(timeoutId);
-        gameArea.classList.add('shake');
+    // ゲーム終了処理と初期画面へのリセット
+    function finishGame() {
+      setTimeout(() => {
+        gameArea.textContent = "終了";
+        result.textContent = "全ての記録が完了しました。";
         setTimeout(() => {
-          gameArea.classList.remove('shake');
-        }, 300);
-        result.textContent = 'フライング！早すぎます。';
-        scores.push('フライング');
-        updateScoreBoard();
-        nextTrial();
-        return;
-      }
-      // 正常なクリックの場合、反応時間を計測
-      const reactionTime = Date.now() - startTime;
-      result.textContent = `反応速度: ${reactionTime} ミリ秒`;
-      scores.push(reactionTime);
-      updateScoreBoard();
-
-      readyToClick = false;
-      // 結果を一瞬表示
-      gameArea.style.backgroundColor = '#e53935';
-      gameArea.classList.remove('ready');
-      gameArea.textContent = '結果表示中…';
-      
-      nextTrial();
-    });
+          resetGame();
+        }, 1000);
+      }, 1000);
+    }
 
     // スコア履歴の更新
     function updateScoreBoard() {
-      scoreBoard.innerHTML = '';
+      scoreBoard.innerHTML = "";
       scores.forEach((score, index) => {
-        const li = document.createElement('li');
+        const li = document.createElement("li");
         li.textContent = `試行 ${index + 1}: ${score} ${typeof score === 'number' ? 'ミリ秒' : ''}`;
         scoreBoard.appendChild(li);
       });
     }
 
-    // ページロード後、1秒後に最初の試行を開始
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        startTrial();
-      }, 1000);
+    // ゲームエリアをクリックしたときの処理
+    gameArea.addEventListener("click", () => {
+      // ゲームが開始していなければ、初期画面からゲーム開始
+      if (!isGameActive) {
+        startGame();
+        return;
+      }
+      // 現在試行中でなければ、クリックは無視
+      if (!trialActive) return;
+
+      // ※緑に変わる前のクリックはフライングとみなす
+      if (!readyToClick) {
+        clearTimeout(timeoutId);
+        gameArea.classList.add("shake");
+        setTimeout(() => {
+          gameArea.classList.remove("shake");
+        }, 300);
+        result.textContent = "フライング！早すぎます。";
+        scores.push("フライング");
+        updateScoreBoard();
+        trialActive = false;
+        nextTrial();
+        return;
+      }
+
+      // 正常にクリックされた場合：反応速度を計測
+      const reactionTime = Date.now() - startTime;
+      result.textContent = `反応速度: ${reactionTime} ミリ秒`;
+      scores.push(reactionTime);
+      updateScoreBoard();
+      trialActive = false;
+      nextTrial();
     });
+
+    // ページ読み込み時に初期状態を設定
+    window.addEventListener("load", resetGame);
   </script>
 </body>
 </html>
