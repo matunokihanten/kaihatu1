@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>反応速度チャレンジ - 集計＆リセット版</title>
+  <title>反応速度チャレンジ - 効果音＆結果表示版</title>
   <style>
     /* 全体レイアウト */
     body {
@@ -39,7 +39,7 @@
     #gameArea.ready {
       background-color: #43A047;
     }
-    /* 早すぎるクリック時のシェイク */
+    /* フライング時のシェイクアニメーション */
     #gameArea.shake {
       animation: shake 0.3s;
     }
@@ -50,7 +50,7 @@
       75% { transform: translateX(-10px); }
       100% { transform: translateX(0); }
     }
-    /* スコア／結果表示エリア */
+    /* 結果／スコア表示エリア */
     #scoreDisplay {
       margin-top: 30px;
     }
@@ -75,6 +75,23 @@
       padding: 8px 12px;
       border-radius: 6px;
     }
+    /* 削除ボタン */
+    #deleteButton {
+      display: none;
+      font-size: 20px;
+      padding: 10px 20px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    #deleteButton:hover {
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
@@ -86,21 +103,30 @@
     <p id="result">まだスコアはありません</p>
     <h3>スコア履歴</h3>
     <ul id="scoreBoard"></ul>
+    <button id="deleteButton">削除</button>
   </div>
-  
+
+  <!-- 効果音 -->
+  <!-- ※以下のsrcは各自の効果音ファイルのURLに変更してください -->
+  <audio id="successSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+  <audio id="errorSound" src="https://www.soundjay.com/button/beep-10.wav" preload="auto"></audio>
+
   <script>
-    const gameArea = document.getElementById('gameArea');
-    const result = document.getElementById('result');
-    const scoreBoard = document.getElementById('scoreBoard');
+    const gameArea = document.getElementById("gameArea");
+    const result = document.getElementById("result");
+    const scoreBoard = document.getElementById("scoreBoard");
+    const deleteButton = document.getElementById("deleteButton");
+    const successSound = document.getElementById("successSound");
+    const errorSound = document.getElementById("errorSound");
 
     let startTime;
     let timeoutId;
     let readyToClick = false; // 緑になったら true
-    let trialActive = false;  // 現在の試行中かどうか
+    let trialActive = false;  // 現在の試行進行中か
     let trialCount = 0;
     const totalTrials = 5;
     let scores = [];
-    let isGameActive = false; // ゲーム全体が進行中かどうか
+    let isGameActive = false; // ゲーム全体進行中か
 
     // 初期状態にリセット
     function resetGame() {
@@ -114,6 +140,7 @@
       readyToClick = false;
       trialActive = false;
       isGameActive = false;
+      deleteButton.style.display = "none";
     }
 
     // ゲーム開始（初期画面からクリックでスタート）
@@ -164,44 +191,40 @@
       }
     }
 
-    // ゲーム終了時に合計タイムと平均タイムを表示し、5秒後に初期状態へリセット
+    // ゲーム終了時：合計タイム、平均タイムを表示し、削除ボタンが押されるまで画面下部に結果を残す
     function finishGame() {
-      // 数値でない (フライング) は 0 として計算
+      // 数値でない(例："フライング")は 0 として計算
       const totalTime = scores.reduce((sum, score) => {
-        return sum + (typeof score === 'number' ? score : 0);
+        return sum + (typeof score === "number" ? score : 0);
       }, 0);
       const averageTime = totalTime / totalTrials;
-
       gameArea.textContent = "ゲーム終了";
       result.textContent = `合計タイム: ${totalTime} ミリ秒　｜　平均タイム: ${averageTime.toFixed(2)} ミリ秒`;
-      
-      // 5秒間結果表示した後、初期状態に戻す
-      setTimeout(() => {
-        resetGame();
-      }, 5000);
+      // 削除ボタンを表示し、ユーザーが押すまで結果を保持
+      deleteButton.style.display = "inline-block";
     }
 
-    // スコア履歴を更新
+    // スコア履歴更新
     function updateScoreBoard() {
       scoreBoard.innerHTML = "";
       scores.forEach((score, index) => {
         const li = document.createElement("li");
-        li.textContent = `試行 ${index + 1}: ${score} ${typeof score === 'number' ? 'ミリ秒' : ''}`;
+        li.textContent = `試行 ${index + 1}: ${score} ${typeof score === "number" ? "ミリ秒" : ""}`;
         scoreBoard.appendChild(li);
       });
     }
 
-    // ゲームエリアのクリックイベント
+    // ゲームエリアのタップ時の処理
     gameArea.addEventListener("click", () => {
       // ゲーム未開始なら、クリックでゲームスタート
       if (!isGameActive) {
         startGame();
         return;
       }
-      // 現在試行中でなければクリック無視
+      // 試行中でなければクリックは無視
       if (!trialActive) return;
 
-      // 緑色（クリック可能状態）に至らずクリック→フライング
+      // 緑に変わる前のクリックは「フライング」
       if (!readyToClick) {
         clearTimeout(timeoutId);
         gameArea.classList.add("shake");
@@ -209,6 +232,9 @@
           gameArea.classList.remove("shake");
         }, 300);
         result.textContent = "フライング！早すぎます。";
+        // エラー効果音再生
+        errorSound.currentTime = 0;
+        errorSound.play();
         scores.push("フライング");
         updateScoreBoard();
         trialActive = false;
@@ -216,13 +242,21 @@
         return;
       }
 
-      // 正常にクリックされたときの反応速度計測
+      // 正常にクリックされた場合の反応速度を計測
       const reactionTime = Date.now() - startTime;
       result.textContent = `反応速度: ${reactionTime} ミリ秒`;
+      // 成功効果音再生
+      successSound.currentTime = 0;
+      successSound.play();
       scores.push(reactionTime);
       updateScoreBoard();
       trialActive = false;
       nextTrial();
+    });
+
+    // 【削除】ボタン押下時の処理で初期状態にリセット
+    deleteButton.addEventListener("click", () => {
+      resetGame();
     });
 
     // ページ読み込み時に初期状態を設定
