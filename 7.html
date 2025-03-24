@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Resource Management Simulation Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+    #game {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+    }
+    h1 { text-align: center; }
+    #stats, #actions { margin-bottom: 20px; }
+    p { font-size: 18px; }
+    button {
+      font-size: 16px;
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background-color: #008cba;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background-color: #005f5f; }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>リソース管理型シミュレーションゲーム</h1>
+    <div id="stats">
+      <p><strong>リソース:</strong> <span id="resources">0</span></p>
+      <p><strong>工場数:</strong> <span id="factories">0</span></p>
+      <p><strong>工場の価格:</strong> <span id="factoryCost">50</span> (リソース)</p>
+      <p><strong>自動生産量:</strong> <span id="productionRate">0</span> (1秒ごと)</p>
+    </div>
+    <div id="actions">
+      <button id="gather">リソースを収集する (+10)</button>
+      <button id="buildFactory">工場を建設する</button>
+    </div>
+  </div>
+  
+  <script>
+    // ゲームの初期状態
+    let resources = 0;
+    let factories = 0;
+    let factoryCost = 50;
+    
+    // 定数
+    const manualGatherAmount = 10;    // クリックで収集するリソース数
+    const factoryProduction = 5;      // 工場1つあたり1秒ごとに生産するリソース量
+    const tickInterval = 1000;        // 1秒間隔の更新タイム
+    
+    // HTMLの要素を取得
+    const resourceDisplay = document.getElementById('resources');
+    const factoriesDisplay = document.getElementById('factories');
+    const factoryCostDisplay = document.getElementById('factoryCost');
+    const productionRateDisplay = document.getElementById('productionRate');
+    const gatherButton = document.getElementById('gather');
+    const buildFactoryButton = document.getElementById('buildFactory');
+    
+    // 表示を更新する関数
+    function updateDisplay() {
+      resourceDisplay.textContent = resources.toFixed(0);
+      factoriesDisplay.textContent = factories;
+      factoryCostDisplay.textContent = factoryCost;
+      productionRateDisplay.textContent = factories * factoryProduction;
+    }
+    
+    // 1秒ごとのゲーム更新 (工場による自動生産)
+    function tick() {
+      resources += factories * factoryProduction;
+      updateDisplay();
+    }
+    
+    // 「リソースを収集する」ボタンの処理
+    gatherButton.addEventListener('click', () => {
+      resources += manualGatherAmount;
+      updateDisplay();
+    });
+    
+    // 「工場を建設する」ボタンの処理
+    buildFactoryButton.addEventListener('click', () => {
+      if (resources >= factoryCost) {
+        resources -= factoryCost;
+        factories++;
+        // 購入後、工場の価格を上昇させて難易度を上げる
+        factoryCost = Math.floor(factoryCost * 1.5);
+        updateDisplay();
+      } else {
+        alert('リソースが不足しています！');
+      }
+    });
+    
+    // 定期更新 (tick) を開始
+    setInterval(tick, tickInterval);
+    
+    // 初期表示の更新
+    updateDisplay();
+  </script>
+</body>
+</html>
