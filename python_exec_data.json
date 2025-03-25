@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "language": "python",
+    "version": "3.8",
+    "engine": "pyodide",
+    "engineVersion": "0.23.4"
+  },
+  "settings": {
+    "autoRunDelay": 500
+  },
+  "packages": [],
+  "defaultCode": "import js\n\n# HTML のキャンバス要素を取得\ncanvas = js.document.getElementById('gameCanvas')\nctx = canvas.getContext('2d')\n\n# ボールの初期位置と移動方向\nx = 30\ndirection = 1\n\n# アニメーション関数\n\ndef animate(timestamp):\n    global x, direction\n    # キャンバスをクリア\n    ctx.clearRect(0, 0, canvas.width, canvas.height)\n    # ボール（円）を描画\n    ctx.beginPath()\n    ctx.arc(x, canvas.height/2, 30, 0, 2 * 3.14159)\n    ctx.fillStyle = 'blue'\n    ctx.fill()\n    # 画面端で進行方向を反転\n    if x > canvas.width - 30:\n        direction = -1\n    elif x < 30:\n        direction = 1\n    # ボールを移動\n    x = x + direction * 5\n    # 次のアニメーションフレームを要求\n    js.window.requestAnimationFrame(animate)\n\nprint('Game Started!')\n# アニメーション開始\njs.window.requestAnimationFrame(animate)"
+}
