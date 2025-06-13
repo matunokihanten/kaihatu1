@@ -3,130 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive 2D Pattern in 3D</title>
+    <title>幾何学的フィボナッチ球体</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden; /* スクロールバーを非表示にする */
-            background-color: #f0f0f0; /* 背景色 */
+            padding: 0;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f23 50%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
         }
-        canvas {
-            display: block; /* canvas要素の余白をなくす */
+        
+        .container {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+        
+        #canvas {
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3), 0 0 100px rgba(0, 191, 255, 0.2);
+            cursor: grab;
+        }
+        
+        #canvas:active {
+            cursor: grabbing;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(0, 191, 255, 0.2));
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .title {
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
+            background: linear-gradient(45deg, #ff8c00, #ff6b6b, #4ecdc4, #45b7d1, #9b59b6, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 20px rgba(255, 140, 0, 0.8); }
+            100% { text-shadow: 0 0 30px rgba(0, 191, 255, 0.8); }
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0.9;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
+            padding: 15px 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-item {
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item:last-child {
+            border-bottom: none;
+        }
+        
+        .value {
+            color: #ffaa00;
+            font-weight: bold;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+    <div class="container">
+        <div class="title">幾何学的フィボナッチ球体</div>
+        <div class="controls">
+            <div class="control-item">回転速度: <span class="value" id="rotationSpeed">1.0</span>x</div>
+            <div class="control-item">層の数: <span class="value" id="layerCount">12</span></div>
+            <div class="control-item">複雑度: <span class="value" id="complexity">5</span></div>
+            <div class="control-item">サイズ: <span class="value" id="sphereSize">100</span>%</div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        ドラッグで回転 | ホイール/ピンチでズーム | スペースで一時停止 | ↑↓で層調整
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // === Three.js シーンのセットアップ ===
+        // Three.js基本設定
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-
-        // === 光源の追加 (テクスチャなので環境光だけでも見えますが、立体感のために追加) ===
-        const ambientLight = new THREE.AmbientLight( 0xffffff, 0.8 ); // 全体を明るくする環境光
-        scene.add( ambientLight );
-
-        const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 ); // 方向性のある光
-        directionalLight.position.set( 1, 1, 1 ).normalize();
-        scene.add( directionalLight );
-
-        camera.position.z = 2; // カメラを少し手前に引く
-
-        // === 画像をテクスチャとしてロードし、オブジェクトに適用 ===
-        const textureLoader = new THREE.TextureLoader();
-        let texturedObject; // ロードしたテクスチャを適用したオブジェクトを保持する変数
-
-        textureLoader.load(
-            'image.png', // ★ここにご提示いただいた画像のファイル名を指定★
-            function ( texture ) {
-                // 画像をテクスチャとして貼り付ける平面ジオメトリを作成
-                // 画像のアスペクト比に合わせて平面のサイズを調整すると良いでしょう
-                const aspectRatio = texture.image.width / texture.image.height;
-                const planeGeometry = new THREE.PlaneGeometry( 2 * aspectRatio, 2 ); // 幅2 * アスペクト比, 高さ2
-
-                // テクスチャを適用するマテリアル
-                const material = new THREE.MeshBasicMaterial( { map: texture, side: THREE.DoubleSide } ); // 両面表示
-                
-                texturedObject = new THREE.Mesh( planeGeometry, material );
-                scene.add( texturedObject );
-                console.log('画像テクスチャがロードされ、オブジェクトが作成されました！');
-            },
-            // 読み込みの進捗状況
-            function ( xhr ) {
-                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-            },
-            // エラーハンドリング
-            function ( error ) {
-                console.error( '画像の読み込み中にエラーが発生しました', error );
-            }
-        );
-
-        // === タッチ操作のための変数 ===
-        let isDragging = false;
-        let previousTouchX = null;
-        let previousTouchY = null;
-        let rotationSpeedFactor = 0.005; // 回転の感度を調整
-
-        // === イベントリスナー (タッチ操作) ===
-        renderer.domElement.addEventListener('touchstart', (event) => {
-            event.preventDefault(); // デフォルトのスクロールやズームを防止
-            isDragging = true;
-            if (event.touches.length > 0) {
-                previousTouchX = event.touches[0].clientX;
-                previousTouchY = event.touches[0].clientY;
-            }
-        }, { passive: false });
-
-        renderer.domElement.addEventListener('touchmove', (event) => {
-            if (!isDragging || !texturedObject) return; // オブジェクトがロードされていない場合は何もしない
-            event.preventDefault();
-
-            if (event.touches.length > 0 && previousTouchX !== null && previousTouchY !== null) {
-                const currentTouchX = event.touches[0].clientX;
-                const currentTouchY = event.touches[0].clientY;
-
-                const deltaX = currentTouchX - previousTouchX;
-                const deltaY = currentTouchY - previousTouchY;
-
-                // ロードしたオブジェクトの回転を適用
-                texturedObject.rotation.y += deltaX * rotationSpeedFactor;
-                texturedObject.rotation.x += deltaY * rotationSpeedFactor;
-
-                previousTouchX = currentTouchX;
-                previousTouchY = currentTouchY;
-            }
-        }, { passive: false });
-
-        renderer.domElement.addEventListener('touchend', () => {
-            isDragging = false;
-            previousTouchX = null;
-            previousTouchY = null;
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true,
+            canvas: document.getElementById('canvas') || undefined
         });
-
-        renderer.domElement.addEventListener('touchcancel', () => {
-            isDragging = false;
-            previousTouchX = null;
-            previousTouchY = null;
-        });
-
-        // === アニメーションループ ===
-        function animate() {
-            requestAnimationFrame( animate );
-            renderer.render( scene, camera );
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        if (!document.getElementById('canvas')) {
+            document.body.appendChild(renderer.domElement);
         }
-        animate();
-
-        // === ウィンドウリサイズ時の処理 ===
-        window.addEventListener( 'resize', () => {
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
-            camera.aspect = newWidth / newHeight;
+        
+        // 状態管理
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let currentRotationX = 0, currentRotationY = 0;
+        let isMouseDown = false;
+        let autoRotate = true;
+        let rotationSpeed = 1.0;
+        let layerCount = 12;
+        let complexity = 5;
+        let sphereSize = 1.0;
+        
+        // UI要素
+        const rotationSpeedDisplay = document.getElementById('rotationSpeed');
+        const layerCountDisplay = document.getElementById('layerCount');
+        const complexityDisplay = document.getElementById('complexity');
+        const sphereSizeDisplay = document.getElementById('sphereSize');
+        
+        // メイン球体グループ
+        const sphereGroup = new THREE.Group();
+        scene.add(sphereGroup);
+        
+        // 幾何学的パターン生成
+        function createGeometricPattern() {
+            // 既存の要素をクリア
+            while (sphereGroup.children.length > 0) {
+                sphereGroup.remove(sphereGroup.children[0]);
+            }
+            
+            const phi = (1 + Math.sqrt(5)) / 2; // 黄金比
+            const radius = 2;
+            
+            // 複数の層を作成
+            for (let layer = 0; layer < layerCount; layer++) {
+                const layerRadius = radius * (0.3 + (layer / layerCount) * 0.7);
+                const pointsInLayer = Math.floor(50 + layer * complexity * 5);
+                
+                // 各層の幾何学的要素
+                const layerGroup = new THREE.Group();
+                
+                // フィボナッチスパイラル上の点
+                for (let i = 0; i < pointsInLayer; i++) {
+                    const t = i / pointsInLayer;
+                    const angle = 2 * Math.PI * i / phi;
+                    const y = (t * 2 - 1) * layerRadius;
+                    const radiusAtY = Math.sqrt(layerRadius * layerRadius - y * y);
+                    
+                    const x = Math.cos(angle) * radiusAtY;
+                    const z = Math.sin(angle) * radiusAtY;
+                    
+                    // 正方形/長方形の幾何学要素
+                    const size = 0.02 + Math.random() * 0.08;
+                    const depth = 0.01 + Math.random() * 0.05;
+                    
+                    // 複数の形状タイプ
+                    let geometry;
+                    const shapeType = Math.floor(Math.random() * 4);
+                    
+                    switch(shapeType) {
+                        case 0: // 立方体
+                            geometry = new THREE.BoxGeometry(size, size, depth);
+                            break;
+                        case 1: // 円柱
+                            geometry = new THREE.CylinderGeometry(size/2, size/2, depth, 8);
+                            break;
+                        case 2: // 八面体
+                            geometry = new THREE.OctahedronGeometry(size/2);
+                            break;
+                        case 3: // トーラス
+                            geometry = new THREE.TorusGeometry(size/2, size/8, 4, 8);
+                            break;
+                    }
+                    
+                    // 色彩計算（画像の色彩を参考）
+                    const hue = (angle / (2 * Math.PI) + layer * 0.1) % 1;
+                    const saturation = 0.7 + Math.random() * 0.3;
+                    const lightness = 0.4 + Math.abs(y / layerRadius) * 0.4;
+                    
+                    // 特別な色彩パターン
+                    let color;
+                    if (i % 8 === 0) {
+                        // オレンジ系
+                        color = new THREE.Color().setHSL(0.08, 0.9, 0.6);
+                    } else if (i % 7 === 0) {
+                        // 青系
+                        color = new THREE.Color().setHSL(0.6, 0.8, 0.5);
+                    } else if (i % 5 === 0) {
+                        // 赤系
+                        color = new THREE.Color().setHSL(0.95, 0.8, 0.5);
+                    } else if (i % 3 === 0) {
+                        // 緑系
+                        color = new THREE.Color().setHSL(0.3, 0.7, 0.5);
+                    } else {
+                        color = new THREE.Color().setHSL(hue, saturation, lightness);
+                    }
+                    
+                    const material = new THREE.MeshPhongMaterial({
+                        color: color,
+                        transparent: true,
+                        opacity: 0.8,
+                        shininess: 100
+                    });
+                    
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(x, y, z);
+                    
+                    // 表面に向ける
+                    mesh.lookAt(x * 2, y * 2, z * 2);
+                    
+                    // ランダムな回転を追加
+                    mesh.rotation.x += Math.random() * Math.PI;
+                    mesh.rotation.y += Math.random() * Math.PI;
+                    mesh.rotation.z += Math.random() * Math.PI;
+                    
+                    layerGroup.add(mesh);
+                }
+                
+                // 同心円状のリング
+                const ringGeometry = new THREE.TorusGeometry(layerRadius, 0.01, 4, 32);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL((layer / layerCount), 0.6, 0.4),
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                ring.rotation.x = Math.PI / 2;
+                layerGroup.add(ring);
+                
+                sphereGroup.add(layerGroup);
+            }
+            
+            // 中心の特別な要素
+            const centerGeometry = new THREE.IcosahedronGeometry(0.15, 2);
+            const centerMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.9,
+                emissive: 0x444444
+            });
+            const centerMesh = new THREE.Mesh(centerGeometry, centerMaterial);
+            sphereGroup.add(centerMesh);
+        }
+        
+        // 照明設定（より複雑な照明）
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xff8c00, 0.8);
+        directionalLight1.position.set(5, 5, 5);
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0x00bfff, 0.6);
+        directionalLight2.position.set(-5, -5, 5);
+        scene.add(directionalLight2);
+        
+        const pointLight = new THREE.PointLight(0xff6b6b, 0.5, 10);
+        pointLight.position.set(0, 0, 3);
+        scene.add(pointLight);
+        
+        // カメラ位置
+        camera.position.z = 6;
+        
+        // マウス/タッチイベント
+        function onMouseMove(event) {
+            if (!isMouseDown && !autoRotate) return;
+            
+            const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
+            const clientY = event.clientY || (event.touches && event.touches[0].clientY) || 0;
+            
+            if (isMouseDown) {
+                targetRotationX = (clientY - window.innerHeight / 2) * 0.01;
+                targetRotationY = (clientX - window.innerWidth / 2) * 0.01;
+            }
+        }
+        
+        function onMouseDown(event) {
+            isMouseDown = true;
+            autoRotate = false;
+            onMouseMove(event);
+        }
+        
+        function onMouseUp() {
+            isMouseDown = false;
+        }
+        
+        // イベントリスナー
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mouseup', onMouseUp);
+        
+        document.addEventListener('touchmove', onMouseMove);
+        document.addEventListener('touchstart', onMouseDown);
+        document.addEventListener('touchend', onMouseUp);
+        
+        // ホイールズーム
+        document.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+            camera.position.z = Math.max(2, Math.min(20, camera.position.z * delta));
+            sphereSize = Math.round((6 / camera.position.z) * 100);
+            sphereSizeDisplay.textContent = sphereSize;
+        });
+        
+        // キーボードコントロール
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    autoRotate = !autoRotate;
+                    break;
+                case 'ArrowUp':
+                    layerCount = Math.min(20, layerCount + 1);
+                    layerCountDisplay.textContent = layerCount;
+                    createGeometricPattern();
+                    break;
+                case 'ArrowDown':
+                    layerCount = Math.max(5, layerCount - 1);
+                    layerCountDisplay.textContent = layerCount;
+                    createGeometricPattern();
+                    break;
+                case 'ArrowLeft':
+                    complexity = Math.max(1, complexity - 1);
+                    complexityDisplay.textContent = complexity;
+                    createGeometricPattern();
+                    break;
+                case 'ArrowRight':
+                    complexity = Math.min(10, complexity + 1);
+                    complexityDisplay.textContent = complexity;
+                    createGeometricPattern();
+                    break;
+            }
+        });
+        
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (autoRotate) {
+                targetRotationY += 0.008 * rotationSpeed;
+                targetRotationX += 0.004 * rotationSpeed;
+            }
+            
+            // スムーズな回転
+            currentRotationX += (targetRotationX - currentRotationX) * 0.05;
+            currentRotationY += (targetRotationY - currentRotationY) * 0.05;
+            
+            sphereGroup.rotation.x = currentRotationX;
+            sphereGroup.rotation.y = currentRotationY;
+            
+            // 個々の要素の回転アニメーション
+            const time = Date.now() * 0.001;
+            sphereGroup.children.forEach((layerGroup, layerIndex) => {
+                if (layerGroup.children) {
+                    layerGroup.children.forEach((child, childIndex) => {
+                        if (child.geometry && child.geometry instanceof THREE.BoxGeometry) {
+                            child.rotation.x += 0.01 * (1 + layerIndex * 0.1);
+                            child.rotation.y += 0.005 * (1 + childIndex * 0.05);
+                        }
+                    });
+                }
+            });
+            
+            // 照明の動的変化
+            pointLight.position.x = Math.sin(time * 0.5) * 3;
+            pointLight.position.y = Math.cos(time * 0.3) * 3;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize( newWidth, newHeight );
-        }, false );
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 初期化
+        createGeometricPattern();
+        animate();
     </script>
 </body>
 </html>
