@@ -1,215 +1,361 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>豪華掲示板</title>
-  <!-- Google Fonts をインポート -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    /* 全体のリッチなスタイル設定 */
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #74ABE2, #5563DE);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      text-align: center;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 2em;
-      font-weight: 700;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    #board-container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    #messages {
-      background: #fafafa;
-      border-radius: 6px;
-      padding: 15px;
-      height: 400px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      transition: background 0.5s ease;
-    }
-    .message {
-      background: #fff;
-      border-left: 4px solid #5563DE;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      animation: fadeIn 0.5s ease-out;
-    }
-    .message strong {
-      color: #5563DE;
-    }
-    .message span.time {
-      font-size: 0.8em;
-      color: #999;
-      float: right;
-    }
-    #input-area {
-      display: flex;
-      gap: 10px;
-    }
-    #message-input {
-      flex: 1;
-      padding: 12px;
-      font-size: 1em;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      transition: border-color 0.3s;
-    }
-    #message-input:focus {
-      border-color: #5563DE;
-      outline: none;
-    }
-    #send-button {
-      padding: 12px 20px;
-      background: #5563DE;
-      color: #fff;
-      border: none;
-      font-size: 1em;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #send-button:hover {
-      background: #4453b3;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3Dフィボナッチ球体</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #0f0f23 0%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+        
+        #canvas {
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            cursor: grab;
+        }
+        
+        #canvas:active {
+            cursor: grabbing;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 14px;
+        }
+        
+        .title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0.8;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .point-count {
+            margin-top: 10px;
+            color: #4ecdc4;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    豪華掲示板
-  </header>
-  <div id="board-container">
-    <div id="messages">
-      <!-- メッセージがここに動的にロードされます -->
+    <div class="container">
+        <div class="title">3D フィボナッチ球体</div>
+        <div class="controls">
+            <div>回転速度: <span id="rotationSpeed">1.0</span>x</div>
+            <div>点の数: <span id="pointCount">1000</span></div>
+            <div>サイズ: <span id="sphereSize">100</span>%</div>
+            <div class="point-count">黄金比: φ = 1.618...</div>
+        </div>
     </div>
-    <div id="input-area">
-      <input type="text" id="message-input" placeholder="ここにメッセージを入力...">
-      <button id="send-button">送信</button>
+    
+    <div class="instructions">
+        ドラッグで回転 | ホイール/ピンチでズーム | 自動回転中
     </div>
-  </div>
 
-  <script type="module">
-    // 必要な Firebase モジュールをインポート
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      onSnapshot, 
-      orderBy, 
-      query 
-    } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-
-    // Firebase の設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyAk_I5nBbccP5CO6aUoKXu19urq_7B9jm0",
-      authDomain: "my-chat-room-75025.firebaseapp.com",
-      projectId: "my-chat-room-75025",
-      storageBucket: "my-chat-room-75025.firebasestorage.app",
-      messagingSenderId: "778251776207",
-      appId: "1:778251776207:web:86b21d6af5bc40f1ba07ba",
-      measurementId: "G-1W7HQ8J1EL"
-    };
-
-    // Firebase, Analytics, Firestore の初期化
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-
-    // DOM 要素を取得
-    const messagesContainer = document.getElementById("messages");
-    const messageInput = document.getElementById("message-input");
-    const sendButton = document.getElementById("send-button");
-
-    /**
-     * メッセージを描画する関数
-     * @param {string} id - ドキュメントID
-     * @param {object} data - { text, user, timestamp } の各種データ
-     */
-    function renderMessage(id, data) {
-      const messageDiv = document.createElement("div");
-      messageDiv.className = "message";
-      messageDiv.setAttribute("data-id", id);
-
-      const user = data.user || "Guest";
-      const timestamp = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
-      const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-      messageDiv.innerHTML = `
-        <strong>${user}</strong>
-        <span class="time">${timeString}</span>
-        <div>${data.text}</div>
-      `;
-      messagesContainer.appendChild(messageDiv);
-    }
-
-    // Firestore の "messages" コレクションからリアルタイムでデータを取得
-    const messagesQuery = query(
-      collection(db, "messages"),
-      orderBy("timestamp", "asc")
-    );
-
-    onSnapshot(messagesQuery, (snapshot) => {
-      messagesContainer.innerHTML = '';  // 描画前にクリア
-      snapshot.forEach((doc) => {
-        renderMessage(doc.id, doc.data());
-      });
-      // 新しいメッセージが表示されたら自動スクロール
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    });
-
-    // 新規メッセージを Firestore に投稿する関数
-    async function postMessage(text) {
-      try {
-        await addDoc(collection(db, "messages"), {
-          text: text,
-          user: "Guest", // 認証機能と連携すればユーザ名を反映できます
-          timestamp: new Date()
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js基本設定
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true,
+            canvas: document.getElementById('canvas') || undefined
         });
-      } catch (error) {
-        console.error("メッセージ投稿エラー:", error);
-      }
-    }
-
-    // 送信ボタンのクリックイベント
-    sendButton.addEventListener("click", () => {
-      const text = messageInput.value.trim();
-      if (text) {
-        postMessage(text);
-        messageInput.value = '';
-      }
-    });
-
-    // Enter キーでの投稿も対応
-    messageInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        sendButton.click();
-      }
-    });
-  </script>
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        if (!document.getElementById('canvas')) {
+            document.body.appendChild(renderer.domElement);
+        }
+        
+        // 状態管理
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let currentRotationX = 0, currentRotationY = 0;
+        let isMouseDown = false;
+        let autoRotate = true;
+        let rotationSpeed = 1.0;
+        let pointCount = 1000;
+        let sphereSize = 1.0;
+        
+        // UI要素
+        const rotationSpeedDisplay = document.getElementById('rotationSpeed');
+        const pointCountDisplay = document.getElementById('pointCount');
+        const sphereSizeDisplay = document.getElementById('sphereSize');
+        
+        // フィボナッチ球体生成
+        function createFibonacciSphere(numPoints) {
+            const points = [];
+            const colors = [];
+            const phi = (1 + Math.sqrt(5)) / 2; // 黄金比
+            
+            for (let i = 0; i < numPoints; i++) {
+                const y = 1 - (i / (numPoints - 1)) * 2;
+                const radius = Math.sqrt(1 - y * y);
+                const theta = 2 * Math.PI * i / phi;
+                
+                const x = Math.cos(theta) * radius;
+                const z = Math.sin(theta) * radius;
+                
+                points.push(new THREE.Vector3(x * 2, y * 2, z * 2));
+                
+                // 位置に基づく色彩
+                const hue = (theta / (2 * Math.PI) + 0.5) % 1;
+                const saturation = 0.8;
+                const lightness = 0.5 + Math.abs(y) * 0.3;
+                
+                const color = new THREE.Color();
+                color.setHSL(hue, saturation, lightness);
+                colors.push(color.r, color.g, color.b);
+            }
+            
+            return { points, colors };
+        }
+        
+        // メイン球体グループ
+        const sphereGroup = new THREE.Group();
+        scene.add(sphereGroup);
+        
+        // フィボナッチ点群作成
+        function createPointCloud() {
+            // 既存の点群をクリア
+            while (sphereGroup.children.length > 0) {
+                sphereGroup.remove(sphereGroup.children[0]);
+            }
+            
+            const { points, colors } = createFibonacciSphere(pointCount);
+            
+            // 点群ジオメトリー
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            
+            points.forEach(point => {
+                positions.push(point.x, point.y, point.z);
+            });
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            // 点群マテリアル
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9,
+                sizeAttenuation: true
+            });
+            
+            const pointCloud = new THREE.Points(geometry, material);
+            sphereGroup.add(pointCloud);
+            
+            // 接続線を追加（スパイラル効果）
+            const lineGeometry = new THREE.BufferGeometry();
+            const linePositions = [];
+            const lineColors = [];
+            
+            for (let i = 0; i < points.length - 1; i++) {
+                const point1 = points[i];
+                const point2 = points[i + 1];
+                
+                linePositions.push(point1.x, point1.y, point1.z);
+                linePositions.push(point2.x, point2.y, point2.z);
+                
+                // グラデーション色
+                const hue1 = (i / points.length);
+                const hue2 = ((i + 1) / points.length);
+                
+                const color1 = new THREE.Color();
+                const color2 = new THREE.Color();
+                color1.setHSL(hue1, 0.7, 0.6);
+                color2.setHSL(hue2, 0.7, 0.6);
+                
+                lineColors.push(color1.r, color1.g, color1.b);
+                lineColors.push(color2.r, color2.g, color2.b);
+            }
+            
+            lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            lineGeometry.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+            
+            const lineMaterial = new THREE.LineBasicMaterial({
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.3,
+                linewidth: 1
+            });
+            
+            const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+            sphereGroup.add(lines);
+            
+            // 外側の透明球体
+            const sphereGeometry = new THREE.SphereGeometry(2.1, 32, 32);
+            const sphereMaterial = new THREE.MeshBasicMaterial({
+                color: 0x4ecdc4,
+                transparent: true,
+                opacity: 0.1,
+                wireframe: true
+            });
+            const wireframeSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphereGroup.add(wireframeSphere);
+        }
+        
+        // 照明設定
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+        
+        // カメラ位置
+        camera.position.z = 6;
+        
+        // マウス/タッチイベント
+        function onMouseMove(event) {
+            if (!isMouseDown && !autoRotate) return;
+            
+            const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
+            const clientY = event.clientY || (event.touches && event.touches[0].clientY) || 0;
+            
+            if (isMouseDown) {
+                targetRotationX = (clientY - window.innerHeight / 2) * 0.01;
+                targetRotationY = (clientX - window.innerWidth / 2) * 0.01;
+            }
+        }
+        
+        function onMouseDown(event) {
+            isMouseDown = true;
+            autoRotate = false;
+            onMouseMove(event);
+        }
+        
+        function onMouseUp() {
+            isMouseDown = false;
+        }
+        
+        // イベントリスナー
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mouseup', onMouseUp);
+        
+        document.addEventListener('touchmove', onMouseMove);
+        document.addEventListener('touchstart', onMouseDown);
+        document.addEventListener('touchend', onMouseUp);
+        
+        // ホイールズーム
+        document.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+            camera.position.z = Math.max(3, Math.min(15, camera.position.z * delta));
+            sphereSize = Math.round((6 / camera.position.z) * 100);
+            sphereSizeDisplay.textContent = sphereSize;
+        });
+        
+        // キーボードコントロール
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    autoRotate = !autoRotate;
+                    break;
+                case 'ArrowUp':
+                    pointCount = Math.min(2000, pointCount + 100);
+                    pointCountDisplay.textContent = pointCount;
+                    createPointCloud();
+                    break;
+                case 'ArrowDown':
+                    pointCount = Math.max(100, pointCount - 100);
+                    pointCountDisplay.textContent = pointCount;
+                    createPointCloud();
+                    break;
+                case 'ArrowLeft':
+                    rotationSpeed = Math.max(0.1, rotationSpeed - 0.1);
+                    rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+                    break;
+                case 'ArrowRight':
+                    rotationSpeed = Math.min(3.0, rotationSpeed + 0.1);
+                    rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+                    break;
+            }
+        });
+        
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (autoRotate) {
+                targetRotationY += 0.01 * rotationSpeed;
+                targetRotationX += 0.005 * rotationSpeed;
+            }
+            
+            // スムーズな回転
+            currentRotationX += (targetRotationX - currentRotationX) * 0.05;
+            currentRotationY += (targetRotationY - currentRotationY) * 0.05;
+            
+            sphereGroup.rotation.x = currentRotationX;
+            sphereGroup.rotation.y = currentRotationY;
+            
+            // 点のサイズをアニメーション
+            const time = Date.now() * 0.001;
+            sphereGroup.children.forEach((child, index) => {
+                if (child instanceof THREE.Points) {
+                    child.material.size = 0.05 + Math.sin(time + index) * 0.02;
+                }
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // 初期化
+        createPointCloud();
+        animate();
+    </script>
 </body>
 </html>
