@@ -49,14 +49,6 @@
             font-size: 14px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             max-width: 200px;
-            cursor: grab; /* ドラッグ可能を示すカーソル */
-            z-index: 100; /* デフォルトのz-index */
-        }
-
-        .controls.dragging, .speed-control.dragging {
-            cursor: grabbing;
-            z-index: 200; /* ドラッグ中は最前面に */
-            box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4), 0 0 120px rgba(0, 191, 255, 0.3); /* ドラッグ中の影 */
         }
         
         .mobile-controls {
@@ -108,8 +100,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             min-width: 150px;
-            cursor: grab; /* ドラッグ可能を示すカーソル */
-            z-index: 100; /* デフォルトのz-index */
         }
         
         .speed-slider {
@@ -149,15 +139,11 @@
                 font-size: 12px;
                 padding: 15px;
                 max-width: 150px;
-                top: 20px; 
-                left: 50%; 
-                transform: translateX(-50%); 
             }
             
             .speed-control {
-                top: 170px; /* 位置を調整してcontrolsと重ならないようにする */
-                right: 50%; /* 中央寄せのためにrightを50%に設定 */
-                transform: translateX(50%); /* 中央寄せのために調整 */
+                top: 10px;
+                right: 10px;
                 padding: 10px;
                 font-size: 12px;
                 min-width: 120px;
@@ -226,14 +212,14 @@
 <body>
     <div class="container">
         <div class="title">幾何学的フィボナッチ球体</div>
-        <div class="controls" id="controlsPanel"> 
+        <div class="controls">
             <div class="control-item">層の数: <span class="value" id="layerCount">12</span></div>
             <div class="control-item">複雑度: <span class="value" id="complexity">5</span></div>
             <div class="control-item">サイズ: <span class="value" id="sphereSize">100</span>%</div>
             <div class="control-item">自動回転: <span class="value" id="autoStatus">ON</span></div>
         </div>
         
-        <div class="speed-control" id="speedControlPanel"> 
+        <div class="speed-control">
             <div>回転速度: <span class="value" id="rotationSpeed">1.0</span>x</div>
             <input type="range" id="speedSlider" class="speed-slider" min="0.1" max="3.0" step="0.1" value="1.0">
         </div>
@@ -282,7 +268,7 @@
         let autoRotateTimeout = null;
         
         // タッチ操作用
-        let touches = {}; // この変数は未使用のようです
+        let touches = {};
         let lastTouchDistance = 0;
         let initialPinchDistance = 0;
         let pinchStartZ = 0;
@@ -294,10 +280,6 @@
         const sphereSizeDisplay = document.getElementById('sphereSize');
         const autoStatusDisplay = document.getElementById('autoStatus');
         const speedSlider = document.getElementById('speedSlider');
-
-        // ドラッグ可能なパネル要素を取得
-        const controlsPanel = document.getElementById('controlsPanel');
-        const speedControlPanel = document.getElementById('speedControlPanel');
         
         // モバイルコントロールボタン
         const layerDownBtn = document.getElementById('layerDown');
@@ -305,85 +287,6 @@
         const complexityDownBtn = document.getElementById('complexityDown');
         const complexityUpBtn = document.getElementById('complexityUp');
         const pausePlayBtn = document.getElementById('pausePlay');
-
-        // ドラッグ＆ドロップ機能を追加する関数
-        function makeDraggable(element) {
-            let isDragging = false;
-            let currentX;
-            let currentY;
-            let initialX;
-            let initialY;
-            let xOffset = 0;
-            let yOffset = 0;
-            let initialZIndex; // 元のz-indexを保存
-
-            function dragStart(e) {
-                // スライダー操作時はドラッグしない
-                if (e.target.closest('.speed-slider')) {
-                    return;
-                }
-
-                e.preventDefault(); // デフォルトのドラッグ動作を防止
-                isDragging = true;
-                element.classList.add('dragging'); // ドラッグ中のスタイルを適用
-                initialZIndex = element.style.zIndex; // 現在のz-indexを保存
-                element.style.zIndex = 200; // ドラッグ中は最前面に
-
-                if (e.type === "touchstart") {
-                    initialX = e.touches[0].clientX - xOffset;
-                    initialY = e.touches[0].clientY - yOffset;
-                } else {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
-                }
-            }
-
-            function drag(e) {
-                if (isDragging) {
-                    if (e.type === "touchmove") {
-                        currentX = e.touches[0].clientX - initialX;
-                        currentY = e.touches[0].clientY - initialY;
-                    } else {
-                        currentX = e.clientX - initialX;
-                        currentY = e.clientY - initialY;
-                    }
-
-                    xOffset = currentX;
-                    yOffset = currentY;
-
-                    // translate3dで位置を更新
-                    element.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-                    resetAutoRotateTimer(); // ドラッグ中は自動回転タイマーをリセット
-                }
-            }
-
-            function dragEnd() {
-                isDragging = false;
-                element.classList.remove('dragging'); // ドラッグ中のスタイルを削除
-                element.style.zIndex = initialZIndex; // 元のz-indexに戻す
-            }
-
-            // マウスイベント
-            element.addEventListener('mousedown', dragStart);
-            document.addEventListener('mouseup', dragEnd);
-            document.addEventListener('mousemove', drag);
-
-            // タッチイベント
-            element.addEventListener('touchstart', dragStart, { passive: false });
-            document.addEventListener('touchend', dragEnd);
-            document.addEventListener('touchmove', drag, { passive: false });
-
-            // スライダー操作時にパネルが動かないように、スライダー上でのドラッグは無視する
-            const sliders = element.querySelectorAll('input[type="range"]');
-            sliders.forEach(slider => {
-                slider.addEventListener('mousedown', (e) => e.stopPropagation());
-                slider.addEventListener('touchstart', (e) => e.stopPropagation());
-            });
-        }
-
-        // コントロールパネルとスピードコントロールパネルをドラッグ可能にする
-        makeDraggable(controlsPanel);
-        makeDraggable(speedControlPanel);
         
         // 自動回転タイマー関数
         function resetAutoRotateTimer() {
@@ -613,10 +516,6 @@
         
         function onMouseDown(event) {
             event.preventDefault();
-            // イベントのターゲットがドラッグ可能なパネルでないことを確認
-            if (event.target.closest('.controls') || event.target.closest('.speed-control')) {
-                return; 
-            }
             isMouseDown = true;
             
             const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
@@ -638,10 +537,6 @@
         // タッチイベント（ピンチズーム対応）
         function onTouchStart(event) {
             event.preventDefault();
-            // イベントのターゲットがドラッグ可能なパネルでないことを確認
-            if (event.target.closest('.controls') || event.target.closest('.speed-control')) {
-                return; 
-            }
             
             if (event.touches.length === 1) {
                 onMouseDown(event);
@@ -664,10 +559,6 @@
         
         function onTouchMove(event) {
             event.preventDefault();
-            // イベントのターゲットがドラッグ可能なパネルでないことを確認
-            if (event.target.closest('.controls') || event.target.closest('.speed-control')) {
-                return; 
-            }
             
             if (event.touches.length === 1) {
                 onMouseMove(event);
@@ -785,8 +676,7 @@
             sphereGroup.children.forEach((layerGroup, layerIndex) => {
                 if (layerGroup.children) {
                     layerGroup.children.forEach((child, childIndex) => {
-                        // リング以外の形状のみ回転
-                        if (child.geometry && !(child.geometry instanceof THREE.TorusGeometry && child.geometry.parameters.thetaSegments === 32)) {
+                        if (child.geometry && child.geometry instanceof THREE.BoxGeometry) {
                             child.rotation.x += 0.01 * (1 + layerIndex * 0.1);
                             child.rotation.y += 0.005 * (1 + childIndex * 0.05);
                         }
