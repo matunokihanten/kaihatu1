@@ -48,6 +48,119 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 14px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 200px;
+        }
+        
+        .mobile-controls {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
+            padding: 15px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.4), rgba(0, 191, 255, 0.4));
+        }
+        
+        .speed-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(0, 191, 255, 0.2));
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            min-width: 150px;
+        }
+        
+        .speed-slider {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ff8c00, #00bfff);
+            outline: none;
+        }
+        
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                font-size: 12px;
+                padding: 15px;
+                max-width: 150px;
+            }
+            
+            .speed-control {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 12px;
+                min-width: 120px;
+            }
+            
+            .mobile-controls {
+                bottom: 60px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .instructions {
+                font-size: 12px;
+                padding: 10px 20px;
+            }
         }
         
         .title {
@@ -100,15 +213,28 @@
     <div class="container">
         <div class="title">幾何学的フィボナッチ球体</div>
         <div class="controls">
-            <div class="control-item">回転速度: <span class="value" id="rotationSpeed">1.0</span>x</div>
             <div class="control-item">層の数: <span class="value" id="layerCount">12</span></div>
             <div class="control-item">複雑度: <span class="value" id="complexity">5</span></div>
             <div class="control-item">サイズ: <span class="value" id="sphereSize">100</span>%</div>
+            <div class="control-item">自動回転: <span class="value" id="autoStatus">ON</span></div>
+        </div>
+        
+        <div class="speed-control">
+            <div>回転速度: <span class="value" id="rotationSpeed">1.0</span>x</div>
+            <input type="range" id="speedSlider" class="speed-slider" min="0.1" max="3.0" step="0.1" value="1.0">
+        </div>
+        
+        <div class="mobile-controls">
+            <button class="control-button" id="layerDown" title="層を減らす">−</button>
+            <button class="control-button" id="complexityDown" title="複雑度を下げる">◁</button>
+            <button class="control-button" id="pausePlay" title="一時停止/再生">⏸</button>
+            <button class="control-button" id="complexityUp" title="複雑度を上げる">▷</button>
+            <button class="control-button" id="layerUp" title="層を増やす">+</button>
         </div>
     </div>
     
     <div class="instructions">
-        ドラッグで回転 | ホイール/ピンチでズーム | スペースで一時停止 | ↑↓で層調整
+        タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 10秒放置で自動回転
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -138,12 +264,90 @@
         let layerCount = 12;
         let complexity = 5;
         let sphereSize = 1.0;
+        let lastInteractionTime = Date.now();
+        let autoRotateTimeout = null;
+        
+        // タッチ操作用
+        let touches = {};
+        let lastTouchDistance = 0;
+        let initialPinchDistance = 0;
+        let pinchStartZ = 0;
         
         // UI要素
         const rotationSpeedDisplay = document.getElementById('rotationSpeed');
         const layerCountDisplay = document.getElementById('layerCount');
         const complexityDisplay = document.getElementById('complexity');
         const sphereSizeDisplay = document.getElementById('sphereSize');
+        const autoStatusDisplay = document.getElementById('autoStatus');
+        const speedSlider = document.getElementById('speedSlider');
+        
+        // モバイルコントロールボタン
+        const layerDownBtn = document.getElementById('layerDown');
+        const layerUpBtn = document.getElementById('layerUp');
+        const complexityDownBtn = document.getElementById('complexityDown');
+        const complexityUpBtn = document.getElementById('complexityUp');
+        const pausePlayBtn = document.getElementById('pausePlay');
+        
+        // 自動回転タイマー関数
+        function resetAutoRotateTimer() {
+            lastInteractionTime = Date.now();
+            if (autoRotateTimeout) {
+                clearTimeout(autoRotateTimeout);
+            }
+            autoRotateTimeout = setTimeout(() => {
+                if (!autoRotate && Date.now() - lastInteractionTime >= 10000) {
+                    autoRotate = true;
+                    updateAutoStatus();
+                }
+            }, 10000);
+        }
+        
+        function updateAutoStatus() {
+            autoStatusDisplay.textContent = autoRotate ? 'ON' : 'OFF';
+            pausePlayBtn.textContent = autoRotate ? '⏸' : '▶';
+        }
+        
+        // スピードスライダーイベント
+        speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+            resetAutoRotateTimer();
+        });
+        
+        // モバイルコントロールイベント
+        layerDownBtn.addEventListener('click', () => {
+            layerCount = Math.max(5, layerCount - 1);
+            layerCountDisplay.textContent = layerCount;
+            createGeometricPattern();
+            resetAutoRotateTimer();
+        });
+        
+        layerUpBtn.addEventListener('click', () => {
+            layerCount = Math.min(20, layerCount + 1);
+            layerCountDisplay.textContent = layerCount;
+            createGeometricPattern();
+            resetAutoRotateTimer();
+        });
+        
+        complexityDownBtn.addEventListener('click', () => {
+            complexity = Math.max(1, complexity - 1);
+            complexityDisplay.textContent = complexity;
+            createGeometricPattern();
+            resetAutoRotateTimer();
+        });
+        
+        complexityUpBtn.addEventListener('click', () => {
+            complexity = Math.min(10, complexity + 1);
+            complexityDisplay.textContent = complexity;
+            createGeometricPattern();
+            resetAutoRotateTimer();
+        });
+        
+        pausePlayBtn.addEventListener('click', () => {
+            autoRotate = !autoRotate;
+            updateAutoStatus();
+            resetAutoRotateTimer();
+        });
         
         // メイン球体グループ
         const sphereGroup = new THREE.Group();
@@ -291,25 +495,108 @@
         
         // マウス/タッチイベント
         function onMouseMove(event) {
-            if (!isMouseDown && !autoRotate) return;
-            
             const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
             const clientY = event.clientY || (event.touches && event.touches[0].clientY) || 0;
             
             if (isMouseDown) {
-                targetRotationX = (clientY - window.innerHeight / 2) * 0.01;
-                targetRotationY = (clientX - window.innerWidth / 2) * 0.01;
+                const deltaX = clientX - mouseX;
+                const deltaY = clientY - mouseY;
+                
+                targetRotationY += deltaX * 0.01;
+                targetRotationX += deltaY * 0.01;
+                
+                mouseX = clientX;
+                mouseY = clientY;
+                
+                autoRotate = false;
+                updateAutoStatus();
+                resetAutoRotateTimer();
             }
         }
         
         function onMouseDown(event) {
+            event.preventDefault();
             isMouseDown = true;
+            
+            const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
+            const clientY = event.clientY || (event.touches && event.touches[0].clientY) || 0;
+            
+            mouseX = clientX;
+            mouseY = clientY;
+            
             autoRotate = false;
-            onMouseMove(event);
+            updateAutoStatus();
+            resetAutoRotateTimer();
         }
         
         function onMouseUp() {
             isMouseDown = false;
+            resetAutoRotateTimer();
+        }
+        
+        // タッチイベント（ピンチズーム対応）
+        function onTouchStart(event) {
+            event.preventDefault();
+            
+            if (event.touches.length === 1) {
+                onMouseDown(event);
+            } else if (event.touches.length === 2) {
+                // ピンチ開始
+                isMouseDown = false;
+                const touch1 = event.touches[0];
+                const touch2 = event.touches[1];
+                
+                initialPinchDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                lastTouchDistance = initialPinchDistance;
+                pinchStartZ = camera.position.z;
+                
+                resetAutoRotateTimer();
+            }
+        }
+        
+        function onTouchMove(event) {
+            event.preventDefault();
+            
+            if (event.touches.length === 1) {
+                onMouseMove(event);
+            } else if (event.touches.length === 2) {
+                // ピンチズーム
+                const touch1 = event.touches[0];
+                const touch2 = event.touches[1];
+                
+                const currentDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                
+                if (lastTouchDistance > 0) {
+                    const scale = currentDistance / initialPinchDistance;
+                    const newZ = pinchStartZ / scale;
+                    camera.position.z = Math.max(2, Math.min(20, newZ));
+                    
+                    sphereSize = Math.round((6 / camera.position.z) * 100);
+                    sphereSizeDisplay.textContent = sphereSize;
+                }
+                
+                lastTouchDistance = currentDistance;
+                resetAutoRotateTimer();
+            }
+        }
+        
+        function onTouchEnd(event) {
+            event.preventDefault();
+            
+            if (event.touches.length === 0) {
+                onMouseUp();
+                lastTouchDistance = 0;
+                initialPinchDistance = 0;
+            } else if (event.touches.length === 1) {
+                // 2本指から1本指に変更
+                onMouseDown(event);
+            }
         }
         
         // イベントリスナー
@@ -317,9 +604,10 @@
         document.addEventListener('mousedown', onMouseDown);
         document.addEventListener('mouseup', onMouseUp);
         
-        document.addEventListener('touchmove', onMouseMove);
-        document.addEventListener('touchstart', onMouseDown);
-        document.addEventListener('touchend', onMouseUp);
+        document.addEventListener('touchstart', onTouchStart, { passive: false });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd, { passive: false });
+        document.addEventListener('touchcancel', onTouchEnd, { passive: false });
         
         // ホイールズーム
         document.addEventListener('wheel', (event) => {
@@ -328,34 +616,41 @@
             camera.position.z = Math.max(2, Math.min(20, camera.position.z * delta));
             sphereSize = Math.round((6 / camera.position.z) * 100);
             sphereSizeDisplay.textContent = sphereSize;
-        });
+            resetAutoRotateTimer();
+        }, { passive: false });
         
-        // キーボードコントロール
+        // キーボードコントロール（PC用）
         document.addEventListener('keydown', (event) => {
             switch(event.code) {
                 case 'Space':
                     event.preventDefault();
                     autoRotate = !autoRotate;
+                    updateAutoStatus();
+                    resetAutoRotateTimer();
                     break;
                 case 'ArrowUp':
                     layerCount = Math.min(20, layerCount + 1);
                     layerCountDisplay.textContent = layerCount;
                     createGeometricPattern();
+                    resetAutoRotateTimer();
                     break;
                 case 'ArrowDown':
                     layerCount = Math.max(5, layerCount - 1);
                     layerCountDisplay.textContent = layerCount;
                     createGeometricPattern();
+                    resetAutoRotateTimer();
                     break;
                 case 'ArrowLeft':
                     complexity = Math.max(1, complexity - 1);
                     complexityDisplay.textContent = complexity;
                     createGeometricPattern();
+                    resetAutoRotateTimer();
                     break;
                 case 'ArrowRight':
                     complexity = Math.min(10, complexity + 1);
                     complexityDisplay.textContent = complexity;
                     createGeometricPattern();
+                    resetAutoRotateTimer();
                     break;
             }
         });
@@ -405,6 +700,8 @@
         
         // 初期化
         createGeometricPattern();
+        updateAutoStatus();
+        resetAutoRotateTimer();
         animate();
     </script>
 </body>
