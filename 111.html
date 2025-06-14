@@ -494,4 +494,235 @@
         
         // Lighting
         scene.add(new THREE.AmbientLight(0x404040, 0.5));
-    
+        scene.add(new THREE.DirectionalLight(0xff8c00, 1.0).position.set(5, 5, 5));
+        scene.add(new THREE.DirectionalLight(0x00bfff, 0.8).position.set(-5, -5, 5));
+        const pointLight = new THREE.PointLight(0xff6b6b, 0.6, 10);
+        pointLight.position.set(0, 0, 3);
+        scene.add(pointLight);
+        
+        // Camera position (initial zoom)
+        camera.position.z = initialCameraZ;
+        
+        // --- Event Handlers for Sphere Interaction ---
+        const onSphereInteractionStart = (event) => {
+            event.preventDefault(); 
+            interaction.isMouseDown = true;
+            interaction.mouseX = event.clientX || event.touches[0].clientX;
+            interaction.mouseY = event.clientY || event.touches[0].clientY;
+            
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+
+            if (event.touches && event.touches.length === 2) {
+                interaction.isMouseDown = false; 
+                const [touch1, touch2] = event.touches;
+                interaction.initialPinchDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                interaction.lastTouchDistance = interaction.initialPinchDistance;
+                interaction.pinchStartZ = camera.position.z;
+            }
+        };
+
+        const onSphereInteractionMove = (event) => {
+            event.preventDefault();
+            
+            if (interaction.isMouseDown && !(event.touches && event.touches.length > 1)) {
+                const clientX = event.clientX || event.touches[0].clientX;
+                const clientY = event.clientY || event.touches[0].clientY;
+                
+                interaction.targetRotationY += (clientX - interaction.mouseX) * ROTATION_DRAG_SENSITIVITY;
+                interaction.targetRotationX += (clientY - interaction.mouseY) * ROTATION_DRAG_SENSITIVITY;
+                
+                interaction.mouseX = clientX;
+                interaction.mouseY = clientY;
+            } else if (event.touches && event.touches.length === 2) {
+                const [touch1, touch2] = event.touches;
+                const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                
+                if (interaction.lastTouchDistance > 0) {
+                    const scale = currentDistance / interaction.initialPinchDistance;
+                    const newZ = interaction.pinchStartZ / scale;
+                    camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, newZ)); 
+                    updateUI();
+                }
+                interaction.lastTouchDistance = currentDistance;
+            }
+            resetAutoRotateTimer();
+        };
+
+        const onSphereInteractionEnd = () => {
+            interaction.isMouseDown = false;
+            interaction.lastTouchDistance = 0;
+            interaction.initialPinchDistance = 0;
+            resetAutoRotateTimer();
+        };
+        
+        // --- Event Listeners ---
+
+        // Sphere Interaction (Mouse/Touch) - Attached to canvas
+        ui.canvas.addEventListener('mousedown', onSphereInteractionStart);
+        ui.canvas.addEventListener('mousemove', onSphereInteractionMove);
+        ui.canvas.addEventListener('mouseup', onSphereInteractionEnd);
+        
+        ui.canvas.addEventListener('touchstart', onSphereInteractionStart, { passive: false });
+        ui.canvas.addEventListener('touchmove', onSphereInteractionMove, { passive: false });
+        ui.canvas.addEventListener('touchend', onSphereInteractionEnd, { passive: false });
+        ui.canvas.addEventListener('touchcancel', onSphereInteractionEnd, { passive: false });
+        
+        // Wheel zoom for sphere - Attached to canvas
+        ui.canvas.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+            camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, camera.position.z * delta)); 
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        }, { passive: false });
+        
+        // UI Controls
+        ui.speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+
+        ui.patternSelect.addEventListener('change', (e) => {
+            currentPatternType = e.target.value;
+            createGeometricPattern(); // Regenerate pattern with new type
+            autoRotate = false; // Manual control overrides auto-rotate
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.layerDownBtn.addEventListener('click', () => {
+            layerCount = Math.max(MIN_LAYERS, layerCount - 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.layerUpBtn.addEventListener('click', () => {
+            layerCount = Math.min(MAX_LAYERS, layerCount + 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.complexityDownBtn.addEventListener('click', () => {
+            complexity = Math.max(MIN_COMPLEXITY, complexity - 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.complexityUpBtn.addEventListener('click', () => {
+            complexity = Math.min(MAX_COMPLEXITY, complexity + 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.pausePlayBtn.addEventListener('click', () => {
+            autoRotate = !autoRotate;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        // Keyboard controls (PC)
+        document.addEventListener('keydown', (event) => {
+            let changed = false;
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    autoRotate = !autoRotate;
+                    changed = true;
+                    break;
+                case 'ArrowUp':
+                    layerCount = Math.min(MAX_LAYERS, layerCount + 1);
+                    createGeometricPattern();
+                    changed = true;
+                    break;
+                case 'ArrowDown':
+                    layerCount = Math.max(MIN_LAYERS, layerCount - 1);
+                    createGeometricPattern();
+                    changed = true;
+                    break;
+                case 'ArrowLeft':
+                    complexity = Math.max(MIN_COMPLEXITY, complexity - 1);
+                    createGeometricPattern();
+                    changed = true;
+                    break;
+                case 'ArrowRight':
+                    complexity = Math.min(MAX_COMPLEXITY, complexity + 1);
+                    createGeometricPattern();
+                    changed = true;
+                    break;
+            }
+            if (changed) {
+                autoRotate = false;
+                updateUI();
+                resetAutoRotateTimer();
+            }
+        });
+        
+        // Animation loop
+        const animate = () => {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.001; // Calculate time once per frame
+
+            if (autoRotate) {
+                interaction.targetRotationY += 0.008 * rotationSpeed;
+                interaction.targetRotationX += 0.004 * rotationSpeed;
+            }
+            
+            // Smooth rotation
+            interaction.currentRotationX += (interaction.targetRotationX - interaction.currentRotationX) * 0.05;
+            interaction.currentRotationY += (interaction.targetRotationY - interaction.currentRotationY) * 0.05;
+            
+            sphereGroup.rotation.x = interaction.currentRotationX;
+            sphereGroup.rotation.y = interaction.currentRotationY;
+            
+            // Individual element rotation animation
+            sphereGroup.children.forEach((layerGroup, layerIndex) => {
+                // Ensure layerGroup has children and is not a Ring (which are not rotated individually)
+                if (layerGroup.children && layerGroup.children.length > 0 && !(layerGroup.children[0] instanceof THREE.Mesh && layerGroup.children[0].geometry instanceof THREE.TorusGeometry)) {
+                     layerGroup.children.forEach((child) => {
+                        if (child.geometry && !(child.geometry instanceof THREE.TorusGeometry)) {
+                            child.rotation.x += ELEMENT_ROTATION_SPEED_MULTIPLIER * rotationSpeed * (1 + layerIndex * 0.05);
+                            child.rotation.y += (ELEMENT_ROTATION_SPEED_MULTIPLIER / 2) * rotationSpeed * (1 + layerIndex * 0.05);
+                        }
+                    });
+                }
+            });
+            
+            // Dynamic light movement
+            pointLight.position.x = Math.sin(time * 0.5) * 3;
+            pointLight.position.y = Math.cos(time * 0.3) * 3;
+            
+            renderer.render(scene, camera);
+        };
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateUI();
+        });
+        
+        // --- Initialization ---
+        createGeometricPattern();
+        ui.speedSlider.value = rotationSpeed; // Set slider to initial value
+        ui.patternSelect.value = currentPatternType; // Set select to initial value
+        updateUI();
+        resetAutoRotateTimer(); // Start auto-rotate timer
+        animate();
+    </script>
+</body>
+</html>
