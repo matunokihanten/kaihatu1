@@ -47,7 +47,7 @@
         }
         
         #controls-left {
-            top: 20px;
+            bottom: 180px; /* Adjusted position */
             left: 20px;
             max-width: 200px;
         }
@@ -59,16 +59,16 @@
         }
 
         #pattern-control {
-            top: 180px; /* Adjusted position to not overlap with other controls */
+            bottom: 340px; /* Adjusted position */
             left: 20px;
             max-width: 200px;
             padding-bottom: 10px; /* Adjust padding for select element */
         }
         
         #mobile-controls-bottom {
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 80px; /* Adjusted position */
+            left: 20px; /* Adjusted position */
+            transform: translateX(0); /* Remove transform */
             display: flex;
             gap: 15px;
             background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
@@ -153,6 +153,7 @@
                 font-size: 12px;
                 padding: 15px;
                 max-width: 150px;
+                left: 10px; /* Adjusted for smaller screens */
             }
             
             #speed-control-right {
@@ -165,6 +166,7 @@
             
             #mobile-controls-bottom {
                 bottom: 60px;
+                left: 10px; /* Adjusted for smaller screens */
             }
             
             .title {
@@ -174,6 +176,10 @@
             .instructions {
                 font-size: 12px;
                 padding: 10px 20px;
+                left: 10px; /* Adjusted for smaller screens */
+                transform: translateX(0); /* Remove transform */
+                width: calc(100% - 40px); /* Adjust width */
+                box-sizing: border-box; /* Include padding in width */
             }
         }
         
@@ -200,8 +206,8 @@
         .instructions {
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 20px; /* Adjusted position */
+            transform: translateX(0); /* Remove transform */
             font-size: 14px;
             opacity: 0.9;
             background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
@@ -261,7 +267,7 @@
     </div>
     
     <div class="instructions">
-        タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 10秒放置で自動回転
+        タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 5秒放置で自動回転
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -273,7 +279,7 @@
         const MAX_COMPLEXITY = 10;
         const ROTATION_DRAG_SENSITIVITY = 0.01;
         const ELEMENT_ROTATION_SPEED_MULTIPLIER = 0.005; // Base speed for individual elements
-        const AUTO_ROTATE_TIMEOUT_MS = 10000;
+        const AUTO_ROTATE_TIMEOUT_MS = 5000; // Changed to 5 seconds
         const CAMERA_MIN_Z = 2;
         const CAMERA_MAX_Z = 10;
         const INITIAL_CAMERA_REF_Z = 4; // Reference Z for 100% size calculation
