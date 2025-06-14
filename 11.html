@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幾何学的フィボナッチ球体</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f23 50%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+        
+        #canvas {
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3), 0 0 100px rgba(0, 191, 255, 0.2);
+            cursor: grab;
+        }
+        
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Control panels - fixed positions */
+        .controls-panel {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(0, 191, 255, 0.2));
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+        
+        #controls-left {
+            top: 20px;
+            left: 20px;
+            max-width: 200px;
+        }
+        
+        #speed-control-right {
+            top: 20px;
+            right: 20px;
+            min-width: 150px;
+        }
+        
+        #mobile-controls-bottom {
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
+            padding: 15px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.4), rgba(0, 191, 255, 0.4));
+        }
+        
+        .speed-slider {
+            width: 100%;
+            margin: 10px 0;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ff8c00, #00bfff);
+            outline: none;
+        }
+        
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            #controls-left {
+                font-size: 12px;
+                padding: 15px;
+                max-width: 150px;
+            }
+            
+            #speed-control-right {
+                top: 10px;
+                right: 10px;
+                padding: 10px;
+                font-size: 12px;
+                min-width: 120px;
+            }
+            
+            #mobile-controls-bottom {
+                bottom: 60px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .instructions {
+                font-size: 12px;
+                padding: 10px 20px;
+            }
+        }
+        
+        .title {
+            position: absolute; /* Position title explicitly */
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            text-shadow: 0 0 20px rgba(255, 140, 0, 0.8);
+            background: linear-gradient(45deg, #ff8c00, #ff6b6b, #4ecdc4, #45b7d1, #9b59b6, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+            z-index: 1000;
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 20px rgba(255, 140, 0, 0.8); }
+            100% { text-shadow: 0 0 30px rgba(0, 191, 255, 0.8); }
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0.9;
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
+            padding: 15px 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+        
+        .control-item {
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item:last-child {
+            border-bottom: none;
+        }
+        
+        .value {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">幾何学的フィボナッチ球体</div>
+    
+    <div id="controls-left" class="controls-panel">
+        <div class="control-item">層の数: <span class="value" id="layerCount">12</span></div>
+        <div class="control-item">複雑度: <span class="value" id="complexity">5</span></div>
+        <div class="control-item">サイズ: <span class="value" id="sphereSize">100</span>%</div>
+        <div class="control-item">自動回転: <span class="value" id="autoStatus">ON</span></div>
+    </div>
+    
+    <div id="speed-control-right" class="controls-panel">
+        <div>回転速度: <span class="value" id="rotationSpeed">1.0</span>x</div>
+        <input type="range" id="speedSlider" class="speed-slider" min="0.1" max="3.0" step="0.1" value="1.0">
+    </div>
+    
+    <div id="mobile-controls-bottom" class="controls-panel">
+        <button class="control-button" id="layerDown" title="層を減らす">−</button>
+        <button class="control-button" id="complexityDown" title="複雑度を下げる">◁</button>
+        <button class="control-button" id="pausePlay" title="一時停止/再生">⏸</button>
+        <button class="control-button" id="complexityUp" title="複雑度を上げる">▷</button>
+        <button class="control-button" id="layerUp" title="層を増やす">+</button>
+    </div>
+    
+    <div class="instructions">
+        タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 10秒放置で自動回転
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js basic setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true, 
+            alpha: true,
+            canvas: document.getElementById('canvas') || undefined
+        });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        if (!document.getElementById('canvas')) {
+            document.body.appendChild(renderer.domElement);
+        }
+        
+        // State management
+        let mouseX = 0, mouseY = 0;
+        let targetRotationX = 0, targetRotationY = 0;
+        let currentRotationX = 0, currentRotationY = 0;
+        let isMouseDown = false;
+        let autoRotate = true;
+        let rotationSpeed = 1.0;
+        let layerCount = 12;
+        let complexity = 5;
+        let lastInteractionTime = Date.now();
+        let autoRotateTimeout = null;
+        
+        // Touch interaction variables
+        let lastTouchDistance = 0;
+        let initialPinchDistance = 0;
+        let pinchStartZ = 0;
+        
+        // UI Elements (cached for performance)
+        const ui = {
+            rotationSpeed: document.getElementById('rotationSpeed'),
+            layerCount: document.getElementById('layerCount'),
+            complexity: document.getElementById('complexity'),
+            sphereSize: document.getElementById('sphereSize'),
+            autoStatus: document.getElementById('autoStatus'),
+            speedSlider: document.getElementById('speedSlider'),
+            layerDownBtn: document.getElementById('layerDown'),
+            layerUpBtn: document.getElementById('layerUp'),
+            complexityDownBtn: document.getElementById('complexityDown'),
+            complexityUpBtn: document.getElementById('complexityUp'),
+            pausePlayBtn: document.getElementById('pausePlay')
+        };
+
+        // Update all UI displays
+        const updateUI = () => {
+            ui.rotationSpeed.textContent = rotationSpeed.toFixed(1);
+            ui.layerCount.textContent = layerCount;
+            ui.complexity.textContent = complexity;
+            ui.sphereSize.textContent = Math.round((4 / camera.position.z) * 100); // Adjusted for new default camera.position.z
+            ui.autoStatus.textContent = autoRotate ? 'ON' : 'OFF';
+            ui.pausePlayBtn.textContent = autoRotate ? '⏸' : '▶';
+        };
+
+        // Auto-rotate timer function
+        const resetAutoRotateTimer = () => {
+            lastInteractionTime = Date.now();
+            clearTimeout(autoRotateTimeout);
+            autoRotateTimeout = setTimeout(() => {
+                if (!autoRotate && Date.now() - lastInteractionTime >= 10000) {
+                    autoRotate = true;
+                    updateUI();
+                }
+            }, 10000);
+        };
+        
+        // Event listeners for UI controls
+        ui.speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.layerDownBtn.addEventListener('click', () => {
+            layerCount = Math.max(5, layerCount - 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.layerUpBtn.addEventListener('click', () => {
+            layerCount = Math.min(20, layerCount + 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.complexityDownBtn.addEventListener('click', () => {
+            complexity = Math.max(1, complexity - 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.complexityUpBtn.addEventListener('click', () => {
+            complexity = Math.min(10, complexity + 1);
+            createGeometricPattern();
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        ui.pausePlayBtn.addEventListener('click', () => {
+            autoRotate = !autoRotate;
+            updateUI();
+            resetAutoRotateTimer();
+        });
+        
+        // Main sphere group
+        const sphereGroup = new THREE.Group();
+        scene.add(sphereGroup);
+        
+        // Geometric pattern generation
+        const createGeometricPattern = () => {
+            while (sphereGroup.children.length > 0) {
+                sphereGroup.remove(sphereGroup.children[0]);
+            }
+            
+            const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
+            const radius = 2;
+            
+            for (let layer = 0; layer < layerCount; layer++) {
+                const layerRadius = radius * (0.3 + (layer / layerCount) * 0.7);
+                const pointsInLayer = Math.floor(50 + layer * complexity * 5);
+                
+                const layerGroup = new THREE.Group();
+                
+                for (let i = 0; i < pointsInLayer; i++) {
+                    const t = i / pointsInLayer;
+                    const angle = 2 * Math.PI * i / phi;
+                    const y = (t * 2 - 1) * layerRadius;
+                    const radiusAtY = Math.sqrt(Math.max(0, layerRadius * layerRadius - y * y)); // Ensure non-negative
+                    
+                    const x = Math.cos(angle) * radiusAtY;
+                    const z = Math.sin(angle) * radiusAtY;
+                    
+                    const size = 0.02 + Math.random() * 0.08;
+                    const depth = 0.01 + Math.random() * 0.05;
+                    
+                    let geometry;
+                    const shapeType = Math.floor(Math.random() * 4);
+                    
+                    switch(shapeType) {
+                        case 0: geometry = new THREE.BoxGeometry(size, size, depth); break;
+                        case 1: geometry = new THREE.CylinderGeometry(size/2, size/2, depth, 8); break;
+                        case 2: geometry = new THREE.OctahedronGeometry(size/2); break;
+                        case 3: geometry = new THREE.TorusGeometry(size/2, size/8, 4, 8); break;
+                    }
+                    
+                    let color;
+                    if (i % 8 === 0) color = new THREE.Color(0xff8c00); // Orange
+                    else if (i % 7 === 0) color = new THREE.Color(0x00bfff); // Blue
+                    else if (i % 5 === 0) color = new THREE.Color(0xff6b6b); // Red
+                    else if (i % 3 === 0) color = new THREE.Color(0x4ecdc4); // Teal
+                    else color = new THREE.Color().setHSL((angle / (2 * Math.PI) + layer * 0.1) % 1, 0.7 + Math.random() * 0.3, 0.4 + Math.abs(y / layerRadius) * 0.4);
+                    
+                    const material = new THREE.MeshPhongMaterial({
+                        color: color, transparent: true, opacity: 0.9, shininess: 100
+                    });
+                    
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(x, y, z);
+                    mesh.lookAt(x * 2, y * 2, z * 2);
+                    mesh.rotation.x += Math.random() * Math.PI;
+                    mesh.rotation.y += Math.random() * Math.PI;
+                    mesh.rotation.z += Math.random() * Math.PI;
+                    
+                    layerGroup.add(mesh);
+                }
+                
+                const ringGeometry = new THREE.TorusGeometry(layerRadius, 0.01, 4, 32);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL((layer / layerCount), 0.6, 0.4),
+                    transparent: true, opacity: 0.3
+                });
+                const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                ring.rotation.x = Math.PI / 2;
+                layerGroup.add(ring);
+                
+                sphereGroup.add(layerGroup);
+            }
+            
+            const centerGeometry = new THREE.IcosahedronGeometry(0.15, 2);
+            const centerMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff, transparent: true, opacity: 0.9, emissive: 0x666666
+            });
+            const centerMesh = new THREE.Mesh(centerGeometry, centerMaterial);
+            sphereGroup.add(centerMesh);
+        };
+        
+        // Lighting
+        scene.add(new THREE.AmbientLight(0x404040, 0.5));
+        scene.add(new THREE.DirectionalLight(0xff8c00, 1.0).position.set(5, 5, 5));
+        scene.add(new THREE.DirectionalLight(0x00bfff, 0.8).position.set(-5, -5, 5));
+        const pointLight = new THREE.PointLight(0xff6b6b, 0.6, 10);
+        pointLight.position.set(0, 0, 3);
+        scene.add(pointLight);
+        
+        // Camera position (closer for better visibility)
+        camera.position.z = 4;
+        
+        // Mouse/Touch events for sphere rotation/zoom
+        const onSphereInteractionStart = (event) => {
+            // Check if the event target is one of the control panels
+            if (event.target.closest('.controls-panel')) {
+                return;
+            }
+
+            event.preventDefault();
+            isMouseDown = true;
+            mouseX = event.clientX || event.touches[0].clientX;
+            mouseY = event.clientY || event.touches[0].clientY;
+            
+            autoRotate = false;
+            updateUI();
+            resetAutoRotateTimer();
+
+            if (event.touches && event.touches.length === 2) {
+                isMouseDown = false; // Disable dragging for 2-finger pinch
+                const [touch1, touch2] = event.touches;
+                initialPinchDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                lastTouchDistance = initialPinchDistance;
+                pinchStartZ = camera.position.z;
+            }
+        };
+
+        const onSphereInteractionMove = (event) => {
+            if (event.target.closest('.controls-panel')) {
+                return;
+            }
+
+            event.preventDefault();
+            
+            if (isMouseDown && !(event.touches && event.touches.length > 1)) {
+                const clientX = event.clientX || event.touches[0].clientX;
+                const clientY = event.clientY || event.touches[0].clientY;
+                
+                targetRotationY += (clientX - mouseX) * 0.01;
+                targetRotationX += (clientY - mouseY) * 0.01;
+                
+                mouseX = clientX;
+                mouseY = clientY;
+            } else if (event.touches && event.touches.length === 2) {
+                const [touch1, touch2] = event.touches;
+                const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                
+                if (lastTouchDistance > 0) {
+                    const scale = currentDistance / initialPinchDistance;
+                    const newZ = pinchStartZ / scale;
+                    camera.position.z = Math.max(2, Math.min(10, newZ)); // Adjusted zoom limits
+                    updateUI();
+                }
+                lastTouchDistance = currentDistance;
+            }
+            resetAutoRotateTimer();
+        };
+
+        const onSphereInteractionEnd = () => {
+            isMouseDown = false;
+            lastTouchDistance = 0;
+            initialPinchDistance = 0;
+            resetAutoRotateTimer();
+        };
+        
+        document.addEventListener('mousedown', onSphereInteractionStart);
+        document.addEventListener('mousemove', onSphereInteractionMove);
+        document.addEventListener('mouseup', onSphereInteractionEnd);
+        
+        document.addEventListener('touchstart', onSphereInteractionStart, { passive: false });
+        document.addEventListener('touchmove', onSphereInteractionMove, { passive: false });
+        document.addEventListener('touchend', onSphereInteractionEnd, { passive: false });
+        document.addEventListener('touchcancel', onSphereInteractionEnd, { passive: false });
+        
+        // Wheel zoom for sphere
+        document.addEventListener('wheel', (event) => {
+      
