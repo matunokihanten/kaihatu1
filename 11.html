@@ -18,7 +18,7 @@
             user-select: none; /* Prevents text selection */
             overflow: hidden;
         }
-        
+
         #canvas {
             border-radius: 15px;
             box-shadow: 0 20px 60px rgba(255, 140, 0, 0.3), 0 0 100px rgba(0, 191, 255, 0.2);
@@ -27,7 +27,7 @@
             width: 100vw;
             height: 100vh;
         }
-        
+
         #canvas:active {
             cursor: grabbing;
         }
@@ -45,31 +45,40 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 1000;
         }
-        
+
         #controls-left {
             top: 20px;
             left: 20px;
             max-width: 200px;
         }
-        
+
         #speed-control-right {
             top: 20px;
             right: 20px;
             min-width: 150px;
         }
-        
+
+        /* Updated position for mobile controls */
         #mobile-controls-bottom {
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 20px; /* Aligned to bottom */
+            left: 20px; /* Aligned to left */
+            transform: translateX(0); /* Remove center transform */
             display: flex;
+            flex-direction: column; /* Stack items vertically */
             gap: 15px;
             background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
             padding: 15px;
             border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            width: fit-content; /* Adjust width to content */
         }
-        
+
+        #mobile-controls-bottom .control-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center; /* Center buttons within their row */
+        }
+
         .control-button {
             width: 50px;
             height: 50px;
@@ -88,12 +97,12 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         .control-button:active {
             transform: scale(0.95);
             background: linear-gradient(135deg, rgba(255, 140, 0, 0.4), rgba(0, 191, 255, 0.4));
         }
-        
+
         .speed-slider {
             width: 100%;
             margin: 10px 0;
@@ -104,7 +113,7 @@
             background: linear-gradient(90deg, #ff8c00, #00bfff);
             outline: none;
         }
-        
+
         .speed-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -115,7 +124,7 @@
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
-        
+
         .speed-slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
@@ -125,14 +134,14 @@
             border: none;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
-        
+
         @media (max-width: 768px) {
             #controls-left {
                 font-size: 12px;
                 padding: 15px;
                 max-width: 150px;
             }
-            
+
             #speed-control-right {
                 top: 10px;
                 right: 10px;
@@ -140,21 +149,34 @@
                 font-size: 12px;
                 min-width: 120px;
             }
-            
+
             #mobile-controls-bottom {
-                bottom: 60px;
+                bottom: 10px;
+                left: 10px;
+                padding: 10px;
+                gap: 10px;
+                font-size: 12px;
             }
-            
+
+            .control-button {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
             .title {
                 font-size: 24px;
             }
-            
+
             .instructions {
                 font-size: 12px;
                 padding: 10px 20px;
+                bottom: 10px;
+                left: 50%; /* Keep instructions centered horizontally */
+                transform: translateX(-50%);
             }
         }
-        
+
         .title {
             position: absolute;
             top: 20px;
@@ -169,12 +191,12 @@
             animation: glow 3s ease-in-out infinite alternate;
             z-index: 1000;
         }
-        
+
         @keyframes glow {
             0% { text-shadow: 0 0 20px rgba(255, 140, 0, 0.8); }
             100% { text-shadow: 0 0 30px rgba(0, 191, 255, 0.8); }
         }
-        
+
         .instructions {
             position: absolute;
             bottom: 20px;
@@ -189,17 +211,17 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             z-index: 1000;
         }
-        
+
         .control-item {
             margin: 8px 0;
             padding: 5px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .control-item:last-child {
             border-bottom: none;
         }
-        
+
         .value {
             color: #ffaa00;
             font-weight: bold;
@@ -207,30 +229,32 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas> <div class="title">幾何学的フィボナッチ球体</div>
-    
+    <canvas id="canvas"></canvas>
+    <div class="title">幾何学的フィボナッチ球体</div>
+
     <div id="controls-left" class="controls-panel">
         <div class="control-item">層の数: <span class="value" id="layerCount"></span></div>
         <div class="control-item">複雑度: <span class="value" id="complexity"></span></div>
         <div class="control-item">サイズ: <span class="value" id="sphereSize"></span>%</div>
         <div class="control-item">自動回転: <span class="value" id="autoStatus"></span></div>
     </div>
-    
+
     <div id="speed-control-right" class="controls-panel">
         <div>回転速度: <span class="value" id="rotationSpeed"></span>x</div>
         <input type="range" id="speedSlider" class="speed-slider" min="0.1" max="3.0" step="0.1">
     </div>
-    
+
     <div id="mobile-controls-bottom" class="controls-panel">
-        <button class="control-button" id="layerDown" title="層を減らす">−</button>
-        <button class="control-button" id="complexityDown" title="複雑度を下げる">◁</button>
-        <button class="control-button" id="pausePlay" title="一時停止/再生">⏸</button>
-        <button class="control-button" id="complexityUp" title="複雑度を上げる">▷</button>
-        <button class="control-button" id="layerUp" title="層を増やす">+</button>
-    </div>
-    
-    <div class="instructions">
-        タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 10秒放置で自動回転
+        <div class="control-row">
+            <button class="control-button" id="layerDown" title="層を減らす">−</button>
+            <button class="control-button" id="complexityDown" title="複雑度を下げる">◁</button>
+            <button class="control-button" id="pausePlay" title="一時停止/再生">⏸</button>
+            <button class="control-button" id="complexityUp" title="複雑度を上げる">▷</button>
+            <button class="control-button" id="layerUp" title="層を増やす">+</button>
+        </div>
+        <div class="control-row instructions">
+            タッチ/ドラッグで回転 | ピンチ/ホイールでズーム | 5秒放置で自動回転
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -242,7 +266,7 @@
         const MAX_COMPLEXITY = 10;
         const ROTATION_DRAG_SENSITIVITY = 0.01;
         const ELEMENT_ROTATION_SPEED_MULTIPLIER = 0.005; // Base speed for individual elements
-        const AUTO_ROTATE_TIMEOUT_MS = 10000;
+        const AUTO_ROTATE_TIMEOUT_MS = 5000; // Changed to 5 seconds
         const CAMERA_MIN_Z = 2;
         const CAMERA_MAX_Z = 10;
         const INITIAL_CAMERA_REF_Z = 4; // Reference Z for 100% size calculation
@@ -257,15 +281,15 @@
         // --- Three.js Basic Setup ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
             alpha: true,
             canvas: document.getElementById('canvas')
         });
-        
+
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x000000, 0);
-        
+
         // --- UI Elements Cache ---
         const ui = {
             rotationSpeedDisplay: document.getElementById('rotationSpeed'),
@@ -297,7 +321,7 @@
             initialPinchDistance: 0,
             pinchStartZ: 0
         };
-        
+
         // --- Functions ---
 
         // Update all UI displays
@@ -305,7 +329,7 @@
             ui.rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
             ui.layerCountDisplay.textContent = layerCount;
             ui.complexityDisplay.textContent = complexity;
-            ui.sphereSizeDisplay.textContent = Math.round((INITIAL_CAMERA_REF_Z / camera.position.z) * 100); 
+            ui.sphereSizeDisplay.textContent = Math.round((INITIAL_CAMERA_REF_Z / camera.position.z) * 100);
             ui.autoStatusDisplay.textContent = autoRotate ? 'ON' : 'OFF';
             ui.pausePlayBtn.textContent = autoRotate ? '⏸' : '▶';
         };
@@ -321,69 +345,69 @@
                 }
             }, AUTO_ROTATE_TIMEOUT_MS);
         };
-        
+
         // Main sphere group
         const sphereGroup = new THREE.Group();
         scene.add(sphereGroup);
-        
+
         // Geometric pattern generation
         const createGeometricPattern = () => {
             while (sphereGroup.children.length > 0) {
                 sphereGroup.remove(sphereGroup.children[0]);
             }
-            
+
             const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
             const radius = 2; // Base radius for the outermost layer
-            
+
             for (let layer = 0; layer < layerCount; layer++) {
                 const layerRadius = radius * (0.3 + (layer / layerCount) * 0.7);
                 const pointsInLayer = Math.floor(50 + layer * complexity * 5);
-                
+
                 const layerGroup = new THREE.Group();
-                
+
                 for (let i = 0; i < pointsInLayer; i++) {
                     const t = i / pointsInLayer;
                     const angle = 2 * Math.PI * i / phi;
                     const y = (t * 2 - 1) * layerRadius;
-                    const radiusAtY = Math.sqrt(Math.max(0, layerRadius * layerRadius - y * y)); 
-                    
+                    const radiusAtY = Math.sqrt(Math.max(0, layerRadius * layerRadius - y * y));
+
                     const x = Math.cos(angle) * radiusAtY;
                     const z = Math.sin(angle) * radiusAtY;
-                    
+
                     const size = 0.02 + Math.random() * 0.08;
                     const depth = 0.01 + Math.random() * 0.05;
-                    
+
                     let geometry;
                     const shapeType = Math.floor(Math.random() * 4);
-                    
+
                     switch(shapeType) {
                         case 0: geometry = new THREE.BoxGeometry(size, size, depth); break;
                         case 1: geometry = new THREE.CylinderGeometry(size/2, size/2, depth, 8); break;
                         case 2: geometry = new THREE.OctahedronGeometry(size/2); break;
                         case 3: geometry = new THREE.TorusGeometry(size/2, size/8, 4, 8); break;
                     }
-                    
+
                     let color;
                     if (i % 8 === 0) color = new THREE.Color(0xff8c00); // Orange
                     else if (i % 7 === 0) color = new THREE.Color(0x00bfff); // Blue
                     else if (i % 5 === 0) color = new THREE.Color(0xff6b6b); // Red
                     else if (i % 3 === 0) color = new THREE.Color(0x4ecdc4); // Teal
                     else color = new THREE.Color().setHSL((angle / (2 * Math.PI) + layer * 0.1) % 1, 0.7 + Math.random() * 0.3, 0.4 + Math.abs(y / layerRadius) * 0.4);
-                    
+
                     const material = new THREE.MeshPhongMaterial({
                         color: color, transparent: true, opacity: 0.9, shininess: 100
                     });
-                    
+
                     const mesh = new THREE.Mesh(geometry, material);
                     mesh.position.set(x, y, z);
                     mesh.lookAt(x * 2, y * 2, z * 2);
                     mesh.rotation.x += Math.random() * Math.PI;
                     mesh.rotation.y += Math.random() * Math.PI;
                     mesh.rotation.z += Math.random() * Math.PI;
-                    
+
                     layerGroup.add(mesh);
                 }
-                
+
                 const ringGeometry = new THREE.TorusGeometry(layerRadius, 0.01, 4, 32);
                 const ringMaterial = new THREE.MeshBasicMaterial({
                     color: new THREE.Color().setHSL((layer / layerCount), 0.6, 0.4),
@@ -392,10 +416,10 @@
                 const ring = new THREE.Mesh(ringGeometry, ringMaterial);
                 ring.rotation.x = Math.PI / 2;
                 layerGroup.add(ring);
-                
+
                 sphereGroup.add(layerGroup);
             }
-            
+
             const centerGeometry = new THREE.IcosahedronGeometry(0.15, 2);
             const centerMaterial = new THREE.MeshPhongMaterial({
                 color: 0xffffff, transparent: true, opacity: 0.9, emissive: 0x666666
@@ -403,7 +427,7 @@
             const centerMesh = new THREE.Mesh(centerGeometry, centerMaterial);
             sphereGroup.add(centerMesh);
         };
-        
+
         // Lighting
         scene.add(new THREE.AmbientLight(0x404040, 0.5));
         scene.add(new THREE.DirectionalLight(0xff8c00, 1.0).position.set(5, 5, 5));
@@ -411,23 +435,23 @@
         const pointLight = new THREE.PointLight(0xff6b6b, 0.6, 10);
         pointLight.position.set(0, 0, 3);
         scene.add(pointLight);
-        
+
         // Camera position (initial zoom)
         camera.position.z = initialCameraZ;
-        
+
         // --- Event Handlers for Sphere Interaction ---
         const onSphereInteractionStart = (event) => {
             event.preventDefault(); // Prevent default browser actions (like scrolling)
             interaction.isMouseDown = true;
             interaction.mouseX = event.clientX || event.touches[0].clientX;
             interaction.mouseY = event.clientY || event.touches[0].clientY;
-            
+
             autoRotate = false;
             updateUI();
             resetAutoRotateTimer();
 
             if (event.touches && event.touches.length === 2) {
-                interaction.isMouseDown = false; 
+                interaction.isMouseDown = false;
                 const [touch1, touch2] = event.touches;
                 interaction.initialPinchDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
                 interaction.lastTouchDistance = interaction.initialPinchDistance;
@@ -437,24 +461,24 @@
 
         const onSphereInteractionMove = (event) => {
             event.preventDefault();
-            
+
             if (interaction.isMouseDown && !(event.touches && event.touches.length > 1)) {
                 const clientX = event.clientX || event.touches[0].clientX;
                 const clientY = event.clientY || event.touches[0].clientY;
-                
+
                 interaction.targetRotationY += (clientX - interaction.mouseX) * ROTATION_DRAG_SENSITIVITY;
                 interaction.targetRotationX += (clientY - interaction.mouseY) * ROTATION_DRAG_SENSITIVITY;
-                
+
                 interaction.mouseX = clientX;
                 interaction.mouseY = clientY;
             } else if (event.touches && event.touches.length === 2) {
                 const [touch1, touch2] = event.touches;
                 const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-                
+
                 if (interaction.lastTouchDistance > 0) {
                     const scale = currentDistance / interaction.initialPinchDistance;
                     const newZ = interaction.pinchStartZ / scale;
-                    camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, newZ)); 
+                    camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, newZ));
                     updateUI();
                 }
                 interaction.lastTouchDistance = currentDistance;
@@ -468,29 +492,29 @@
             interaction.initialPinchDistance = 0;
             resetAutoRotateTimer();
         };
-        
+
         // --- Event Listeners ---
 
         // Sphere Interaction (Mouse/Touch)
         ui.canvas.addEventListener('mousedown', onSphereInteractionStart);
         ui.canvas.addEventListener('mousemove', onSphereInteractionMove);
         ui.canvas.addEventListener('mouseup', onSphereInteractionEnd);
-        
+
         ui.canvas.addEventListener('touchstart', onSphereInteractionStart, { passive: false });
         ui.canvas.addEventListener('touchmove', onSphereInteractionMove, { passive: false });
         ui.canvas.addEventListener('touchend', onSphereInteractionEnd, { passive: false });
         ui.canvas.addEventListener('touchcancel', onSphereInteractionEnd, { passive: false });
-        
+
         // Wheel zoom for sphere
         ui.canvas.addEventListener('wheel', (event) => {
             event.preventDefault();
             const delta = event.deltaY > 0 ? 1.1 : 0.9;
-            camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, camera.position.z * delta)); 
+            camera.position.z = Math.max(CAMERA_MIN_Z, Math.min(CAMERA_MAX_Z, camera.position.z * delta));
             autoRotate = false;
             updateUI();
             resetAutoRotateTimer();
         }, { passive: false });
-        
+
         // UI Controls
         ui.speedSlider.addEventListener('input', (e) => {
             rotationSpeed = parseFloat(e.target.value);
@@ -498,7 +522,7 @@
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         ui.layerDownBtn.addEventListener('click', () => {
             layerCount = Math.max(MIN_LAYERS, layerCount - 1);
             createGeometricPattern();
@@ -506,7 +530,7 @@
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         ui.layerUpBtn.addEventListener('click', () => {
             layerCount = Math.min(MAX_LAYERS, layerCount + 1);
             createGeometricPattern();
@@ -514,7 +538,7 @@
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         ui.complexityDownBtn.addEventListener('click', () => {
             complexity = Math.max(MIN_COMPLEXITY, complexity - 1);
             createGeometricPattern();
@@ -522,7 +546,7 @@
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         ui.complexityUpBtn.addEventListener('click', () => {
             complexity = Math.min(MAX_COMPLEXITY, complexity + 1);
             createGeometricPattern();
@@ -530,13 +554,13 @@
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         ui.pausePlayBtn.addEventListener('click', () => {
             autoRotate = !autoRotate;
             updateUI();
             resetAutoRotateTimer();
         });
-        
+
         // Keyboard controls (PC)
         document.addEventListener('keydown', (event) => {
             let changed = false;
@@ -573,25 +597,25 @@
                 resetAutoRotateTimer();
             }
         });
-        
+
         // Animation loop
         const animate = () => {
             requestAnimationFrame(animate);
-            
+
             const time = Date.now() * 0.001; // Calculate time once per frame
 
             if (autoRotate) {
                 interaction.targetRotationY += 0.008 * rotationSpeed;
                 interaction.targetRotationX += 0.004 * rotationSpeed;
             }
-            
+
             // Smooth rotation
             interaction.currentRotationX += (interaction.targetRotationX - interaction.currentRotationX) * 0.05;
             interaction.currentRotationY += (interaction.targetRotationY - interaction.currentRotationY) * 0.05;
-            
+
             sphereGroup.rotation.x = interaction.currentRotationX;
             sphereGroup.rotation.y = interaction.currentRotationY;
-            
+
             // Individual element rotation animation
             sphereGroup.children.forEach((layerGroup, layerIndex) => {
                 if (layerGroup.children) {
@@ -603,14 +627,14 @@
                     });
                 }
             });
-            
+
             // Dynamic light movement
             pointLight.position.x = Math.sin(time * 0.5) * 3;
             pointLight.position.y = Math.cos(time * 0.3) * 3;
-            
+
             renderer.render(scene, camera);
         };
-        
+
         // Window resize handler
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -618,7 +642,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             updateUI();
         });
-        
+
         // --- Initialization ---
         createGeometricPattern();
         ui.speedSlider.value = rotationSpeed; // Set slider to initial value
