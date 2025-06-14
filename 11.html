@@ -58,19 +58,20 @@
             min-width: 150px;
         }
 
-        /* Updated position for mobile controls */
+        /* Updated position and size for mobile controls for all screen sizes */
         #mobile-controls-bottom {
-            bottom: 20px; /* Aligned to bottom */
-            left: 20px; /* Aligned to left */
+            bottom: 10px; /* Aligned to bottom */
+            left: 10px; /* Aligned to left */
             transform: translateX(0); /* Remove center transform */
             display: flex;
             flex-direction: column; /* Stack items vertically */
-            gap: 15px;
+            gap: 10px; /* Adjusted gap */
             background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
-            padding: 15px;
+            padding: 10px; /* Reduced padding */
             border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             width: fit-content; /* Adjust width to content */
+            font-size: 11px; /* Reduced font size for the panel text */
         }
 
         #mobile-controls-bottom .control-row {
@@ -80,13 +81,13 @@
         }
 
         .control-button {
-            width: 50px;
-            height: 50px;
+            width: 35px; /* Reduced button size */
+            height: 35px; /* Reduced button size */
             border: none;
             border-radius: 50%;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
             color: white;
-            font-size: 18px;
+            font-size: 14px; /* Reduced font size */
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -135,45 +136,43 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
+        /* Responsive adjustments for smaller screens (smartphones/tablets) */
         @media (max-width: 768px) {
             #controls-left {
-                font-size: 12px;
-                padding: 15px;
-                max-width: 150px;
+                font-size: 10px; /* Further reduced */
+                padding: 10px; /* Further reduced */
+                max-width: 120px; /* Adjusted max-width */
             }
 
             #speed-control-right {
                 top: 10px;
                 right: 10px;
                 padding: 10px;
-                font-size: 12px;
-                min-width: 120px;
+                font-size: 10px; /* Further reduced */
+                min-width: 100px; /* Adjusted min-width */
             }
 
             #mobile-controls-bottom {
-                bottom: 10px;
-                left: 10px;
-                padding: 10px;
-                gap: 10px;
-                font-size: 12px;
+                bottom: 5px; /* Aligned closer to the edge */
+                left: 5px; /* Aligned closer to the edge */
+                padding: 8px; /* Further reduced padding */
+                gap: 8px; /* Adjusted gap for small screens */
+                font-size: 10px; /* Further reduced font size for panel text */
             }
 
             .control-button {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                width: 30px; /* Smaller buttons on very small screens */
+                height: 30px;
+                font-size: 12px; /* Adjusted font size for smaller buttons */
             }
 
             .title {
-                font-size: 24px;
+                font-size: 20px; /* Smaller title on mobile */
             }
 
             .instructions {
-                font-size: 12px;
-                padding: 10px 20px;
-                bottom: 10px;
-                left: 50%; /* Keep instructions centered horizontally */
-                transform: translateX(-50%);
+                font-size: 9px; /* Very small text for instructions on mobile */
+                margin-top: 3px; /* Smaller margin */
             }
         }
 
@@ -197,21 +196,6 @@
             100% { text-shadow: 0 0 30px rgba(0, 191, 255, 0.8); }
         }
 
-        .instructions {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-            opacity: 0.9;
-            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(0, 191, 255, 0.3));
-            padding: 15px 30px;
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1000;
-        }
-
         .control-item {
             margin: 8px 0;
             padding: 5px 0;
@@ -225,6 +209,22 @@
         .value {
             color: #ffaa00;
             font-weight: bold;
+        }
+
+        /* Instructions styling moved inside #mobile-controls-bottom and adjusted */
+        .instructions {
+            padding: 0;
+            background: none;
+            border: none;
+            backdrop-filter: none;
+            position: static;
+            transform: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+            text-align: center;
+            opacity: 0.9;
         }
     </style>
 </head>
