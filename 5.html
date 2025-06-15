@@ -1,266 +1,596 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>反応速度チャレンジ - 効果音＆結果表示版</title>
-  <style>
-    /* 全体レイアウト */
-    body {
-      background: linear-gradient(45deg, #e3e3e3, #ffffff);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-    }
-    /* ゲームエリア */
-    #gameArea {
-      width: 300px;
-      height: 300px;
-      margin: 0 auto;
-      border-radius: 15px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      color: #fff;
-      background-color: #e53935; /* 初期は赤 */
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.5s, transform 0.2s;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    }
-    /* 緑状態 */
-    #gameArea.ready {
-      background-color: #43A047;
-    }
-    /* フライング時のシェイクアニメーション */
-    #gameArea.shake {
-      animation: shake 0.3s;
-    }
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      50% { transform: translateX(10px); }
-      75% { transform: translateX(-10px); }
-      100% { transform: translateX(0); }
-    }
-    /* 結果／スコア表示エリア */
-    #scoreDisplay {
-      margin-top: 30px;
-    }
-    #scoreDisplay h2,
-    #scoreDisplay h3 {
-      margin: 10px 0;
-    }
-    #result {
-      font-size: 22px;
-      font-weight: bold;
-      margin: 10px;
-    }
-    #scoreBoard {
-      list-style: none;
-      padding: 0;
-      margin-top: 10px;
-    }
-    #scoreBoard li {
-      font-size: 20px;
-      margin: 6px 0;
-      background: rgba(76,175,80,0.1);
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-    /* 削除ボタン */
-    #deleteButton {
-      display: none;
-      font-size: 20px;
-      padding: 10px 20px;
-      background: #f44336;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 20px;
-      box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-    #deleteButton:hover {
-      transform: scale(1.05);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フィボナッチ渦巻き立方体</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at 20% 80%, #ff006e 0%, #8338ec 25%, #3a86ff 50%, #06ffa5 75%, #ffbe0b 100%);
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            animation: backgroundShift 10s ease-in-out infinite alternate;
+        }
+        
+        @keyframes backgroundShift {
+            0% { filter: hue-rotate(0deg) saturate(1.5); }
+            50% { filter: hue-rotate(180deg) saturate(2); }
+            100% { filter: hue-rotate(360deg) saturate(1.5); }
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.9), rgba(131, 56, 236, 0.9));
+            padding: 20px;
+            border-radius: 20px;
+            color: white;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: controlsGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes controlsGlow {
+            0% { box-shadow: 0 8px 32px rgba(255, 0, 110, 0.5); }
+            100% { box-shadow: 0 8px 32px rgba(131, 56, 236, 0.5); }
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        
+        input[type="range"] {
+            width: 200px;
+            height: 6px;
+            background: #333;
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            animation: thumbGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes thumbGlow {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(255, 0, 110, 0.8); }
+            100% { transform: scale(1.1); box-shadow: 0 0 20px rgba(131, 56, 236, 0.8); }
+        }
+        
+        #status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .value-display {
+            color: #06ffa5;
+            font-weight: bold;
+            text-shadow: 0 0 10px #06ffa5;
+            animation: valueGlow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes valueGlow {
+            0% { color: #06ffa5; text-shadow: 0 0 10px #06ffa5; }
+            100% { color: #ffbe0b; text-shadow: 0 0 15px #ffbe0b; }
+        }
+    </style>
 </head>
 <body>
-  <h1>反応速度チャレンジ</h1>
-  <div id="gameArea">クリックして開始</div>
-  
-  <div id="scoreDisplay">
-    <h2>結果</h2>
-    <p id="result">まだスコアはありません</p>
-    <h3>スコア履歴</h3>
-    <ul id="scoreBoard"></ul>
-    <button id="deleteButton">削除</button>
-  </div>
+    <div id="container">
+        <div id="controls">
+            <div class="control-group">
+                <label for="size">サイズ: <span id="sizeValue" class="value-display">2.0</span></label>
+                <input type="range" id="size" min="0.1" max="5" step="0.1" value="2">
+            </div>
+            <div class="control-group">
+                <label for="speed">回転速度: <span id="speedValue" class="value-display">1.0</span></label>
+                <input type="range" id="speed" min="0.1" max="10" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+                <label for="complexity">複雑度: <span id="complexityValue" class="value-display">8</span></label>
+                <input type="range" id="complexity" min="3" max="50" step="1" value="8">
+            </div>
+        </div>
+        
+        <div id="status">
+            <div id="autoRotateCountdown">自動回転まで: <span id="countdown">5</span>秒</div>
+            <div id="autoRotateStatus" style="display: none;">自動回転中</div>
+        </div>
+    </div>
 
-  <!-- 効果音 -->
-  <!-- ※以下のsrcは各自の効果音ファイルのURLに変更してください -->
-  <audio id="successSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
-  <audio id="errorSound" src="https://www.soundjay.com/button/beep-10.wav" preload="auto"></audio>
-
-  <script>
-    const gameArea = document.getElementById("gameArea");
-    const result = document.getElementById("result");
-    const scoreBoard = document.getElementById("scoreBoard");
-    const deleteButton = document.getElementById("deleteButton");
-    const successSound = document.getElementById("successSound");
-    const errorSound = document.getElementById("errorSound");
-
-    let startTime;
-    let timeoutId;
-    let readyToClick = false; // 緑になったら true
-    let trialActive = false;  // 現在の試行進行中か
-    let trialCount = 0;
-    const totalTrials = 5;
-    let scores = [];
-    let isGameActive = false; // ゲーム全体進行中か
-
-    // 初期状態にリセット
-    function resetGame() {
-      trialCount = 0;
-      scores = [];
-      updateScoreBoard();
-      result.textContent = "まだスコアはありません";
-      gameArea.textContent = "クリックして開始";
-      gameArea.style.backgroundColor = "#e53935";
-      gameArea.classList.remove("ready");
-      readyToClick = false;
-      trialActive = false;
-      isGameActive = false;
-      deleteButton.style.display = "none";
-    }
-
-    // ゲーム開始（初期画面からクリックでスタート）
-    function startGame() {
-      isGameActive = true;
-      trialCount = 0;
-      scores = [];
-      updateScoreBoard();
-      result.textContent = "";
-      gameArea.textContent = "準備中…";
-      gameArea.style.backgroundColor = "#e53935";
-      gameArea.classList.remove("ready");
-      // 1秒後に第1試行を開始
-      setTimeout(() => {
-        startTrial();
-      }, 1000);
-    }
-
-    // 各試行開始
-    function startTrial() {
-      trialActive = true;
-      readyToClick = false;
-      gameArea.textContent = "待機中…";
-      gameArea.style.backgroundColor = "#e53935";
-      gameArea.classList.remove("ready");
-
-      // 2～5秒のランダムな遅延
-      const delay = Math.random() * 3000 + 2000;
-      timeoutId = setTimeout(() => {
-        gameArea.style.backgroundColor = "#43A047";
-        gameArea.classList.add("ready");
-        gameArea.textContent = "今すぐクリック！";
-        startTime = Date.now();
-        readyToClick = true;
-      }, delay);
-    }
-
-    // 次の試行またはゲーム終了へ
-    function nextTrial() {
-      trialCount++;
-      if (trialCount < totalTrials) {
-        setTimeout(() => {
-          result.textContent = "";
-          startTrial();
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // シーンの初期化
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 10, 50);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('container').appendChild(renderer.domElement);
+        
+        // フィボナッチ数列を生成
+        function generateFibonacci(n) {
+            const fib = [1, 1];
+            for (let i = 2; i < n; i++) {
+                fib[i] = fib[i-1] + fib[i-2];
+            }
+            return fib;
+        }
+        
+        // フィボナッチ渦巻きのポイントを生成
+        function createFibonacciSpiral(complexity, scale) {
+            const points = [];
+            const fibonacci = generateFibonacci(complexity);
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // 黄金角
+            
+            for (let i = 0; i < complexity * 20; i++) {
+                const t = i * 0.1;
+                const fibIndex = Math.floor(t) % fibonacci.length;
+                const radius = fibonacci[fibIndex] * 0.1 * scale;
+                const angle = t * goldenAngle;
+                
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                const z = t * 0.05 * scale - complexity * 0.5 * scale;
+                
+                points.push(new THREE.Vector3(x, y, z));
+            }
+            
+            return points;
+        }
+        
+        // 立方体の各面にフィボナッチ渦巻きを作成
+        function createFibonacciCube(size, complexity) {
+            const group = new THREE.Group();
+            const spiralPoints = createFibonacciSpiral(complexity, size);
+            
+            // 6つの面に対してそれぞれ渦巻きを作成
+            const faces = [
+                { rotation: [0, 0, 0], position: [0, 0, size] },           // 前面
+                { rotation: [0, Math.PI, 0], position: [0, 0, -size] },    // 背面
+                { rotation: [0, Math.PI/2, 0], position: [size, 0, 0] },   // 右面
+                { rotation: [0, -Math.PI/2, 0], position: [-size, 0, 0] }, // 左面
+                { rotation: [-Math.PI/2, 0, 0], position: [0, size, 0] },  // 上面
+                { rotation: [Math.PI/2, 0, 0], position: [0, -size, 0] }   // 下面
+            ];
+            
+            faces.forEach((face, index) => {
+                // より鮮やかで刺激的な色を作成
+                const hue1 = (index * 60 + Date.now() * 0.001) / 360;
+                const hue2 = (index * 60 + 30 + Date.now() * 0.001) / 360;
+                const color1 = new THREE.Color().setHSL(hue1 % 1, 1, 0.7);
+                const color2 = new THREE.Color().setHSL(hue2 % 1, 1, 0.5);
+                
+                // グラデーション効果のある線を作成
+                const geometry = new THREE.BufferGeometry().setFromPoints(spiralPoints);
+                const colors = [];
+                for (let i = 0; i < spiralPoints.length; i++) {
+                    const t = i / spiralPoints.length;
+                    const mixedColor = color1.clone().lerp(color2, Math.sin(t * Math.PI * 4));
+                    colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
+                }
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                
+                const material = new THREE.LineBasicMaterial({ 
+                    vertexColors: true,
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const spiral = new THREE.Line(geometry, material);
+                spiral.rotation.set(...face.rotation);
+                spiral.position.set(...face.position);
+                spiral.castShadow = true;
+                spiral.receiveShadow = true;
+                
+                group.add(spiral);
+                
+                // より派手なパーティクル効果
+                const particleGeometry = new THREE.BufferGeometry();
+                const particlePositions = [];
+                const particleColors = [];
+                const particleSizes = [];
+                
+                spiralPoints.forEach((point, i) => {
+                    if (i % 2 === 0) {
+                        particlePositions.push(point.x, point.y, point.z);
+                        const t = i / spiralPoints.length;
+                        const sparkleColor = new THREE.Color().setHSL(
+                            (hue1 + t) % 1, 
+                            1, 
+                            0.8 + Math.sin(t * Math.PI * 8) * 0.2
+                        );
+                        particleColors.push(sparkleColor.r, sparkleColor.g, sparkleColor.b);
+                        particleSizes.push(Math.random() * 0.1 + 0.05);
+                    }
+                });
+                
+                particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3));
+                particleGeometry.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
+                particleGeometry.setAttribute('size', new THREE.Float32BufferAttribute(particleSizes, 1));
+                
+                const particleMaterial = new THREE.PointsMaterial({
+                    size: 0.1 * size,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    blending: THREE.AdditiveBlending,
+                    sizeAttenuation: true
+                });
+                
+                const particles = new THREE.Points(particleGeometry, particleMaterial);
+                particles.rotation.set(...face.rotation);
+                particles.position.set(...face.position);
+                
+                group.add(particles);
+                
+                // 追加のスパークルエフェクト
+                const sparkleGeometry = new THREE.SphereGeometry(0.02 * size, 8, 8);
+                for (let i = 0; i < 20; i++) {
+                    const sparkleMaterial = new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL(Math.random(), 1, 0.8),
+                        transparent: true,
+                        opacity: Math.random() * 0.5 + 0.5,
+                        blending: THREE.AdditiveBlending
+                    });
+                    
+                    const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial);
+                    const randomPoint = spiralPoints[Math.floor(Math.random() * spiralPoints.length)];
+                    sparkle.position.copy(randomPoint);
+                    sparkle.rotation.set(...face.rotation);
+                    sparkle.position.add(new THREE.Vector3(...face.position));
+                    
+                    group.add(sparkle);
+                }
+            });
+            
+            return group;
+        }
+        
+        // 初期立方体を作成
+        let fibonacciCube = createFibonacciCube(2, 8);
+        scene.add(fibonacciCube);
+        
+        // カメラの位置設定
+        camera.position.set(5, 5, 8);
+        camera.lookAt(0, 0, 0);
+        
+        // ライティング（より派手に）
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xff006e, 1.2);
+        directionalLight1.position.set(5, 5, 5);
+        directionalLight1.castShadow = true;
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0x8338ec, 1.2);
+        directionalLight2.position.set(-5, -5, 5);
+        scene.add(directionalLight2);
+        
+        const directionalLight3 = new THREE.DirectionalLight(0x06ffa5, 1.2);
+        directionalLight3.position.set(0, 5, -5);
+        scene.add(directionalLight3);
+        
+        // ポイントライトを追加
+        const pointLight1 = new THREE.PointLight(0xff006e, 2, 30);
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+        
+        const pointLight2 = new THREE.PointLight(0x3a86ff, 2, 30);
+        pointLight2.position.set(-10, -10, 10);
+        scene.add(pointLight2);
+        
+        // コントロール変数
+        let rotationSpeed = 1;
+        let autoRotate = false;
+        let mouseDown = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let touchEffects = [];
+        let lastTouchTime = 0;
+        let touchPulse = 0;
+        let touchColor = new THREE.Color(1, 1, 1);
+        
+        // UI要素の取得
+        const sizeSlider = document.getElementById('size');
+        const speedSlider = document.getElementById('speed');
+        const complexitySlider = document.getElementById('complexity');
+        const sizeValue = document.getElementById('sizeValue');
+        const speedValue = document.getElementById('speedValue');
+        const complexityValue = document.getElementById('complexityValue');
+        const countdownElement = document.getElementById('countdown');
+        const autoRotateCountdown = document.getElementById('autoRotateCountdown');
+        const autoRotateStatus = document.getElementById('autoRotateStatus');
+        
+        // スライダーイベントリスナー
+        sizeSlider.addEventListener('input', (e) => {
+            const size = parseFloat(e.target.value);
+            sizeValue.textContent = size.toFixed(1);
+            updateCube();
+        });
+        
+        speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            speedValue.textContent = rotationSpeed.toFixed(1);
+        });
+        
+        complexitySlider.addEventListener('input', (e) => {
+            const complexity = parseInt(e.target.value);
+            complexityValue.textContent = complexity;
+            updateCube();
+        });
+        
+        // 立方体を更新する関数
+        function updateCube() {
+            scene.remove(fibonacciCube);
+            const size = parseFloat(sizeSlider.value);
+            const complexity = parseInt(complexitySlider.value);
+            fibonacciCube = createFibonacciCube(size, complexity);
+            scene.add(fibonacciCube);
+        }
+        
+        // マウス・タッチコントロール
+        renderer.domElement.addEventListener('mousedown', onPointerDown);
+        renderer.domElement.addEventListener('mouseup', onPointerUp);
+        renderer.domElement.addEventListener('mousemove', onPointerMove);
+        
+        // タッチイベント
+        renderer.domElement.addEventListener('touchstart', onPointerDown);
+        renderer.domElement.addEventListener('touchend', onPointerUp);
+        renderer.domElement.addEventListener('touchmove', onPointerMove);
+        
+        function onPointerDown(e) {
+            e.preventDefault();
+            mouseDown = true;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            mouseX = clientX;
+            mouseY = clientY;
+            
+            // タッチエフェクトを追加
+            addTouchEffect(clientX, clientY);
+            triggerTouchResponse();
+        }
+        
+        function onPointerUp(e) {
+            e.preventDefault();
+            mouseDown = false;
+        }
+        
+        function onPointerMove(e) {
+            e.preventDefault();
+            if (mouseDown) {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                if (!autoRotate) {
+                    const deltaX = clientX - mouseX;
+                    const deltaY = clientY - mouseY;
+                    
+                    fibonacciCube.rotation.y += deltaX * 0.01;
+                    fibonacciCube.rotation.x += deltaY * 0.01;
+                }
+                
+                mouseX = clientX;
+                mouseY = clientY;
+                
+                // ドラッグ中もエフェクトを追加
+                if (Math.random() < 0.3) {
+                    addTouchEffect(clientX, clientY);
+                }
+            }
+        }
+        
+        // タッチエフェクトを追加する関数
+        function addTouchEffect(x, y) {
+            const effect = {
+                x: (x / window.innerWidth) * 2 - 1,
+                y: -(y / window.innerHeight) * 2 + 1,
+                life: 1.0,
+                size: Math.random() * 0.5 + 0.5,
+                color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6)
+            };
+            touchEffects.push(effect);
+            
+            // エフェクトの数を制限
+            if (touchEffects.length > 50) {
+                touchEffects.splice(0, 10);
+            }
+        }
+        
+        // タッチレスポンスをトリガーする関数
+        function triggerTouchResponse() {
+            lastTouchTime = Date.now();
+            touchPulse = 1.0;
+            
+            // より鮮やかなランダム色
+            touchColor.setHSL(Math.random(), 1, 0.8);
+            
+            // 立方体にパルス効果（より大きく）
+            fibonacciCube.scale.set(1.5, 1.5, 1.5);
+            
+            // 色の爆発効果
+            fibonacciCube.children.forEach((child, index) => {
+                if (child.material) {
+                    const explosionColor = new THREE.Color().setHSL(
+                        Math.random(), 
+                        1, 
+                        0.7 + Math.random() * 0.3
+                    );
+                    
+                    if (child.material.color) {
+                        child.material.color.copy(explosionColor);
+                    }
+                    
+                    // より派手な透明度効果
+                    child.material.transparent = true;
+                    child.material.opacity = 0.3 + Math.random() * 0.7;
+                    child.material.blending = THREE.AdditiveBlending;
+                }
+            });
+            
+            // より激しいランダム回転
+            const randomRotation = {
+                x: (Math.random() - 0.5) * 1.5,
+                y: (Math.random() - 0.5) * 1.5,
+                z: (Math.random() - 0.5) * 1.5
+            };
+            
+            fibonacciCube.rotation.x += randomRotation.x;
+            fibonacciCube.rotation.y += randomRotation.y;
+            fibonacciCube.rotation.z += randomRotation.z;
+            
+            // カメラシェイク効果
+            camera.position.x += (Math.random() - 0.5) * 0.5;
+            camera.position.y += (Math.random() - 0.5) * 0.5;
+        }
+        
+        // 5秒後の自動回転カウントダウン
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                autoRotate = true;
+                autoRotateCountdown.style.display = 'none';
+                autoRotateStatus.style.display = 'block';
+                clearInterval(countdownInterval);
+            }
         }, 1000);
-      } else {
-        finishGame();
-      }
-    }
-
-    // ゲーム終了時：合計タイム、平均タイムを表示し、削除ボタンが押されるまで画面下部に結果を残す
-    function finishGame() {
-      // 数値でない(例："フライング")は 0 として計算
-      const totalTime = scores.reduce((sum, score) => {
-        return sum + (typeof score === "number" ? score : 0);
-      }, 0);
-      const averageTime = totalTime / totalTrials;
-      gameArea.textContent = "ゲーム終了";
-      result.textContent = `合計タイム: ${totalTime} ミリ秒　｜　平均タイム: ${averageTime.toFixed(2)} ミリ秒`;
-      // 削除ボタンを表示し、ユーザーが押すまで結果を保持
-      deleteButton.style.display = "inline-block";
-    }
-
-    // スコア履歴更新
-    function updateScoreBoard() {
-      scoreBoard.innerHTML = "";
-      scores.forEach((score, index) => {
-        const li = document.createElement("li");
-        li.textContent = `試行 ${index + 1}: ${score} ${typeof score === "number" ? "ミリ秒" : ""}`;
-        scoreBoard.appendChild(li);
-      });
-    }
-
-    // ゲームエリアのタップ時の処理
-    gameArea.addEventListener("click", () => {
-      // ゲーム未開始なら、クリックでゲームスタート
-      if (!isGameActive) {
-        startGame();
-        return;
-      }
-      // 試行中でなければクリックは無視
-      if (!trialActive) return;
-
-      // 緑に変わる前のクリックは「フライング」
-      if (!readyToClick) {
-        clearTimeout(timeoutId);
-        gameArea.classList.add("shake");
-        setTimeout(() => {
-          gameArea.classList.remove("shake");
-        }, 300);
-        result.textContent = "フライング！早すぎます。";
-        // エラー効果音再生
-        errorSound.currentTime = 0;
-        errorSound.play();
-        scores.push("フライング");
-        updateScoreBoard();
-        trialActive = false;
-        nextTrial();
-        return;
-      }
-
-      // 正常にクリックされた場合の反応速度を計測
-      const reactionTime = Date.now() - startTime;
-      result.textContent = `反応速度: ${reactionTime} ミリ秒`;
-      // 成功効果音再生
-      successSound.currentTime = 0;
-      successSound.play();
-      scores.push(reactionTime);
-      updateScoreBoard();
-      trialActive = false;
-      nextTrial();
-    });
-
-    // 【削除】ボタン押下時の処理で初期状態にリセット
-    deleteButton.addEventListener("click", () => {
-      resetGame();
-    });
-
-    // ページ読み込み時に初期状態を設定
-    window.addEventListener("load", resetGame);
-  </script>
+        
+        // レンダーループ
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 自動回転
+            if (autoRotate) {
+                fibonacciCube.rotation.x += 0.005 * rotationSpeed;
+                fibonacciCube.rotation.y += 0.01 * rotationSpeed;
+                fibonacciCube.rotation.z += 0.003 * rotationSpeed;
+            }
+            
+            // タッチエフェクトのアップデート
+            updateTouchEffects();
+            
+            // タッチパルス効果
+            if (touchPulse > 0) {
+                touchPulse -= 0.05;
+                const scale = 1 + touchPulse * 0.2;
+                fibonacciCube.scale.set(scale, scale, scale);
+            } else {
+                fibonacciCube.scale.set(1, 1, 1);
+            }
+            
+            // 周期的な色の変化（より刺激的に）
+            const timeSinceTouch = Date.now() - lastTouchTime;
+            if (timeSinceTouch > 2000) {
+                const time = Date.now() * 0.003;
+                fibonacciCube.children.forEach((child, index) => {
+                    if (child.material && child.material.color) {
+                        const hue = (time + index * 0.1) % 1;
+                        const saturation = 0.8 + Math.sin(time * 2 + index) * 0.2;
+                        const lightness = 0.6 + Math.sin(time * 3 + index) * 0.3;
+                        child.material.color.setHSL(hue, saturation, lightness);
+                        
+                        // パーティクルの透明度をアニメーション
+                        if (child.material.opacity !== undefined) {
+                            child.material.opacity = 0.5 + Math.sin(time * 4 + index) * 0.4;
+                        }
+                    }
+                });
+                
+                // ライトの色も変化
+                pointLight1.color.setHSL((time * 0.5) % 1, 1, 0.8);
+                pointLight2.color.setHSL((time * 0.3 + 0.5) % 1, 1, 0.8);
+                
+                // ライトの位置も動的に変化
+                pointLight1.position.x = Math.sin(time) * 15;
+                pointLight1.position.z = Math.cos(time) * 15;
+                pointLight2.position.x = Math.cos(time * 0.7) * 15;
+                pointLight2.position.z = Math.sin(time * 0.7) * 15;
+            }
+            
+            // カメラの位置を少しずつ元に戻す
+            camera.position.x += (5 - camera.position.x) * 0.02;
+            camera.position.y += (5 - camera.position.y) * 0.02;
+            camera.position.z += (8 - camera.position.z) * 0.02;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // タッチエフェクトを更新する関数
+        function updateTouchEffects() {
+            touchEffects.forEach((effect, index) => {
+                effect.life -= 0.02;
+                effect.size += 0.01;
+                
+                if (effect.life <= 0) {
+                    touchEffects.splice(index, 1);
+                }
+            });
+            
+            // エフェクトを3D空間に表示（簡易的な実装）
+            if (touchEffects.length > 0) {
+                const time = Date.now() * 0.001;
+                fibonacciCube.children.forEach((child) => {
+                    if (child.material) {
+                        const intensity = touchEffects.reduce((sum, effect) => sum + effect.life, 0) * 0.1;
+                        const originalOpacity = child.material.opacity || 1;
+                        child.material.transparent = true;
+                        child.material.opacity = Math.max(0.3, originalOpacity - intensity * Math.sin(time * 10));
+                    }
+                });
+            }
+        }
+        
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // アニメーション開始
+        animate();
+    </script>
 </body>
 </html>
