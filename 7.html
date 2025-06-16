@@ -1,111 +1,424 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Resource Management Simulation Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 20px;
-    }
-    #game {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      border: 2px solid #ccc;
-    }
-    h1 { text-align: center; }
-    #stats, #actions { margin-bottom: 20px; }
-    p { font-size: 18px; }
-    button {
-      font-size: 16px;
-      padding: 10px 15px;
-      margin: 5px;
-      border: none;
-      border-radius: 4px;
-      background-color: #008cba;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover { background-color: #005f5f; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多層回転立方体デモ - バー削減版</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        
+        #info h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #8be9fd; /* Accent color */
+        }
+        
+        #info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px; /* パディングを小さく */
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            color: white;
+            min-width: 125px; /* 最小幅を半分程度に */
+            max-width: 200px; /* 最大幅も設定し、コンテンツに合わせる */
+        }
+        
+        .control-group {
+            margin-bottom: 10px; /* マージンを小さく */
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 3px; /* マージンを小さく */
+            font-size: 0.85em; /* フォントサイズも少し小さく */
+            color: #8be9fd; /* Accent color */
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        
+        .control-group input[type="range"]:hover {
+            opacity: 1;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8be9fd;
+            cursor: pointer;
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #8be9fd;
+            cursor: pointer;
+        }
+        
+        .control-group button {
+            background: linear-gradient(45deg, #627ee7, #4b6cb7);
+            border: none;
+            color: white;
+            padding: 6px 12px; /* パディングを小さく */
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em; /* フォントサイズも少し小さく */
+            transition: all 0.3s ease;
+            margin-right: 5px; /* マージンを小さく */
+            margin-bottom: 5px;
+        }
+        
+        .control-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5em;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <div id="game">
-    <h1>リソース管理型シミュレーションゲーム</h1>
-    <div id="stats">
-      <p><strong>リソース:</strong> <span id="resources">0</span></p>
-      <p><strong>工場数:</strong> <span id="factories">0</span></p>
-      <p><strong>工場の価格:</strong> <span id="factoryCost">50</span> (リソース)</p>
-      <p><strong>自動生産量:</strong> <span id="productionRate">0</span> (1秒ごと)</p>
+    <div id="container">
+        <div id="loading">Three.jsを読み込み中...</div>
+        
+        <div id="info">
+            <h2>✨ 多層回転オブジェクトデモ (バー削減版)</h2>
+            <p>📱 <strong>操作方法:</strong></p>
+            <p>• マウス/指でドラッグ: 視点回転</p>
+            <p>• ホイール/ピンチ: ズーム</p>
+            <p>• 5秒後に自動回転開始</p>
+        </div>
+        
+        <div id="controls">
+            <div class="control-group">
+                <label>回転速度: <span id="speedValue">5.00</span></label>
+                <input type="range" id="speedSlider" min="0" max="20" step="0.05" value="5.0">
+            </div>
+            
+            <div class="control-group">
+                <label>レイヤー数: <span id="layersValue">30</span></label>
+                <input type="range" id="layersSlider" min="10" max="100" step="1" value="30">
+            </div>
+            
+            <div class="control-group">
+                <label>全体スケール: <span id="scaleValue">1.0</span></label>
+                <input type="range" id="scaleSlider" min="0.5" max="2.0" step="0.05" value="1.0">
+            </div>
+            
+            <div class="control-group">
+                <button id="resetBtn">🔄 リセット</button>
+            </div>
+        </div>
     </div>
-    <div id="actions">
-      <button id="gather">リソースを収集する (+10)</button>
-      <button id="buildFactory">工場を建設する</button>
-    </div>
-  </div>
-  
-  <script>
-    // ゲームの初期状態
-    let resources = 0;
-    let factories = 0;
-    let factoryCost = 50;
-    
-    // 定数
-    const manualGatherAmount = 10;    // クリックで収集するリソース数
-    const factoryProduction = 5;      // 工場1つあたり1秒ごとに生産するリソース量
-    const tickInterval = 1000;        // 1秒間隔の更新タイム
-    
-    // HTMLの要素を取得
-    const resourceDisplay = document.getElementById('resources');
-    const factoriesDisplay = document.getElementById('factories');
-    const factoryCostDisplay = document.getElementById('factoryCost');
-    const productionRateDisplay = document.getElementById('productionRate');
-    const gatherButton = document.getElementById('gather');
-    const buildFactoryButton = document.getElementById('buildFactory');
-    
-    // 表示を更新する関数
-    function updateDisplay() {
-      resourceDisplay.textContent = resources.toFixed(0);
-      factoriesDisplay.textContent = factories;
-      factoryCostDisplay.textContent = factoryCost;
-      productionRateDisplay.textContent = factories * factoryProduction;
-    }
-    
-    // 1秒ごとのゲーム更新 (工場による自動生産)
-    function tick() {
-      resources += factories * factoryProduction;
-      updateDisplay();
-    }
-    
-    // 「リソースを収集する」ボタンの処理
-    gatherButton.addEventListener('click', () => {
-      resources += manualGatherAmount;
-      updateDisplay();
-    });
-    
-    // 「工場を建設する」ボタンの処理
-    buildFactoryButton.addEventListener('click', () => {
-      if (resources >= factoryCost) {
-        resources -= factoryCost;
-        factories++;
-        // 購入後、工場の価格を上昇させて難易度を上げる
-        factoryCost = Math.floor(factoryCost * 1.5);
-        updateDisplay();
-      } else {
-        alert('リソースが不足しています！');
-      }
-    });
-    
-    // 定期更新 (tick) を開始
-    setInterval(tick, tickInterval);
-    
-    // 初期表示の更新
-    updateDisplay();
-  </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // グローバル変数
+        let scene, camera, renderer, controls;
+        let mainObject; // 多層立方体のグループ
+        let autoRotationStarted = false;
+        let rotationSpeed = 5.0; 
+        let currentLayers = 30; 
+        let currentScale = 1.0;
+
+        // 固定値として定義
+        const FIXED_DEPTH = 1.0;   // 凹み深さの固定値
+        const FIXED_TWIST = 0.5;   // ねじれ度の固定値
+
+        // カラーパレット (よりはっきりした色に調整)
+        const colorPalette = [
+            new THREE.Color(0xFF0000), // 赤
+            new THREE.Color(0xFF4500), // オレンジレッド (以前より鮮やかに)
+            new THREE.Color(0xFFD700), // ゴールド (鮮やか)
+            new THREE.Color(0x32CD32), // ライムグリーン (鮮やか)
+            new THREE.Color(0x00BFFF), // ディープスカイブルー (鮮やか)
+            new THREE.Color(0x4169E1), // ロイヤルブルー (鮮やか)
+            new THREE.Color(0x9932CC), // ダークオーキッド (鮮やか)
+            new THREE.Color(0xFF69B4), // ホットピンク (鮮やか)
+            new THREE.Color(0xFFA07A), // ライトサーモン (少し彩度アップ)
+            new THREE.Color(0x7B68EE), // ミディアムスレートブルー (鮮やか)
+            new THREE.Color(0x00FFFF)  // シアン (鮮やか)
+        ];
+
+        // 初期化
+        function init() {
+            // シーン作成
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e); 
+
+            // カメラ作成
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 20); 
+
+            // レンダラー作成
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding; 
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // OrbitControlsの設定
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; 
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false; 
+            controls.minDistance = 5;
+            controls.maxDistance = 50;
+
+            // ライト設定
+            setupLights();
+
+            // 多層立方体を作成
+            createLayeredObject();
+
+            // コントローラー設定
+            setupControls();
+
+            // イベントリスナー設定
+            setupEventListeners();
+
+            // 5秒後に自動回転開始
+            setTimeout(() => {
+                autoRotationStarted = true;
+            }, 5000);
+
+            // ローディング非表示
+            document.getElementById('loading').style.display = 'none';
+
+            // アニメーション開始
+            animate();
+        }
+
+        // ライト設定
+        function setupLights() {
+            // 環境光
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            // 指向性ライト
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(20, 20, 20);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.height = 2048;
+            scene.add(directionalLight);
+
+            // ポイントライト (色に深みを与える)
+            const pointLight = new THREE.PointLight(0x627ee7, 0.5, 100);
+            pointLight.position.set(-10, 10, -10);
+            scene.add(pointLight);
+        }
+
+        // 多層オブジェクト作成
+        function createLayeredObject() {
+            if (mainObject) {
+                scene.remove(mainObject);
+                // 子要素のジオメトリとマテリアルを破棄してメモリリークを防ぐ
+                mainObject.children.forEach(child => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(m => m.dispose());
+                        } else {
+                            child.material.dispose(); // 直接マテリアルを破棄
+                        }
+                    }
+                });
+            }
+            mainObject = new THREE.Group();
+
+            const baseSize = 8; // 最外層の基本サイズ
+
+            for (let i = 0; i < currentLayers; i++) {
+                const normalizedIndex = i / (currentLayers - 1); // 0から1の範囲で正規化
+
+                // 凹みを表現するためのサイズ調整 (固定値を使用)
+                let sizeFactor;
+                if (normalizedIndex < 0.5) {
+                    sizeFactor = 1 - Math.pow(normalizedIndex * 2, 2.5) * FIXED_DEPTH * 0.8; 
+                } else {
+                    sizeFactor = 1 - Math.pow((1 - normalizedIndex) * 2, 2.5) * FIXED_DEPTH * 0.8;
+                }
+                
+                sizeFactor = Math.max(0.05, sizeFactor); // 最小サイズを保証
+
+                const layerSize = baseSize * sizeFactor;
+
+                // レイヤー間のオフセット (奥行き感と凹み感を出す)
+                const offset = (normalizedIndex - 0.5) * 2; 
+                const layerPositionZ = offset * (baseSize / currentLayers / 2) * FIXED_DEPTH * 2; 
+
+                // 色のグラデーション
+                const colorIndexFloat = normalizedIndex * (colorPalette.length - 1);
+                const colorIndex1 = Math.floor(colorIndexFloat);
+                const colorIndex2 = Math.ceil(colorIndexFloat);
+                const lerpFactor = colorIndexFloat - colorIndex1;
+
+                const color1 = colorPalette[colorIndex1];
+                const color2 = colorPalette[colorIndex2];
+                const interpolatedColor = new THREE.Color().lerpColors(color1, color2, lerpFactor);
+
+                const geometry = new THREE.BoxGeometry(layerSize, layerSize, layerSize);
+                const material = new THREE.MeshPhongMaterial({
+                    color: interpolatedColor,
+                    shininess: 150, 
+                    transparent: true,
+                    opacity: 0.3 + (0.6 * (1 - Math.abs(offset))) 
+                });
+
+                const layer = new THREE.Mesh(geometry, material);
+                layer.position.z = layerPositionZ; 
+
+                // 各レイヤーにねじれを加える (固定値を使用)
+                layer.rotation.y = normalizedIndex * FIXED_TWIST * Math.PI * 2; 
+                layer.rotation.x = normalizedIndex * FIXED_TWIST * Math.PI * 0.5; 
+
+                layer.castShadow = true;
+                layer.receiveShadow = true;
+                mainObject.add(layer);
+            }
+
+            mainObject.scale.setScalar(currentScale); 
+            scene.add(mainObject);
+        }
+
+        // コントローラー設定
+        function setupControls() {
+            // スライダー
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                rotationSpeed = parseFloat(e.target.value);
+                document.getElementById('speedValue').textContent = rotationSpeed.toFixed(2);
+            });
+
+            document.getElementById('layersSlider').addEventListener('input', (e) => {
+                currentLayers = parseInt(e.target.value);
+                document.getElementById('layersValue').textContent = currentLayers;
+                createLayeredObject(); 
+            });
+
+            document.getElementById('scaleSlider').addEventListener('input', (e) => {
+                currentScale = parseFloat(e.target.value);
+                document.getElementById('scaleValue').textContent = currentScale.toFixed(2);
+                if (mainObject) {
+                    mainObject.scale.setScalar(currentScale); 
+                }
+            });
+            
+            // ボタン
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                // カメラのリセット
+                camera.position.set(0, 0, 20);
+                controls.target.set(0, 0, 0);
+                controls.update();
+
+                // コントロールUIのスライダーを初期値に戻す
+                document.getElementById('speedSlider').value = 5.0;
+                rotationSpeed = 5.0;
+                document.getElementById('speedValue').textContent = rotationSpeed.toFixed(2);
+
+                document.getElementById('layersSlider').value = 30; 
+                currentLayers = 30;
+                document.getElementById('layersValue').textContent = currentLayers;
+
+                document.getElementById('scaleSlider').value = 1.0;
+                currentScale = 1.0;
+                document.getElementById('scaleValue').textContent = currentScale.toFixed(2);
+
+                createLayeredObject(); 
+            });
+        }
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // ウィンドウリサイズ
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 自動回転
+            if (autoRotationStarted && mainObject) {
+                mainObject.rotation.y += 0.005 * rotationSpeed;
+            }
+
+            // OrbitControlsの更新（ダンピングのため）
+            controls.update();
+
+            // レンダリング
+            renderer.render(scene, camera);
+        }
+
+        // 初期化実行
+        init();
+    </script>
 </body>
 </html>
