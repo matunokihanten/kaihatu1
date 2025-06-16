@@ -1,269 +1,464 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>豪華な逆算チャレンジ</title>
-  <style>
-    /* 背景＆フォント */
-    body {
-      background: linear-gradient(to right, #ece9e6, #ffffff);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-      text-align: center;
-      color: #333;
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-    }
-    /* ゲーム全体のコンテナ */
-    #game-container {
-      background: #fdfdfd;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      margin-top: 1rem;
-    }
-    /* レベル設定パネル */
-    #level-panel {
-      margin: 1rem 0;
-      font-size: 1.2rem;
-    }
-    #level-panel button {
-      margin: 0 0.5rem;
-      padding: 0.4rem 0.8rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    #level-panel button:hover {
-      background-color: #45a049;
-    }
-    /* 目標＆合計の表示 */
-    #target, #current-sum {
-      font-size: 1.5rem;
-      margin: 0.8rem 0;
-    }
-    /* 数字表示 */
-    #numbers-container {
-      margin: 1rem 0;
-    }
-    #numbers-container > span {
-      display: inline-block;
-      margin: 0.5rem;
-      font-size: 1.8rem;
-      padding: 0.5rem 1rem;
-      border: 2px solid #888;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    #numbers-container > span:hover {
-      transform: scale(1.1);
-      border-color: #555;
-    }
-    /* コントロールボタン */
-    .control-buttons {
-      margin: 1rem;
-    } 
-    .control-buttons button {
-      margin: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #2196F3;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .control-buttons button:hover {
-      background-color: #0b7dda;
-    }
-    /* メッセージ表示 */
-    #message {
-      font-size: 1.3rem;
-      margin-top: 0.8rem;
-      color: #d9534f;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フィボナッチ渦巻き立方体 (点なし)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000000; /* 背景を黒に設定 */
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7); /* コントロールパネルの背景を半透明の黒に */
+            padding: 20px;
+            border-radius: 20px;
+            color: white;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        
+        input[type="range"] {
+            width: 200px;
+            height: 6px;
+            background: #333;
+            outline: none;
+            border-radius: 3px;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff, #06ffa5, #ffbe0b);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        #status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .value-display {
+            color: #06ffa5;
+            font-weight: bold;
+            text-shadow: none;
+        }
+    </style>
 </head>
 <body>
-  <h1>豪華な逆算チャレンジ</h1>
-  <div id="game-container">
-    <div id="level-panel">
-      <button id="level-down">レベルダウン</button>
-      <span id="current-level">レベル: 2</span>
-      <button id="level-up">レベルアップ</button>
+    <div id="container">
+        <div id="controls">
+            <div class="control-group">
+                <label for="size">サイズ: <span id="sizeValue" class="value-display">2.0</span></label>
+                <input type="range" id="size" min="0.1" max="5" step="0.1" value="2">
+            </div>
+            <div class="control-group">
+                <label for="speed">回転速度: <span id="speedValue" class="value-display">1.0</span></label>
+                <input type="range" id="speed" min="0.1" max="10" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+                <label for="complexity">複雑度: <span id="complexityValue" class="value-display">8</span></label>
+                <input type="range" id="complexity" min="3" max="50" step="1" value="8">
+            </div>
+            <div class="control-group">
+                <label for="colorCount">色の数: <span id="colorCountValue" class="value-display">6</span></label>
+                <input type="range" id="colorCount" min="2" max="12" step="1" value="6">
+            </div>
+        </div>
+        
+        <div id="status">
+            <div id="autoRotateCountdown">自動回転まで: <span id="countdown">5</span>秒</div>
+            <div id="autoRotateStatus" style="display: none;">自動回転中</div>
+        </div>
     </div>
-    <p id="target">目標: ?</p>
-    <p id="current-sum">現在の合計: ?</p>
-    <div id="numbers-container"></div>
-    <p id="message"></p>
-    <div class="control-buttons">
-      <button id="new-challenge">新しいチャレンジ</button>
-    </div>
-  </div>
-  
-  <script>
-    // グローバル変数
-    let puzzle = {};
-    let currentLevel = 2; // 初期レベル
-    const minLevel = 1;
-    const maxLevel = 5;
 
-    // レベルに応じたパズル設定を取得
-    function getLevelSettings(level) {
-      let settings = {};
-      switch (level) {
-        case 1:
-          settings.count = 3;
-          settings.maxNumber = 5;
-          break;
-        case 2:
-          settings.count = 5;
-          settings.maxNumber = 9;
-          break;
-        case 3:
-          settings.count = 7;
-          settings.maxNumber = 9;
-          break;
-        case 4:
-          settings.count = 9;
-          settings.maxNumber = 12;
-          break;
-        case 5:
-          settings.count = 11;
-          settings.maxNumber = 15;
-          break;
-        default:
-          settings.count = 5;
-          settings.maxNumber = 9;
-      }
-      return settings;
-    }
-    
-    // Fisher-Yates アルゴリズムでシャッフル
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    // パズル生成関数
-    function generatePuzzle() {
-      const { count, maxNumber } = getLevelSettings(currentLevel);
-      let numbers = [];
-      let initialSum = 0;
-      let target = 0;
-      // すべてが + の場合、初期合計と目標が同じになってしまうので再生成
-      do {
-        numbers = [];
-        initialSum = 0;
-        target = 0;
-        for (let i = 0; i < count; i++) {
-          // 1～maxNumber の数字を生成
-          const num = Math.floor(Math.random() * maxNumber) + 1;
-          // ランダムに解答用の符号 + (1) か - (-1) を設定
-          const solSign = Math.random() < 0.5 ? 1 : -1;
-          numbers.push({
-            value: num,
-            solutionSign: solSign,  // 内部利用
-            currentSign: 1          // 現在の符号はすべて +1 からスタート
-          });
-          initialSum += num;
-          target += solSign * num;
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // シーンの初期化
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 10, 50);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0); 
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('container').appendChild(renderer.domElement);
+        
+        // フィボナッチ数列を生成
+        function generateFibonacci(n) {
+            const fib = [1, 1];
+            for (let i = 2; i < n; i++) {
+                fib[i] = fib[i-1] + fib[i-2];
+            }
+            return fib;
         }
-      } while (target === initialSum || target <= 0);
-      
-      puzzle.numbers = numbers;
-      puzzle.initialSum = initialSum;
-      puzzle.target = target;
-    }
+        
+        // フィボナッチ渦巻きのポイントを生成
+        function createFibonacciSpiral(complexity, scale) {
+            const points = [];
+            const fibonacci = generateFibonacci(complexity);
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // 黄金角
+            
+            for (let i = 0; i < complexity * 20; i++) {
+                const t = i * 0.1;
+                const fibIndex = Math.floor(t) % fibonacci.length;
+                const radius = fibonacci[fibIndex] * 0.1 * scale;
+                const angle = t * goldenAngle;
+                
+                const x = radius * Math.cos(angle);
+                const y = radius * Math.sin(angle);
+                const z = t * 0.05 * scale - complexity * 0.5 * scale;
+                
+                points.push(new THREE.Vector3(x, y, z));
+            }
+            
+            return points;
+        }
 
-    // パズルの内容を画面に表示
-    function displayPuzzle() {
-      document.getElementById("current-level").innerText = "レベル: " + currentLevel;
-      document.getElementById("target").innerText = "目標: " + puzzle.target;
-      document.getElementById("current-sum").innerText = "現在の合計: " + puzzle.initialSum;
-      const container = document.getElementById("numbers-container");
-      container.innerHTML = "";
-      document.getElementById("message").innerText = "";
-      puzzle.numbers.forEach((item, index) => {
-        const span = document.createElement("span");
-        span.innerText = "+" + item.value;
-        span.dataset.index = index;
-        span.addEventListener("click", function() {
-          toggleNumber(index);
+        // 基本となる色のパレット
+        const fixedColorPalette = [
+            new THREE.Color(0xff006e), // 赤紫
+            new THREE.Color(0x8338ec), // 紫
+            new THREE.Color(0x3a86ff), // 青
+            new THREE.Color(0x06ffa5), // 緑
+            new THREE.Color(0xffbe0b), // 黄色
+            new THREE.Color(0xff006e), // 赤紫 (繰り返し)
+            new THREE.Color(0xEE82EE), // バイオレット
+            new THREE.Color(0x00FFFF), // シアン
+            new THREE.Color(0xFF4500), // オレンジレッド
+            new THREE.Color(0xADFF2F), // 緑黄色
+            new THREE.Color(0xBA55D3), // ミディアムオーキッド
+            new THREE.Color(0x87CEEB)  // スカイブルー
+        ];
+        
+        // 立方体の各面にフィボナッチ渦巻きを作成
+        function createFibonacciCube(size, complexity, colorCount) {
+            const group = new THREE.Group();
+            const spiralPoints = createFibonacciSpiral(complexity, size);
+            
+            // 6つの面に対してそれぞれ渦巻きを作成
+            const faces = [
+                { rotation: [0, 0, 0], position: [0, 0, size] },           // 前面
+                { rotation: [0, Math.PI, 0], position: [0, 0, -size] },    // 背面
+                { rotation: [0, Math.PI/2, 0], position: [size, 0, 0] },   // 右面
+                { rotation: [0, -Math.PI/2, 0], position: [-size, 0, 0] }, // 左面
+                { rotation: [-Math.PI/2, 0, 0], position: [0, size, 0] },  // 上面
+                { rotation: [Math.PI/2, 0, 0], position: [0, -size, 0] }   // 下面
+            ];
+            
+            faces.forEach((face, faceIndex) => {
+                const baseColorIndex1 = faceIndex % colorCount;
+                const baseColorIndex2 = (faceIndex + 1) % colorCount;
+                const color1 = fixedColorPalette.at(baseColorIndex1 % fixedColorPalette.length);
+                const color2 = fixedColorPalette.at(baseColorIndex2 % fixedColorPalette.length);
+                
+                // グラデーション効果のある線を作成
+                const geometry = new THREE.BufferGeometry().setFromPoints(spiralPoints);
+                const colors = [];
+                for (let i = 0; i < spiralPoints.length; i++) {
+                    const t = i / spiralPoints.length;
+                    const mixedColor = color1.clone().lerp(color2, Math.sin(t * Math.PI * 2));
+                    colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
+                }
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                
+                const material = new THREE.LineBasicMaterial({ 
+                    vertexColors: true,
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const spiral = new THREE.Line(geometry, material);
+                spiral.rotation.set(...face.rotation);
+                spiral.position.set(...face.position);
+                spiral.castShadow = true;
+                spiral.receiveShadow = true;
+                
+                group.add(spiral);
+                
+                // スパークルエフェクト (こちらは残します)
+                const sparkleGeometry = new THREE.SphereGeometry(0.02 * size, 8, 8);
+                for (let i = 0; i < 10; i++) { 
+                    const sparkleMaterial = new THREE.MeshBasicMaterial({
+                        color: new THREE.Color().setHSL(Math.random(), 1, 0.9), 
+                        transparent: true,
+                        opacity: Math.random() * 0.3 + 0.3, 
+                        blending: THREE.AdditiveBlending
+                    });
+                    
+                    const sparkle = new THREE.Mesh(sparkleGeometry, sparkleMaterial);
+                    // spiralPointsが空でないことを確認
+                    const randomPoint = spiralPoints.length > 0 ? spiralPoints.at(Math.floor(Math.random() * spiralPoints.length)) : new THREE.Vector3();
+                    sparkle.position.copy(randomPoint);
+                    sparkle.rotation.set(...face.rotation);
+                    sparkle.position.add(new THREE.Vector3(...face.position));
+                    
+                    group.add(sparkle);
+                }
+            });
+            
+            return group;
+        }
+        
+        // 初期立方体を作成
+        let fibonacciCube = createFibonacciCube(2, 8, 6); // 初期値に色の数を追加
+        scene.add(fibonacciCube);
+        
+        // カメラの位置設定
+        camera.position.set(5, 5, 8);
+        camera.lookAt(0, 0, 0);
+        
+        // ライティング（固定色）
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6); // 環境光を少し明るく
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xff006e, 1.0); // 固定色
+        directionalLight1.position.set(5, 5, 5);
+        directionalLight1.castShadow = true;
+        scene.add(directionalLight1);
+        
+        const directionalLight2 = new THREE.DirectionalLight(0x8338ec, 1.0); // 固定色
+        directionalLight2.position.set(-5, -5, 5);
+        scene.add(directionalLight2);
+        
+        const directionalLight3 = new THREE.DirectionalLight(0x06ffa5, 1.0); // 固定色
+        directionalLight3.position.set(0, 5, -5);
+        scene.add(directionalLight3);
+        
+        // ポイントライトを追加（固定色、位置も固定）
+        const pointLight1 = new THREE.PointLight(0xffbe0b, 1.5, 30); // 固定色と少し強めの明るさ
+        pointLight1.position.set(10, 10, 10);
+        scene.add(pointLight1);
+        
+        const pointLight2 = new THREE.PointLight(0x3a86ff, 1.5, 30); // 固定色と少し強めの明るさ
+        pointLight2.position.set(-10, -10, 10);
+        scene.add(pointLight2);
+        
+        // コントロール変数
+        let rotationSpeed = 1;
+        let autoRotate = false;
+        let mouseDown = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let touchPulse = 0;
+        
+        // UI要素の取得
+        const sizeSlider = document.getElementById('size');
+        const speedSlider = document.getElementById('speed');
+        const complexitySlider = document.getElementById('complexity');
+        const colorCountSlider = document.getElementById('colorCount');
+        const sizeValue = document.getElementById('sizeValue');
+        const speedValue = document.getElementById('speedValue');
+        const complexityValue = document.getElementById('complexityValue');
+        const colorCountValue = document.getElementById('colorCountValue');
+        const countdownElement = document.getElementById('countdown');
+        const autoRotateCountdown = document.getElementById('autoRotateCountdown');
+        const autoRotateStatus = document.getElementById('autoRotateStatus');
+        
+        // スライダーイベントリスナー
+        sizeSlider.addEventListener('input', (e) => {
+            const size = parseFloat(e.target.value);
+            sizeValue.textContent = size.toFixed(1);
+            updateCube();
         });
-        container.appendChild(span);
-      });
-    }
+        
+        speedSlider.addEventListener('input', (e) => {
+            rotationSpeed = parseFloat(e.target.value);
+            speedValue.textContent = rotationSpeed.toFixed(1);
+        });
+        
+        complexitySlider.addEventListener('input', (e) => {
+            const complexity = parseInt(e.target.value);
+            complexityValue.textContent = complexity;
+            updateCube();
+        });
 
-    // 現在の合計を計算し、正解かチェックする
-    function updateCurrentSumAndCheck() {
-      let currentSum = puzzle.numbers.reduce((acc, item) => acc + item.currentSign * item.value, 0);
-      document.getElementById("current-sum").innerText = "現在の合計: " + currentSum;
-      const messageElem = document.getElementById("message");
-      if (currentSum === puzzle.target) {
-        messageElem.innerText = "正解！";
-      } else {
-        messageElem.innerText = "";
-      }
-    }
+        colorCountSlider.addEventListener('input', (e) => {
+            const count = parseInt(e.target.value);
+            colorCountValue.textContent = count;
+            updateCube();
+        });
+        
+        // 立方体を更新する関数
+        function updateCube() {
+            scene.remove(fibonacciCube);
+            const size = parseFloat(sizeSlider.value);
+            const complexity = parseInt(complexitySlider.value);
+            const colorCount = parseInt(colorCountSlider.value);
+            fibonacciCube = createFibonacciCube(size, complexity, colorCount);
+            scene.add(fibonacciCube);
+        }
+        
+        // マウス・タッチコントロール
+        renderer.domElement.addEventListener('mousedown', onPointerDown);
+        renderer.domElement.addEventListener('mouseup', onPointerUp);
+        renderer.domElement.addEventListener('mousemove', onPointerMove);
+        
+        // タッチイベント
+        renderer.domElement.addEventListener('touchstart', onPointerDown);
+        renderer.domElement.addEventListener('touchend', onPointerUp);
+        renderer.domElement.addEventListener('touchmove', onPointerMove);
+        
+        function onPointerDown(e) {
+            e.preventDefault();
+            mouseDown = true;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            mouseX = clientX;
+            mouseY = clientY;
+            
+            triggerTouchResponse();
+        }
+        
+        function onPointerUp(e) {
+            e.preventDefault();
+            mouseDown = false;
+        }
+        
+        function onPointerMove(e) {
+            e.preventDefault();
+            if (mouseDown) {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                if (!autoRotate) {
+                    const deltaX = clientX - mouseX;
+                    const deltaY = clientY - mouseY;
+                    
+                    fibonacciCube.rotation.y += deltaX * 0.01;
+                    fibonacciCube.rotation.x += deltaY * 0.01;
+                }
+                
+                mouseX = clientX;
+                mouseY = clientY;
+            }
+        }
+        
+        // タッチレスポンスをトリガーする関数
+        function triggerTouchResponse() {
+            touchPulse = 1.0;
+            
+            fibonacciCube.scale.set(1.1, 1.1, 1.1); 
+            
+            fibonacciCube.children.forEach((child) => {
+                if (child.material) {
+                    child.material.transparent = true;
+                    child.material.opacity = 0.3; 
+                }
+            });
+            
+            const randomRotation = {
+                x: (Math.random() - 0.5) * 0.2, 
+                y: (Math.random() - 0.5) * 0.2, 
+                z: (Math.random() - 0.5) * 0.2  
+            };
+            
+            fibonacciCube.rotation.x += randomRotation.x;
+            fibonacciCube.rotation.y += randomRotation.y;
+            fibonacciCube.rotation.z += randomRotation.z;
+        }
+        
+        // 5秒後の自動回転カウントダウン
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                autoRotate = true;
+                autoRotateCountdown.style.display = 'none';
+                autoRotateStatus.style.display = 'block';
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+        
+        // レンダーループ
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (autoRotate) {
+                fibonacciCube.rotation.x += 0.005 * rotationSpeed;
+                fibonacciCube.rotation.y += 0.01 * rotationSpeed;
+                fibonacciCube.rotation.z += 0.003 * rotationSpeed;
+            }
+            
+            if (touchPulse > 0) {
+                touchPulse -= 0.05;
+                const scale = 1 + touchPulse * 0.1; 
+                fibonacciCube.scale.set(scale, scale, scale);
 
-    // 数字の符号を切り替える（+ ⇔ -）
-    function toggleNumber(index) {
-      puzzle.numbers[index].currentSign *= -1;
-      const span = document.querySelector('span[data-index="' + index + '"]');
-      span.innerText = (puzzle.numbers[index].currentSign === 1 ? "+" : "-") + puzzle.numbers[index].value;
-      updateCurrentSumAndCheck();
-    }
+                fibonacciCube.children.forEach((child) => {
+                    if (child.material) {
+                        const currentOpacity = child.material.opacity;
+                        child.material.opacity = Math.min(0.9, currentOpacity + 0.05); 
+                    }
+                });
 
-    // レベルアップ処理
-    function levelUp() {
-      if (currentLevel < maxLevel) {
-        currentLevel++;
-        generatePuzzle();
-        displayPuzzle();
-      } else {
-        alert("最高レベルに到達しています！");
-      }
-    }
-
-    // レベルダウン処理
-    function levelDown() {
-      if (currentLevel > minLevel) {
-        currentLevel--;
-        generatePuzzle();
-        displayPuzzle();
-      } else {
-        alert("これ以上レベルを下げられません！");
-      }
-    }
-
-    // ボタンへのイベント設定
-    document.getElementById("level-up").addEventListener("click", levelUp);
-    document.getElementById("level-down").addEventListener("click", levelDown);
-    document.getElementById("new-challenge").addEventListener("click", function() {
-      generatePuzzle();
-      displayPuzzle();
-    });
-
-    // ページ読み込み時に初期パズル生成
-    window.onload = function() {
-      generatePuzzle();
-      displayPuzzle();
-    }
-  </script>
+            } else {
+                fibonacciCube.scale.set(1, 1, 1);
+                fibonacciCube.children.forEach((child) => {
+                    if (child.material && child.material.opacity !== undefined) {
+                        child.material.opacity = 0.9;
+                    }
+                });
+            }
+            
+            camera.position.x += (5 - camera.position.x) * 0.02;
+            camera.position.y += (5 - camera.position.y) * 0.02;
+            camera.position.z += (8 - camera.position.z) * 0.02;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // アニメーション開始
+        animate();
+    </script>
 </body>
 </html>
