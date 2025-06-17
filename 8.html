@@ -14,7 +14,7 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 8px;
-            max-width: 280px;
+            max-width: 140px; /* ここを半分にしました */
             z-index: 10;
         }
         #controls label {
@@ -24,6 +24,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* 小さくなった時に改行するように */
+        }
+        #controls label span {
+            margin-left: 5px;
+            min-width: 40px; /* 値表示の最小幅を確保 */
+            text-align: right;
         }
         #controls input[type="range"] {
             width: 100%;
@@ -78,25 +84,25 @@
 </head>
 <body>
     <div id="controls">
-        <label for="speed-slider">回転スピード: <span id="speed-value">0.0255</span></label>
-        <input type="range" id="speed-slider" min="0.001" max="0.05" step="0.0005" value="0.0255">
+        <label for="speed-slider">回転スピード: <span id="speed-value">0.0050</span></label>
+        <input type="range" id="speed-slider" min="0.001" max="0.05" step="0.0005" value="0.005">
 
-        <label for="scale-slider">球体サイズ: <span id="scale-value">1.25</span></label>
-        <input type="range" id="scale-slider" min="0.5" max="2.0" step="0.05" value="1.25">
+        <label for="scale-slider">球体サイズ: <span id="scale-value">1.20</span></label>
+        <input type="range" id="scale-slider" min="0.5" max="2.0" step="0.05" value="1.2">
 
         <label for="complexity-slider">複雑度: <span id="complexity-value">36</span></label>
         <input type="range" id="complexity-slider" min="8" max="64" step="8" value="36">
 
-        <label for="displacement-slider">凹凸の強さ: <span id="displacement-value">0.15</span></label>
-        <input type="range" id="displacement-slider" min="0.0" max="0.3" step="0.01" value="0.15">
+        <label for="displacement-slider">凹凸の強さ: <span id="displacement-value">0.005</span></label>
+        <input type="range" id="displacement-slider" min="0.0" max="0.3" step="0.005" value="0.005">
 
-        <label for="friction-slider">慣性: <span id="friction-value">0.92</span></label>
-        <input type="range" id="friction-slider" min="0.85" max="0.99" step="0.01" value="0.92">
+        <label for="friction-slider">慣性: <span id="friction-value">2.00</span></label>
+        <input type="range" id="friction-slider" min="0.1" max="5.0" step="0.1" value="2.0">
 
         <label for="texture-select">テクスチャ:</label>
         <select id="texture-select">
-            <option value="random_blocks">ランダムブロック</option>
-            <option value="noise_pattern" selected>ノイズパターン</option>
+            <option value="random_blocks" selected>ランダムブロック</option>
+            <option value="noise_pattern">ノイズパターン</option>
             <option value="gradient">グラデーション</option>
         </select>
 
@@ -111,7 +117,7 @@
         let previousMousePosition = { x: 0, y: 0 };
         let rotationSpeedX = 0;
         let rotationSpeedY = 0;
-        let autoRotateBaseSpeed = 0.0255; // 自動回転の基本速度
+        let autoRotateBaseSpeed = 0.005; // 自動回転の基本速度（初期値）
         let autoRotateTargetX = 0; // 自動回転の目標X軸速度
         let autoRotateTargetY = 0; // 自動回転の目標Y軸速度
         let autoRotateChangeInterval = 3000; // 自動回転の方向が変わる間隔（ミリ秒）
@@ -193,7 +199,7 @@
             scaleSlider.addEventListener('input', (event) => {
                 const newScale = parseFloat(event.target.value);
                 sphere.scale.set(newScale, newScale, newScale);
-                scaleValueSpan.textContent = newScale.toFixed(2); // 小数点以下2桁表示に変更
+                scaleValueSpan.textContent = newScale.toFixed(2);
 
                 camera.position.z = newScale + 1.0;
                 camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
@@ -218,7 +224,7 @@
                     newDisplacement,
                     textureSelect.value
                 );
-                displacementValueSpan.textContent = newDisplacement.toFixed(2);
+                displacementValueSpan.textContent = newDisplacement.toFixed(3);
             });
 
             frictionSlider.addEventListener('input', (event) => {
@@ -238,13 +244,13 @@
                 // スピードをランダムに
                 const randomSpeed = getRandomFloat(parseFloat(speedSlider.min), parseFloat(speedSlider.max));
                 speedSlider.value = randomSpeed;
-                speedValueSpan.textContent = randomSpeed.toFixed(4); // 小数点以下4桁表示に変更
+                speedValueSpan.textContent = randomSpeed.toFixed(4);
                 autoRotateBaseSpeed = randomSpeed;
 
                 // スケールをランダムに
                 const randomScale = getRandomFloat(parseFloat(scaleSlider.min), parseFloat(scaleSlider.max));
                 scaleSlider.value = randomScale;
-                scaleValueSpan.textContent = randomScale.toFixed(2); // 小数点以下2桁表示に変更
+                scaleValueSpan.textContent = randomScale.toFixed(2);
                 sphere.scale.set(randomScale, randomScale, randomScale);
                 camera.position.z = randomScale + 1.0;
                 camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
@@ -257,7 +263,7 @@
                 // 凹凸の強さをランダムに
                 const randomDisplacement = getRandomFloat(parseFloat(displacementSlider.min), parseFloat(displacementSlider.max));
                 displacementSlider.value = randomDisplacement;
-                displacementValueSpan.textContent = randomDisplacement.toFixed(2);
+                displacementValueSpan.textContent = randomDisplacement.toFixed(3);
 
                 // 慣性をランダムに
                 const randomFriction = getRandomFloat(parseFloat(frictionSlider.min), parseFloat(frictionSlider.max));
@@ -502,7 +508,13 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            const friction = parseFloat(frictionSlider.value);
+            const frictionSliderValue = parseFloat(frictionSlider.value); // スライダー値を使用
+            // 慣性スライダーの値を「減衰係数」と「目標への追従係数」として解釈し直す
+            // スライダー値が小さいほど減衰が強く、大きいほど動きを保ち、目標への追従も速くなるように調整
+            // 例えば、スライダー値が1.0の時に通常の減衰(0.95)、値が5.0の時に非常に動きが続くようにする
+            const decayFactor = Math.max(0.7, 1 - (frictionSliderValue / 10)); // 慣性値が大きいほど減衰が弱まる
+            const trackingFactor = frictionSliderValue * 0.02; // 慣性値が大きいほど目標への追従が速くなる
+
             const currentTime = Date.now();
             const elapsedTime = currentTime - autoRotateStartTime;
 
@@ -510,31 +522,33 @@
                 if (elapsedTime > AUTO_ROTATE_DELAY) {
                     // 自動回転の方向を定期的に変更
                     if (currentTime - lastAutoRotateChangeTime > autoRotateChangeInterval) {
-                        autoRotateTargetX = (Math.random() - 0.5) * autoRotateBaseSpeed * 2; // ランダムな方向と速度
-                        autoRotateTargetY = (Math.random() - 0.5) * autoRotateBaseSpeed * 2; // ランダムな方向と速度
+                        // ランダムな方向と速度を設定
+                        autoRotateTargetX = (Math.random() - 0.5) * autoRotateBaseSpeed * 2;
+                        autoRotateTargetY = (Math.random() - 0.5) * autoRotateBaseSpeed * 2;
                         lastAutoRotateChangeTime = currentTime;
                     }
                     // 目標速度に向かって現在の速度を徐々に変化させる
-                    rotationSpeedX += (autoRotateTargetX - rotationSpeedX) * (1 - friction);
-                    rotationSpeedY += (autoRotateTargetY - rotationSpeedY) * (1 - friction);
+                    rotationSpeedX += (autoRotateTargetX - rotationSpeedX) * trackingFactor;
+                    rotationSpeedY += (autoRotateTargetY - rotationSpeedY) * trackingFactor;
 
                 } else {
                     // 自動回転開始前の遅延中、またはユーザー操作直後
                     // 現在の速度に慣性を適用して徐々に停止
-                    rotationSpeedX *= friction;
-                    rotationSpeedY *= friction;
+                    rotationSpeedX *= decayFactor;
+                    rotationSpeedY *= decayFactor;
                 }
             } else {
-                // ドラッグ中は目標回転速度を0に近づける（手動操作が主導）
-                rotationSpeedX *= friction;
-                rotationSpeedY *= friction;
+                // ドラッグ中は、現在の速度に慣性を適用して徐々に減衰
+                rotationSpeedX *= decayFactor; // マウス操作時の減衰にも適用
+                rotationSpeedY *= decayFactor;
                 autoRotateStartTime = currentTime; // ドラッグ中は自動回転タイマーをリセット
                 lastAutoRotateChangeTime = currentTime; // 自動回転の方向変更タイマーもリセット
             }
 
             // 速度が大きくなりすぎないように制限
-            rotationSpeedX = Math.max(Math.min(rotationSpeedX, autoRotateBaseSpeed * 2), -autoRotateBaseSpeed * 2);
-            rotationSpeedY = Math.max(Math.min(rotationSpeedY, autoRotateBaseSpeed * 2), -autoRotateBaseSpeed * 2);
+            const maxSpeed = autoRotateBaseSpeed * 5; // ベース速度の5倍を最大速度に設定（調整可）
+            rotationSpeedX = Math.max(Math.min(rotationSpeedX, maxSpeed), -maxSpeed);
+            rotationSpeedY = Math.max(Math.min(rotationSpeedY, maxSpeed), -maxSpeed);
 
 
             sphere.rotation.x += rotationSpeedX;
