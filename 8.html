@@ -479,4 +479,38 @@
         }
 
         function getPinchDistance(touches) {
-         
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = Date.now() - autoRotateStartTime;
+            if (elapsedTime > AUTO_ROTATE_DELAY) {
+                sphere.rotation.y += autoRotateSpeed;
+            }
+
+            if (!isDragging) {
+                const friction = parseFloat(frictionSlider.value); // スライダーの値を使用
+                rotationSpeedX *= friction;
+                rotationSpeedY *= friction;
+            }
+            sphere.rotation.x += rotationSpeedX;
+            sphere.rotation.y += rotationSpeedY;
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
