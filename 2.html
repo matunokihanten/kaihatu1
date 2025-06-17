@@ -14,22 +14,20 @@
             align-items: center;
             height: 100vh;
             font-family: 'Arial', sans-serif;
-            touch-action: none;
+            touch-action: none; /* タッチジェスチャーのブラウザデフォルト動作を無効化 */
             user-select: none;
             overflow: hidden;
-        }
-        
-        .container {
-            text-align: center;
-            color: white;
-            position: relative;
-            z-index: 10;
         }
         
         #canvas {
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             cursor: grab;
+            position: absolute; /* canvasを絶対配置にする */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         #canvas:active {
@@ -38,7 +36,8 @@
         
         .controls {
             position: absolute;
-            top: 20px;
+            /* 初期位置は左下 */
+            bottom: 20px; 
             left: 20px;
             color: rgba(255, 255, 255, 0.9);
             background: rgba(0, 0, 0, 0.3);
@@ -46,8 +45,60 @@
             border-radius: 10px;
             backdrop-filter: blur(10px);
             font-size: 14px;
+            z-index: 20; /* controlsがcanvasより前面に来るように */
+            cursor: grab; /* ドラッグできることを示すカーソル */
+            user-select: none; /* テキスト選択を防止 */
+            display: flex; /* スライダー要素のためにflexboxを使用 */
+            flex-direction: column; /* 要素を縦に並べる */
+            gap: 8px; /* 要素間のスペース */
+        }
+
+        .controls:active {
+            cursor: grabbing;
         }
         
+        .controls label, .controls div {
+            white-space: nowrap; /* テキストが途中で改行されないように */
+        }
+
+        /* スライダーのスタイル */
+        .controls input[type="range"] {
+            -webkit-appearance: none; /* デフォルトのスタイルを無効化 */
+            width: 150px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+            transition: opacity .2s;
+            vertical-align: middle; /* テキストと高さを合わせる */
+        }
+
+        .controls input[type="range"]:hover {
+            opacity: 0.8;
+        }
+
+        .controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
         .title {
             font-size: 28px;
             margin-bottom: 10px;
@@ -56,6 +107,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            position: absolute; /* タイトルも絶対配置に */
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            white-space: nowrap; /* テキストが途中で改行されないように */
         }
         
         .instructions {
@@ -69,61 +126,93 @@
             padding: 10px 20px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
+            z-index: 20; /* instructionsがcanvasより前面に来るように */
+            white-space: nowrap; /* テキストが途中で改行されないように */
         }
         
-        .point-count {
+        .point-count-info { /* クラス名を変更して他のpoint-countと区別 */
             margin-top: 10px;
             color: #4ecdc4;
+            font-size: 13px; /* 少し小さめに */
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">3D フィボナッチ球体</div>
-        <div class="controls">
-            <div>回転速度: <span id="rotationSpeed">1.0</span>x</div>
-            <div>点の数: <span id="pointCount">1000</span></div>
-            <div>サイズ: <span id="sphereSize">100</span>%</div>
-            <div class="point-count">黄金比: φ = 1.618...</div>
+    <div class="title">3D フィボナッチ球体</div>
+    
+    <div class="controls" id="controlsPanel">
+        <div>
+            <label for="rotationSpeedSlider">回転速度:</label> 
+            <input type="range" id="rotationSpeedSlider" min="0.1" max="3.0" step="0.1" value="1.0">
+            <span id="rotationSpeedDisplay">1.0</span>x
         </div>
+        <div>
+            <label for="pointCountSlider">点の数:</label> 
+            <input type="range" id="pointCountSlider" min="100" max="2000" step="10" value="1000">
+            <span id="pointCountDisplay">1000</span>
+        </div>
+        <div>サイズ: <span id="sphereSize">100</span>%</div>
+        <div class="point-count-info">黄金比: φ = 1.618...</div>
     </div>
     
     <div class="instructions">
-        ドラッグで回転 | ホイール/ピンチでズーム | 自動回転中
+        ドラッグ/スワイプで回転 | ピンチイン・アウト/ホイールでズーム | タップでランダム変化 | 調整後に自動回転再開
     </div>
+
+    <canvas id="canvas"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         // Three.js基本設定
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const canvas = document.getElementById('canvas');
+        
         const renderer = new THREE.WebGLRenderer({ 
             antialias: true, 
             alpha: true,
-            canvas: document.getElementById('canvas') || undefined
+            canvas: canvas 
         });
         
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x000000, 0);
-        if (!document.getElementById('canvas')) {
-            document.body.appendChild(renderer.domElement);
-        }
         
         // 状態管理
         let mouseX = 0, mouseY = 0;
         let targetRotationX = 0, targetRotationY = 0;
         let currentRotationX = 0, currentRotationY = 0;
         let isMouseDown = false;
-        let autoRotate = true;
+        let autoRotate = false; 
         let rotationSpeed = 1.0;
         let pointCount = 1000;
-        let sphereSize = 1.0;
+        let sphereSize = 1.0; 
         
+        // ピンチズーム用の変数
+        let initialPinchDistance = 0;
+        let isPinching = false;
+
+        // ★追加: 自動回転タイマーIDを管理する変数
+        let autoRotateTimer; 
+
         // UI要素
-        const rotationSpeedDisplay = document.getElementById('rotationSpeed');
-        const pointCountDisplay = document.getElementById('pointCount');
+        const rotationSpeedDisplay = document.getElementById('rotationSpeedDisplay');
+        const pointCountDisplay = document.getElementById('pointCountDisplay');
         const sphereSizeDisplay = document.getElementById('sphereSize');
-        
+        const controlsPanel = document.getElementById('controlsPanel');
+        // スライダー要素の取得
+        const rotationSpeedSlider = document.getElementById('rotationSpeedSlider');
+        const pointCountSlider = document.getElementById('pointCountSlider');
+
+        // ★追加: 自動回転を遅延して開始する関数
+        function startAutoRotateAfterDelay() {
+            clearTimeout(autoRotateTimer); // 既存のタイマーがあればクリア
+            autoRotate = false; // 一旦自動回転を停止
+            autoRotateTimer = setTimeout(() => {
+                autoRotate = true;
+            }, 5000); // 5秒後に自動回転を有効化
+        }
+
         // フィボナッチ球体生成
         function createFibonacciSphere(numPoints) {
             const points = [];
@@ -140,10 +229,10 @@
                 
                 points.push(new THREE.Vector3(x * 2, y * 2, z * 2));
                 
-                // 位置に基づく色彩
-                const hue = (theta / (2 * Math.PI) + 0.5) % 1;
-                const saturation = 0.8;
-                const lightness = 0.5 + Math.abs(y) * 0.3;
+                // 位置に基づく色彩 (より多様な色合いに調整)
+                const hue = (theta / (2 * Math.PI) + (y + 1) / 4) % 1; 
+                const saturation = 0.7 + Math.sin(i * 0.01) * 0.2; 
+                const lightness = 0.5 + Math.abs(y) * 0.2; 
                 
                 const color = new THREE.Color();
                 color.setHSL(hue, saturation, lightness);
@@ -183,7 +272,7 @@
                 vertexColors: true,
                 transparent: true,
                 opacity: 0.9,
-                sizeAttenuation: true
+                sizeAttenuation: true // カメラからの距離に応じて点のサイズが変わる
             });
             
             const pointCloud = new THREE.Points(geometry, material);
@@ -194,16 +283,17 @@
             const linePositions = [];
             const lineColors = [];
             
-            for (let i = 0; i < points.length - 1; i++) {
+            const numConnections = Math.min(points.length -1, 1000); 
+            for (let i = 0; i < numConnections; i++) {
                 const point1 = points[i];
-                const point2 = points[i + 1];
+                // 少し離れた点と接続してスパイラルを形成
+                const point2 = points[Math.min(i + 5, points.length - 1)]; 
                 
                 linePositions.push(point1.x, point1.y, point1.z);
                 linePositions.push(point2.x, point2.y, point2.z);
                 
-                // グラデーション色
                 const hue1 = (i / points.length);
-                const hue2 = ((i + 1) / points.length);
+                const hue2 = ((i + 5) / points.length); 
                 
                 const color1 = new THREE.Color();
                 const color2 = new THREE.Color();
@@ -221,13 +311,13 @@
                 vertexColors: true,
                 transparent: true,
                 opacity: 0.3,
-                linewidth: 1
+                linewidth: 1 
             });
             
             const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
             sphereGroup.add(lines);
             
-            // 外側の透明球体
+            // 外側の透明球体（ワイヤーフレーム）
             const sphereGeometry = new THREE.SphereGeometry(2.1, 32, 32);
             const sphereMaterial = new THREE.MeshBasicMaterial({
                 color: 0x4ecdc4,
@@ -237,6 +327,10 @@
             });
             const wireframeSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphereGroup.add(wireframeSphere);
+            
+            // UIを更新
+            pointCountDisplay.textContent = pointCount;
+            pointCountSlider.value = pointCount; // スライダーも現在の値に同期
         }
         
         // 照明設定
@@ -250,73 +344,229 @@
         // カメラ位置
         camera.position.z = 6;
         
-        // マウス/タッチイベント
-        function onMouseMove(event) {
-            if (!isMouseDown && !autoRotate) return;
-            
-            const clientX = event.clientX || (event.touches && event.touches[0].clientX) || 0;
-            const clientY = event.clientY || (event.touches && event.touches[0].clientY) || 0;
-            
-            if (isMouseDown) {
-                targetRotationX = (clientY - window.innerHeight / 2) * 0.01;
-                targetRotationY = (clientX - window.innerWidth / 2) * 0.01;
-            }
+        // --- イベントハンドラ ---
+        
+        function updateRotation(clientX, clientY) {
+            targetRotationX = (clientY - window.innerHeight / 2) * 0.01;
+            targetRotationY = (clientX - window.innerWidth / 2) * 0.01;
         }
-        
-        function onMouseDown(event) {
-            isMouseDown = true;
-            autoRotate = false;
-            onMouseMove(event);
-        }
-        
-        function onMouseUp() {
-            isMouseDown = false;
-        }
-        
-        // イベントリスナー
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mousedown', onMouseDown);
-        document.addEventListener('mouseup', onMouseUp);
-        
-        document.addEventListener('touchmove', onMouseMove);
-        document.addEventListener('touchstart', onMouseDown);
-        document.addEventListener('touchend', onMouseUp);
-        
-        // ホイールズーム
-        document.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+
+        function zoomCamera(delta) {
+            // ズーム範囲を制限 (3から15の間に設定)
             camera.position.z = Math.max(3, Math.min(15, camera.position.z * delta));
-            sphereSize = Math.round((6 / camera.position.z) * 100);
+            updateSphereSizeDisplay();
+        }
+
+        function updateSphereSizeDisplay() {
+            // カメラのz位置に基づき、球体の見かけのサイズをパーセンテージで表示
+            sphereSize = Math.round((6 / camera.position.z) * 100); 
             sphereSizeDisplay.textContent = sphereSize;
+        }
+
+        // controlsパネルのドラッグ＆ドロップ用変数
+        let isDraggingPanel = false;
+        let panelOffsetX, panelOffsetY;
+
+        // controlsパネルのイベントリスナー
+        controlsPanel.addEventListener('mousedown', (e) => {
+            // スライダー上でクリックした場合はドラッグしない
+            if (e.target.tagName === 'INPUT') {
+                return;
+            }
+            isDraggingPanel = true;
+            panelOffsetX = e.clientX - controlsPanel.getBoundingClientRect().left;
+            panelOffsetY = e.clientY - controlsPanel.getBoundingClientRect().top;
+            controlsPanel.style.cursor = 'grabbing';
+            e.stopPropagation(); 
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingPanel) {
+                const x = e.clientX - panelOffsetX;
+                const y = e.clientY - panelOffsetY;
+                // 画面外に出ないように制限 (簡易版)
+                const maxX = window.innerWidth - controlsPanel.offsetWidth;
+                const maxY = window.innerHeight - controlsPanel.offsetHeight;
+                controlsPanel.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
+                controlsPanel.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
+                controlsPanel.style.right = 'auto'; 
+                controlsPanel.style.bottom = 'auto';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDraggingPanel = false;
+            controlsPanel.style.cursor = 'grab';
+            startAutoRotateAfterDelay(); // ★修正: パネルドラッグ終了後に自動回転タイマーをセット
+        });
+
+        // タッチイベント (controlsパネルのドラッグ)
+        controlsPanel.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1 && e.target.tagName !== 'INPUT') { // スライダー上でタッチした場合はドラッグしない
+                isDraggingPanel = true;
+                const touch = e.touches[0];
+                const rect = controlsPanel.getBoundingClientRect();
+                panelOffsetX = touch.clientX - rect.left;
+                panelOffsetY = touch.clientY - rect.top;
+                controlsPanel.style.cursor = 'grabbing';
+                e.stopPropagation(); 
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDraggingPanel && e.touches.length === 1) {
+                const touch = e.touches[0];
+                const x = touch.clientX - panelOffsetX;
+                const y = touch.clientY - panelOffsetY;
+                const maxX = window.innerWidth - controlsPanel.offsetWidth;
+                const maxY = window.innerHeight - controlsPanel.offsetHeight;
+                controlsPanel.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
+                controlsPanel.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
+                controlsPanel.style.right = 'auto';
+                controlsPanel.style.bottom = 'auto';
+                e.preventDefault(); 
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            isDraggingPanel = false;
+            controlsPanel.style.cursor = 'grab';
+            startAutoRotateAfterDelay(); // ★修正: パネルドラッグ終了後に自動回転タイマーをセット
+        });
+
+
+        // マウスイベント (canvasの回転)
+        canvas.addEventListener('mousemove', (event) => {
+            if (isMouseDown && !isDraggingPanel) { 
+                updateRotation(event.clientX, event.clientY);
+            }
         });
         
-        // キーボードコントロール
+        canvas.addEventListener('mousedown', (event) => {
+            isMouseDown = true;
+            autoRotate = false; 
+            clearTimeout(autoRotateTimer); // ★追加: 手動操作開始時にタイマーをクリア
+            updateRotation(event.clientX, event.clientY);
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isMouseDown = false;
+            startAutoRotateAfterDelay(); // ★修正: マウスを離したら自動回転タイマーをセット
+        });
+        
+        // タッチイベント (canvasの回転、ズーム、タップでの変化)
+        canvas.addEventListener('touchstart', (event) => {
+            if (event.touches.length === 1) {
+                isMouseDown = true; 
+                autoRotate = false;
+                clearTimeout(autoRotateTimer); // ★追加: 手動操作開始時にタイマーをクリア
+                updateRotation(event.touches[0].clientX, event.touches[0].clientY);
+            } else if (event.touches.length === 2) {
+                isPinching = true; 
+                autoRotate = false; // ピンチ中は自動回転停止
+                clearTimeout(autoRotateTimer); // ★追加: ピンチ開始時にタイマーをクリア
+                initialPinchDistance = getPinchDistance(event.touches);
+            }
+        }, { passive: false }); 
+
+        canvas.addEventListener('touchmove', (event) => {
+            if (isMouseDown && event.touches.length === 1 && !isDraggingPanel) {
+                updateRotation(event.touches[0].clientX, event.touches[0].clientY);
+            } else if (isPinching && event.touches.length === 2) {
+                const currentPinchDistance = getPinchDistance(event.touches);
+                const delta = initialPinchDistance / currentPinchDistance; 
+                zoomCamera(delta);
+                initialPinchDistance = currentPinchDistance; 
+            }
+            event.preventDefault(); 
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (event) => {
+            // isMouseDownがtrueで、かつ指が完全に離れた（touches.length === 0）場合のみ、タップとみなす
+            // これにより、回転やズームの途中で誤ってタップが検出されるのを防ぐ
+            // スライダー操作中にタップを検出しないように e.target.tagName !== 'INPUT' を追加
+            if (isMouseDown && event.touches.length === 0 && !isPinching && event.target.tagName !== 'INPUT') {
+                // タップでのランダム変化ロジック (スライダーと併用)
+                rotationSpeed = parseFloat((Math.random() * 2.5 + 0.5).toFixed(1)); 
+                rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+                rotationSpeedSlider.value = rotationSpeed; // スライダーも更新
+
+                pointCount = Math.floor(Math.random() * (2000 - 500 + 1)) + 500; 
+                createPointCloud(); 
+            }
+            isMouseDown = false;
+            isPinching = false;
+            startAutoRotateAfterDelay(); // ★修正: 指を離したら自動回転タイマーをセット
+        });
+
+        // ピンチ距離の計算ヘルパー
+        function getPinchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        
+        // ホイールズーム
+        canvas.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+            zoomCamera(delta);
+            autoRotate = false; // ホイール操作中は自動回転停止
+            startAutoRotateAfterDelay(); // ★追加: ホイール操作後に自動回転タイマーをセット
+        });
+        
+        // キーボードコントロール (オプション) - 既存のものを維持
         document.addEventListener('keydown', (event) => {
             switch(event.code) {
                 case 'Space':
                     event.preventDefault();
                     autoRotate = !autoRotate;
+                    // Spaceキーで自動回転をトグルした場合は、タイマーもリセット
+                    if (autoRotate) {
+                        clearTimeout(autoRotateTimer);
+                    } else {
+                        clearTimeout(autoRotateTimer); // 停止時もタイマーをクリア
+                    }
                     break;
                 case 'ArrowUp':
-                    pointCount = Math.min(2000, pointCount + 100);
-                    pointCountDisplay.textContent = pointCount;
-                    createPointCloud();
-                    break;
                 case 'ArrowDown':
-                    pointCount = Math.max(100, pointCount - 100);
-                    pointCountDisplay.textContent = pointCount;
-                    createPointCloud();
-                    break;
                 case 'ArrowLeft':
-                    rotationSpeed = Math.max(0.1, rotationSpeed - 0.1);
-                    rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
-                    break;
                 case 'ArrowRight':
-                    rotationSpeed = Math.min(3.0, rotationSpeed + 0.1);
-                    rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+                    autoRotate = false; // キーボード操作中は自動回転停止
+                    clearTimeout(autoRotateTimer); // ★追加: キーボード操作開始時にタイマーをクリア
                     break;
             }
+        });
+        // キーボードでの調整が終わった時にもタイマーをセット
+        document.addEventListener('keyup', (event) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
+                startAutoRotateAfterDelay();
+            }
+        });
+
+
+        // --- スライダーイベントリスナー ---
+        rotationSpeedSlider.addEventListener('input', (event) => {
+            rotationSpeed = parseFloat(event.target.value);
+            rotationSpeedDisplay.textContent = rotationSpeed.toFixed(1);
+            autoRotate = false; // スライダー操作中は自動回転を一時停止
+            clearTimeout(autoRotateTimer); // ★追加: スライダー操作開始時にタイマーをクリア
+        });
+        // スライダー操作終了時にタイマーをセット
+        rotationSpeedSlider.addEventListener('change', () => { // 'change'イベントはmouseup時に発火
+            startAutoRotateAfterDelay();
+        });
+
+
+        pointCountSlider.addEventListener('input', (event) => {
+            pointCount = parseInt(event.target.value, 10);
+            createPointCloud(); // 点の数を変更したら再描画
+            autoRotate = false; // スライダー操作中は自動回転を一時停止
+            clearTimeout(autoRotateTimer); // ★追加: スライダー操作開始時にタイマーをクリア
+        });
+        // スライダー操作終了時にタイマーをセット
+        pointCountSlider.addEventListener('change', () => { // 'change'イベントはmouseup時に発火
+            startAutoRotateAfterDelay();
         });
         
         // アニメーションループ
@@ -324,8 +574,8 @@
             requestAnimationFrame(animate);
             
             if (autoRotate) {
-                targetRotationY += 0.01 * rotationSpeed;
-                targetRotationX += 0.005 * rotationSpeed;
+                targetRotationY += 0.005 * rotationSpeed; 
+                targetRotationX += 0.002 * rotationSpeed; 
             }
             
             // スムーズな回転
@@ -339,7 +589,8 @@
             const time = Date.now() * 0.001;
             sphereGroup.children.forEach((child, index) => {
                 if (child instanceof THREE.Points) {
-                    child.material.size = 0.05 + Math.sin(time + index) * 0.02;
+                    const baseSize = 0.05 * (camera.position.z / 6); 
+                    child.material.size = baseSize + Math.sin(time * 2 + index * 0.1) * 0.02;
                 }
             });
             
@@ -351,10 +602,16 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            updateSphereSizeDisplay(); 
         });
         
         // 初期化
         createPointCloud();
+        updateSphereSizeDisplay(); 
+
+        // ページロード時の初回自動回転開始
+        startAutoRotateAfterDelay(); 
+        
         animate();
     </script>
 </body>
