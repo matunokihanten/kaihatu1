@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Adjustable Bumpy Sphere</title>
+    <title>Advanced Adjustable Bumpy Sphere with Dynamic Auto-Rotation</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: sans-serif; color: #eee; }
         canvas { display: block; }
@@ -14,7 +14,7 @@
             background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 8px;
-            max-width: 280px; /* 少し幅を広げる */
+            max-width: 280px;
             z-index: 10;
         }
         #controls label {
@@ -60,7 +60,7 @@
             cursor: pointer;
             font-size: 0.9em;
             width: 100%;
-            margin-top: 5px; /* マージンを少し調整 */
+            margin-top: 5px;
         }
         #controls button:hover, #controls select:hover {
             background-color: #0056b3;
@@ -78,25 +78,25 @@
 </head>
 <body>
     <div id="controls">
-        <label for="speed-slider">回転スピード: <span id="speed-value">0.005</span></label>
-        <input type="range" id="speed-slider" min="0.001" max="0.05" step="0.0005" value="0.005">
+        <label for="speed-slider">回転スピード: <span id="speed-value">0.0255</span></label>
+        <input type="range" id="speed-slider" min="0.001" max="0.05" step="0.0005" value="0.0255">
 
-        <label for="scale-slider">球体サイズ: <span id="scale-value">1.0</span></label>
-        <input type="range" id="scale-slider" min="0.5" max="2.0" step="0.05" value="1.0">
+        <label for="scale-slider">球体サイズ: <span id="scale-value">1.25</span></label>
+        <input type="range" id="scale-slider" min="0.5" max="2.0" step="0.05" value="1.25">
 
-        <label for="complexity-slider">複雑度: <span id="complexity-value">32</span></label>
-        <input type="range" id="complexity-slider" min="8" max="64" step="8" value="32">
+        <label for="complexity-slider">複雑度: <span id="complexity-value">36</span></label>
+        <input type="range" id="complexity-slider" min="8" max="64" step="8" value="36">
 
-        <label for="displacement-slider">凹凸の強さ: <span id="displacement-value">0.10</span></label>
-        <input type="range" id="displacement-slider" min="0.0" max="0.3" step="0.01" value="0.1">
+        <label for="displacement-slider">凹凸の強さ: <span id="displacement-value">0.15</span></label>
+        <input type="range" id="displacement-slider" min="0.0" max="0.3" step="0.01" value="0.15">
 
-        <label for="friction-slider">慣性: <span id="friction-value">0.95</span></label>
-        <input type="range" id="friction-slider" min="0.85" max="0.99" step="0.01" value="0.95">
+        <label for="friction-slider">慣性: <span id="friction-value">0.92</span></label>
+        <input type="range" id="friction-slider" min="0.85" max="0.99" step="0.01" value="0.92">
 
         <label for="texture-select">テクスチャ:</label>
         <select id="texture-select">
             <option value="random_blocks">ランダムブロック</option>
-            <option value="noise_pattern">ノイズパターン</option>
+            <option value="noise_pattern" selected>ノイズパターン</option>
             <option value="gradient">グラデーション</option>
         </select>
 
@@ -111,16 +111,21 @@
         let previousMousePosition = { x: 0, y: 0 };
         let rotationSpeedX = 0;
         let rotationSpeedY = 0;
-        let autoRotateSpeed = 0.005; // 自動回転の基本速度
+        let autoRotateBaseSpeed = 0.0255; // 自動回転の基本速度
+        let autoRotateTargetX = 0; // 自動回転の目標X軸速度
+        let autoRotateTargetY = 0; // 自動回転の目標Y軸速度
+        let autoRotateChangeInterval = 3000; // 自動回転の方向が変わる間隔（ミリ秒）
+        let lastAutoRotateChangeTime = Date.now();
+
         let autoRotateStartTime = Date.now();
-        const AUTO_ROTATE_DELAY = 5000; // 5秒後に自動回転開始
+        const AUTO_ROTATE_DELAY = 1000; // 1秒後に自動回転開始（ユーザー操作後のリセットも含む）
 
         let initialPinchDistance = 0;
-        let initialSphereScale = 1; // 現在の球体のスケール (ピンチ用)
+        let initialSphereScale = 1;
 
         // ズームイン・アウトの限界
         const MIN_CAMERA_Z = 1.2;
-        const MAX_CAMERA_Z = 5.0; // カメラのZ座標でズームを制御
+        const MAX_CAMERA_Z = 5.0;
 
         // UI要素
         const speedSlider = document.getElementById('speed-slider');
@@ -129,11 +134,11 @@
         const scaleValueSpan = document.getElementById('scale-value');
         const complexitySlider = document.getElementById('complexity-slider');
         const complexityValueSpan = document.getElementById('complexity-value');
-        const displacementSlider = document.getElementById('displacement-slider'); // 新しいスライダー
-        const displacementValueSpan = document.getElementById('displacement-value'); // 新しいスライダー
-        const frictionSlider = document.getElementById('friction-slider'); // 新しいスライダー
-        const frictionValueSpan = document.getElementById('friction-value'); // 新しいスライダー
-        const textureSelect = document.getElementById('texture-select'); // 新しいセレクトボックス
+        const displacementSlider = document.getElementById('displacement-slider');
+        const displacementValueSpan = document.getElementById('displacement-value');
+        const frictionSlider = document.getElementById('friction-slider');
+        const frictionValueSpan = document.getElementById('friction-value');
+        const textureSelect = document.getElementById('texture-select');
         const randomizeButton = document.getElementById('randomize-button');
 
         function init() {
@@ -142,8 +147,8 @@
 
             // カメラの作成
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = parseFloat(scaleSlider.value) + 1.0; // 球体の初期サイズに合わせてカメラ位置を調整
-            camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z)); // 限界を適用
+            camera.position.z = parseFloat(scaleSlider.value) + 1.0;
+            camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
 
             // レンダラーの作成
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -181,16 +186,15 @@
 
             // UIスライダーのイベントリスナー
             speedSlider.addEventListener('input', (event) => {
-                autoRotateSpeed = parseFloat(event.target.value);
-                speedValueSpan.textContent = autoRotateSpeed.toFixed(3);
+                autoRotateBaseSpeed = parseFloat(event.target.value);
+                speedValueSpan.textContent = autoRotateBaseSpeed.toFixed(4);
             });
 
             scaleSlider.addEventListener('input', (event) => {
                 const newScale = parseFloat(event.target.value);
                 sphere.scale.set(newScale, newScale, newScale);
-                scaleValueSpan.textContent = newScale.toFixed(1);
+                scaleValueSpan.textContent = newScale.toFixed(2); // 小数点以下2桁表示に変更
 
-                // 球体サイズに合わせてカメラZ位置を調整（ズーム）
                 camera.position.z = newScale + 1.0;
                 camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
             });
@@ -211,7 +215,7 @@
                 createBumpySphere(
                     parseFloat(scaleSlider.value),
                     parseInt(complexitySlider.value),
-                    newDisplacement, // 新しい変位を渡す
+                    newDisplacement,
                     textureSelect.value
                 );
                 displacementValueSpan.textContent = newDisplacement.toFixed(2);
@@ -226,7 +230,7 @@
                     parseFloat(scaleSlider.value),
                     parseInt(complexitySlider.value),
                     parseFloat(displacementSlider.value),
-                    event.target.value // 選択されたテクスチャタイプを渡す
+                    event.target.value
                 );
             });
 
@@ -234,20 +238,19 @@
                 // スピードをランダムに
                 const randomSpeed = getRandomFloat(parseFloat(speedSlider.min), parseFloat(speedSlider.max));
                 speedSlider.value = randomSpeed;
-                speedValueSpan.textContent = randomSpeed.toFixed(3);
-                autoRotateSpeed = randomSpeed;
+                speedValueSpan.textContent = randomSpeed.toFixed(4); // 小数点以下4桁表示に変更
+                autoRotateBaseSpeed = randomSpeed;
 
                 // スケールをランダムに
                 const randomScale = getRandomFloat(parseFloat(scaleSlider.min), parseFloat(scaleSlider.max));
                 scaleSlider.value = randomScale;
-                scaleValueSpan.textContent = randomScale.toFixed(1);
+                scaleValueSpan.textContent = randomScale.toFixed(2); // 小数点以下2桁表示に変更
                 sphere.scale.set(randomScale, randomScale, randomScale);
                 camera.position.z = randomScale + 1.0;
                 camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
 
-
                 // 複雑度をランダムに
-                const randomComplexity = getRandomInt(8, 64); // 8の倍数
+                const randomComplexity = getRandomInt(8, 64);
                 complexitySlider.value = randomComplexity;
                 complexityValueSpan.textContent = randomComplexity;
 
@@ -280,7 +283,7 @@
             return Math.floor(Math.random() * ((max - min) / step + 1)) * step + min;
         }
 
-        // 凹凸のある球体を生成する関数（引数を追加）
+        // 凹凸のある球体を生成する関数
         function createBumpySphere(scale, complexity, displacementStrength, textureType) {
             if (sphere) {
                 scene.remove(sphere);
@@ -310,12 +313,11 @@
             for (let i = 0; i < positionAttribute.count; i++) {
                 tempVector.fromBufferAttribute(positionAttribute, i);
                 const normal = tempVector.clone().normalize();
-                // 凹凸の強さスライダーの値を使用
-                const displacement = (Math.random() - 0.5) * 2 * displacementStrength; // -displacementStrength から +displacementStrength の範囲
+                const displacement = (Math.random() - 0.5) * 2 * displacementStrength;
                 tempVector.add(normal.multiplyScalar(displacement));
                 positionAttribute.setXYZ(i, tempVector.x, tempVector.y, tempVector.z);
             }
-            geometry.computeVertexNormals(); // 法線を再計算
+            geometry.computeVertexNormals();
 
             const material = new THREE.MeshStandardMaterial({
                 map: texture,
@@ -324,7 +326,7 @@
             });
 
             sphere = new THREE.Mesh(geometry, material);
-            sphere.scale.set(scale, scale, scale); // 初期スケールを設定
+            sphere.scale.set(scale, scale, scale);
             scene.add(sphere);
         }
 
@@ -366,12 +368,12 @@
                 imageData.data[i * 4] = value;
                 imageData.data[i * 4 + 1] = value;
                 imageData.data[i * 4 + 2] = value;
-                imageData.data[i * 4 + 3] = 255; // Alpha
+                imageData.data[i * 4 + 3] = 255;
             }
             context.putImageData(imageData, 0, 0);
             const texture = new THREE.CanvasTexture(canvas);
             texture.needsUpdate = true;
-            texture.magFilter = THREE.LinearFilter; // ノイズは滑らかに
+            texture.magFilter = THREE.LinearFilter;
             texture.minFilter = THREE.LinearMipmapLinearFilter;
             return texture;
         }
@@ -405,6 +407,10 @@
                 x: event.clientX,
                 y: event.clientY
             };
+            // ユーザー操作があったら自動回転開始タイマーをリセット
+            autoRotateStartTime = Date.now();
+            autoRotateTargetX = 0; // 手動操作開始時、自動回転の目標値をリセット
+            autoRotateTargetY = 0;
         }
 
         function onMouseMove(event) {
@@ -413,6 +419,7 @@
             const deltaX = event.clientX - previousMousePosition.x;
             const deltaY = event.clientY - previousMousePosition.y;
 
+            // マウスドラッグは現在の回転速度に直接影響
             rotationSpeedY = deltaX * 0.005;
             rotationSpeedX = deltaY * 0.005;
 
@@ -435,10 +442,14 @@
                     x: event.touches[0].clientX,
                     y: event.touches[0].clientY
                 };
+                // ユーザー操作があったら自動回転開始タイマーをリセット
+                autoRotateStartTime = Date.now();
+                autoRotateTargetX = 0; // 手動操作開始時、自動回転の目標値をリセット
+                autoRotateTargetY = 0;
             } else if (event.touches.length === 2) {
-                isDragging = false; // ピンチ中はドラッグを無効化
+                isDragging = false;
                 initialPinchDistance = getPinchDistance(event.touches);
-                initialSphereScale = sphere.scale.x; // 現在の球体のスケールを保存
+                initialSphereScale = sphere.scale.x;
             }
         }
 
@@ -461,15 +472,13 @@
                 const scaleFactor = currentPinchDistance / initialPinchDistance;
                 let newScale = initialSphereScale * scaleFactor;
 
-                // ズームイン・アウトの限界を適用（球体サイズで制御）
                 newScale = Math.max(parseFloat(scaleSlider.min), Math.min(parseFloat(scaleSlider.max), newScale));
 
                 sphere.scale.set(newScale, newScale, newScale);
-                scaleSlider.value = newScale; // スライダーも同期
-                scaleValueSpan.textContent = newScale.toFixed(1);
+                scaleSlider.value = newScale;
+                scaleValueSpan.textContent = newScale.toFixed(2);
 
-                // 球体サイズに合わせてカメラZ位置を調整（ズーム）
-                camera.position.z = newScale + 1.0; // 1.0はオフセット
+                camera.position.z = newScale + 1.0;
                 camera.position.z = Math.max(MIN_CAMERA_Z, Math.min(MAX_CAMERA_Z, camera.position.z));
             }
         }
@@ -493,16 +502,41 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            const elapsedTime = Date.now() - autoRotateStartTime;
-            if (elapsedTime > AUTO_ROTATE_DELAY) {
-                sphere.rotation.y += autoRotateSpeed;
-            }
+            const friction = parseFloat(frictionSlider.value);
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - autoRotateStartTime;
 
             if (!isDragging) {
-                const friction = parseFloat(frictionSlider.value); // スライダーの値を使用
+                if (elapsedTime > AUTO_ROTATE_DELAY) {
+                    // 自動回転の方向を定期的に変更
+                    if (currentTime - lastAutoRotateChangeTime > autoRotateChangeInterval) {
+                        autoRotateTargetX = (Math.random() - 0.5) * autoRotateBaseSpeed * 2; // ランダムな方向と速度
+                        autoRotateTargetY = (Math.random() - 0.5) * autoRotateBaseSpeed * 2; // ランダムな方向と速度
+                        lastAutoRotateChangeTime = currentTime;
+                    }
+                    // 目標速度に向かって現在の速度を徐々に変化させる
+                    rotationSpeedX += (autoRotateTargetX - rotationSpeedX) * (1 - friction);
+                    rotationSpeedY += (autoRotateTargetY - rotationSpeedY) * (1 - friction);
+
+                } else {
+                    // 自動回転開始前の遅延中、またはユーザー操作直後
+                    // 現在の速度に慣性を適用して徐々に停止
+                    rotationSpeedX *= friction;
+                    rotationSpeedY *= friction;
+                }
+            } else {
+                // ドラッグ中は目標回転速度を0に近づける（手動操作が主導）
                 rotationSpeedX *= friction;
                 rotationSpeedY *= friction;
+                autoRotateStartTime = currentTime; // ドラッグ中は自動回転タイマーをリセット
+                lastAutoRotateChangeTime = currentTime; // 自動回転の方向変更タイマーもリセット
             }
+
+            // 速度が大きくなりすぎないように制限
+            rotationSpeedX = Math.max(Math.min(rotationSpeedX, autoRotateBaseSpeed * 2), -autoRotateBaseSpeed * 2);
+            rotationSpeedY = Math.max(Math.min(rotationSpeedY, autoRotateBaseSpeed * 2), -autoRotateBaseSpeed * 2);
+
+
             sphere.rotation.x += rotationSpeedX;
             sphere.rotation.y += rotationSpeedY;
 
