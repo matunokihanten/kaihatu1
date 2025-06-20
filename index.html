@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>万華鏡アニメーション</title>
+  <title>豪華で回転する万華鏡アニメーション</title>
   <style>
     body, html {
       margin: 0;
@@ -21,21 +21,31 @@
       z-index: 10;
       color: white;
       font-family: Arial, sans-serif;
+      background: rgba(0, 0, 0, 0.5); /* 背景を半透明にして見やすく */
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #controls label {
+        margin-right: 5px;
+    }
+    #speedRange {
+        vertical-align: middle; /* ラベルとスライダーを中央揃え */
     }
   </style>
 </head>
 <body>
   <!-- スピードを調整するスライダー -->
   <div id="controls">
-    <label for="speedRange">Speed:</label>
-    <input type="range" id="speedRange" min="1" max="6000" value="3000">
+    <label for="speedRange">スピード:</label>
+    <!-- maxを60000に変更 -->
+    <input type="range" id="speedRange" min="1" max="60000" value="3000">
   </div>
   <canvas id="canvas"></canvas>
-  
+
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     // キャンバスが常に画面全体にフィットするようにリサイズ
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -43,61 +53,128 @@
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-    
+
     // スライダーで調整する回転スピード
     const speedSlider = document.getElementById('speedRange');
     let speed = parseFloat(speedSlider.value);
     speedSlider.addEventListener('input', () => {
       speed = parseFloat(speedSlider.value);
     });
-    
+
     let angle = 0;
     let colorOffset = 0;
-    
+    let patternOffset = 0; // パターンの位置や色のオフセット用
+
     function animate() {
       // キャンバスをクリア
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // 画面中央を原点に
       ctx.save();
       ctx.translate(canvas.width / 2, canvas.height / 2);
-      
+
       // 万華鏡効果のために複数のセグメント（ここでは12個）に分ける
-      const segments = 12;
-      const segmentAngle = (Math.PI * 2) / segments;
+      const segments = 12; // セグメント数
+      const segmentAngle = (Math.PI * 2) / segments; // 各セグメントの角度
       // キャンバス上に十分な大きさで描画するため、対角線の長さを半径とする
-      const radius = Math.hypot(canvas.width, canvas.height);
-      
+      const radius = Math.hypot(canvas.width, canvas.height) / 1.5; // 半径を少し小さくして中心に隙間を作る
+
       for (let i = 0; i < segments; i++) {
         ctx.save();
         // 各セグメントごとに回転
         ctx.rotate(i * segmentAngle + angle);
         // 奇数番目のセグメントは左右反転して対称効果を追加
-        if (i % 2 === 1) ctx.scale(1, -1);
-        
-        // セグメントごとに三角形のパス（扇形に近い形）を描く
+        // 簡易的にY軸反転を適用
+        if (i % 2 === 1) {
+             ctx.scale(1, -1);
+        }
+
+
+        // セグメントのパスを定義（塗りつぶしとパターンのクリッピングに使う）
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(radius * Math.cos(-segmentAngle / 2), radius * Math.sin(-segmentAngle / 2));
-        ctx.lineTo(radius * Math.cos(segmentAngle / 2), radius * Math.sin(segmentAngle / 2));
+        ctx.moveTo(0, 0); // 中心から開始
+        // セグメントの端の2点
+        const p1x = radius * Math.cos(-segmentAngle / 2);
+        const p1y = radius * Math.sin(-segmentAngle / 2);
+        const p2x = radius * Math.cos(segmentAngle / 2);
+        const p2y = radius * Math.sin(segmentAngle / 2);
+        ctx.lineTo(p1x, p1y);
+        ctx.lineTo(p2x, p2y);
         ctx.closePath();
-        
-        // HSLを使用して色相を連続的に変化させる
-        ctx.fillStyle = `hsl(${(colorOffset + i * 30) % 360}, 100%, 50%)`;
+
+        // このパスでクリッピングすると、描画がセグメント内に収まる
+        ctx.clip();
+
+
+        // 放射状グラデーションを作成（背景として使用）
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        const baseHue = (colorOffset + i * (360 / segments)) % 360;
+
+        gradient.addColorStop(0, `hsl(${baseHue}, 100%, 70%)`);
+        gradient.addColorStop(0.5, `hsl(${(baseHue + 30) % 360}, 90%, 50%)`);
+        gradient.addColorStop(1, `hsl(${(baseHue + 60) % 360}, 70%, 30%)`);
+
+        ctx.fillStyle = gradient;
         ctx.fill();
-        ctx.restore();
+
+
+        // 万華鏡らしいパターンを描画（中心から放射する線や図形）
+        const patternLines = 40; // セグメント内に描画する線の数（増やすと密度が増す）
+        for (let j = 0; j < patternLines; j++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0); // 中心から開始
+
+            // 線がセグメントの範囲内に収まるように角度を計算
+            // jに応じてセグメントの角度範囲(-segmentAngle/2 から segmentAngle/2)内で変化
+            // patternOffset を加えて、時間と共に線の位置を少しずらす
+            const lineAngle = -segmentAngle / 2 + (segmentAngle / (patternLines - 1)) * j + patternOffset;
+
+            // 線の終点の半径を計算（中心からの距離）
+            // 外側に行くほど半径が大きくなる
+            const endRadius = radius * (0.2 + (j / patternLines) * 0.8); // 中心近くは短く、外側は長く
+
+            // 時間経過や線の番号によって終点の位置を少し変化させる（波打つような効果）
+            const waveFactor = Math.sin(angle * 20 + j * 0.8) * 15; // 時間と線の番号で変化する波の大きさ
+            const endX = (endRadius + waveFactor) * Math.cos(lineAngle);
+            const endY = (endRadius + waveFactor) * Math.sin(lineAngle);
+
+
+            ctx.lineTo(endX, endY);
+
+
+            // 線の色を距離や時間によって変化させる
+            // 中心から外側に行くほど色相が変化するように
+            // colorOffset と patternOffset を組み合わせて色の変化を複雑に
+            const lineColorHue = (baseHue + (j / patternLines) * 200 + colorOffset * 2 + patternOffset * 50) % 360;
+            ctx.strokeStyle = `hsl(${lineColorHue}, 100%, 60%)`;
+
+            // 線の太さも変化させる
+            ctx.lineWidth = 0.5 + (j / patternLines) * 2; // 外側に行くほど太く
+
+            ctx.stroke();
+        }
+
+
+        ctx.restore(); // クリッピングとセグメントの回転・反転を元に戻す
       }
-      
-      ctx.restore();
-      
+
+      ctx.restore(); // 全体のtranslateを元に戻す
+
       // 回転のスピードはスライダーの値に応じて変化
-      angle += (speed / 6000) * 0.05;
-      // 色相のオフセットを変化させることで、色が連続的に変わるようにする
-      colorOffset += 0.5;
-      
+      // スライダーの値(1-60000)を適切な回転速度にマッピング
+      // 最大速度で元の最大速度の10倍になるように調整
+      // 元の最大速度 (6000/6000 * 0.05) の10倍 -> 0.5
+      angle += speed / 60000 * 0.5;
+
+      // 色相のオフセットを変化させる
+      colorOffset += 0.8; // 色の変化速度
+
+      // パターンのオフセットを変化させる（線の位置や色に影響）
+      patternOffset += 0.002; // パターンの変化速度（少し速く）
+
       requestAnimationFrame(animate);
     }
-    
+
     animate();
   </script>
 </body>
