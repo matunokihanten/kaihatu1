@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -9,10 +10,9 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; }
         h1 { color: #0056b3; text-align: center; margin-bottom: 30px; }
 
-        /* ダウンロードされるHTMLファイルでのグループボタンコンテナのスタイル */
         #generatedGroupButtonsContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* 8列表示 */
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
             gap: 10px;
             margin-top: 20px;
             margin-bottom: 30px;
@@ -20,13 +20,13 @@
             background-color: #e6f0fa;
             border-radius: 10px;
             box-shadow: inset 0 1px 5px rgba(0,0,0,0.08);
-            max-width: 800px; /* 必要に応じて調整 */
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
         }
 
         .generated-group-scroll-button {
-            background: linear-gradient(145deg, #4CAF50, #2E8B57); /* 緑系のグラデーション */
+            background: linear-gradient(145deg, #4CAF50, #2E8B57);
             color: white;
             border: none;
             padding: 10px 5px;
@@ -47,34 +47,54 @@
             box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
         }
 
-        .group-container { /* 新しいグループ用のコンテナ */
+        .tag-container {
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #b0d8f0;
+            scroll-margin-top: 80px; /* スクロール位置の調整 */
+        }
+        .tag-container:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .tag-title {
+            font-size: 1.6em;
+            color: #004085;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            background-color: #e0f2ff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .group-container {
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 1px dashed #e0e0e0;
-            scroll-margin-top: 80px; /* グループボタンの高さに合わせて調整 */
+            /* group-container自体は直接スクロールターゲットにならないのでscroll-margin-topは不要 */
         }
         .group-container:last-of-type {
-            border-bottom: none;
             margin-bottom: 0;
         }
         .group-title {
             font-size: 1.3em;
             color: #0056b3;
-            margin-top: 30px; /* グループタイトル上部の余白を調整 */
+            margin-top: 30px;
             margin-bottom: 15px;
             text-align: center;
             font-weight: 600;
         }
         .button-grid {
             display: grid;
-            /* 画面幅に応じて最大4列に調整 */
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             padding: 0 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
-        @media (min-width: 900px) { /* 特定のブレークポイント以上で4列を強制 */
+        @media (min-width: 900px) {
             .button-grid {
                 grid-template-columns: repeat(4, 1fr);
             }
@@ -97,7 +117,6 @@
             max-width: 100%;
         }
 
-        /* リンク名の9文字目から強制的に折り返すためのCSS */
         .link-button span.wrapped-text {
             word-break: break-all;
             display: block;
@@ -108,12 +127,12 @@
         }
         @media (max-width: 768px) {
             #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); /* 小画面では列数を調整 */
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
             }
         }
         @media (max-width: 480px) {
             #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(4, 1fr); /* さらに狭い画面では4列に */
+                grid-template-columns: repeat(4, 1fr);
             }
         }
     </style>
@@ -122,25 +141,21 @@
     <h1>脳トレ部屋 - リンク一覧</h1>
 
     <div id="generatedGroupButtonsContainer">
-        <button class="generated-group-scroll-button" onclick="document.getElementById('group-HTM').scrollIntoView({ behavior: 'smooth', block: 'start' });">HTM</button>
-        <button class="generated-group-scroll-button" onclick="document.getElementById('group-構成ジ').scrollIntoView({ behavior: 'smooth', block: 'start' });">構成ジ</button>
-        <button class="generated-group-scroll-button" onclick="document.getElementById('group-飲食店').scrollIntoView({ behavior: 'smooth', block: 'start' });">飲食店</button>
+        <button class="generated-group-scroll-button" onclick="document.getElementById('tag-仕事支援').scrollIntoView({ behavior: 'smooth', block: 'start' });">仕事支援</button>
     </div>
-    <div class="group-container" id="group-HTM">
-        <h2 class="group-title">HTMで始まるリンク</h2>
+    <div class="tag-container" id="tag-仕事支援">
+        <h2 class="tag-title">仕事支援</h2>
+    <div class="group-container">
+        <h3 class="group-title">HTMで始まるリンク</h3>
         <div class="button-grid">
         <a href="https://matunokihanten.github.io/g/ko-do2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
         </div></div>
-    <div class="group-container" id="group-飲食店">
-        <h2 class="group-title">飲食店で始まるリンク</h2>
+    <div class="group-container">
+        <h3 class="group-title">構成ジで始まるリンク</h3>
         <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/menyu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">飲食店用 メニュ<span class="wrapped-text">ー作成 改良中</span></a>
+        <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
         </div></div>
-    <div class="group-container" id="group-構成ジ">
-        <h2 class="group-title">構成ジで始まるリンク</h2>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
-        </div></div>
+    </div>
 
 </body>
 </html>
