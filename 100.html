@@ -1,138 +1,283 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>脳トレ部屋 - リンク一覧</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; }
-        h1 { color: #0056b3; text-align: center; margin-bottom: 30px; }
+        :root {
+            --primary-blue: #007bff;
+            --primary-dark-blue: #0056b3;
+            --light-blue-bg: #e6f0fa;
+            --dark-text: #333;
+            --light-text: #fff;
+            --section-border: #b0d8f0;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-strong: rgba(0, 0, 0, 0.25);
+            --gradient-green: linear-gradient(145deg, #4CAF50, #2E8B57);
+            --gradient-green-hover: linear-gradient(145deg, #2E8B57, #1E6C3B);
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: var(--dark-text);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        h1 {
+            color: var(--primary-dark-blue);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.8em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px var(--shadow-light);
+        }
 
         #generatedGroupButtonsContainer {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
+            display: flex; /* Use flexbox for better alignment */
+            justify-content: center; /* Center the buttons */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 15px;
             margin-top: 20px;
-            margin-bottom: 30px;
-            padding: 15px;
-            background-color: #e6f0fa;
-            border-radius: 10px;
-            box-shadow: inset 0 1px 5px rgba(0,0,0,0.08);
-            max-width: 800px;
+            margin-bottom: 50px;
+            padding: 20px;
+            background-color: var(--light-blue-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--shadow-light);
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
+            border: 1px solid #cce0f0;
         }
 
         .generated-group-scroll-button {
-            background: linear-gradient(145deg, #4CAF50, #2E8B57);
-            color: white;
+            background: var(--gradient-green);
+            color: var(--light-text);
             border: none;
-            padding: 10px 5px;
-            border-radius: 8px;
+            padding: 12px 25px;
+            border-radius: 30px; /* Pill shape */
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 10px var(--shadow-medium);
             text-align: center;
-            display: block;
-            width: 100%;
+            min-width: 120px; /* Ensure buttons have a minimum width */
+            flex-grow: 1; /* Allow buttons to grow */
         }
 
         .generated-group-scroll-button:hover {
-            background: linear-gradient(145deg, #2E8B57, #1E6C3B);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+            background: var(--gradient-green-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 18px var(--shadow-strong);
         }
 
         .tag-container {
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #b0d8f0;
-            scroll-margin-top: 80px; /* スクロール位置の調整 */
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--section-border);
+            scroll-margin-top: 100px; /* Adjust for fixed header/buttons if any */
         }
         .tag-container:last-of-type {
             border-bottom: none;
             margin-bottom: 0;
         }
+
         .tag-title {
-            font-size: 1.6em;
-            color: #004085;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            font-size: 2.2em;
+            color: var(--primary-dark-blue);
+            margin-top: 30px;
+            margin-bottom: 30px;
             text-align: center;
             font-weight: 700;
             background-color: #e0f2ff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px var(--shadow-light);
+            border-left: 6px solid var(--primary-blue);
+            text-transform: uppercase;
         }
 
         .group-container {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            /* group-container自体は直接スクロールターゲットにならないのでscroll-margin-topは不要 */
+            margin-bottom: 35px;
+            padding-bottom: 20px;
         }
         .group-container:last-of-type {
             margin-bottom: 0;
         }
+
         .group-title {
-            font-size: 1.3em;
-            color: #0056b3;
-            margin-top: 30px;
-            margin-bottom: 15px;
+            font-size: 1.7em;
+            color: var(--primary-blue);
+            margin-top: 40px;
+            margin-bottom: 25px;
             text-align: center;
             font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
         }
+        .group-title::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--primary-blue);
+            border-radius: 2px;
+        }
+
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted min-width for better fit */
+            gap: 20px;
             padding: 0 20px;
-            max-width: 1200px;
+            max-width: 1400px; /* Increased max-width for wider screens */
             margin: 0 auto;
         }
-        @media (min-width: 900px) {
-            .button-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
+
         .link-button {
-            display: block;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
+            display: flex; /* Use flex for content centering */
+            align-items: center;
+            justify-content: center;
+            color: var(--light-text);
+            padding: 20px 25px;
+            border-radius: 10px;
             text-decoration: none;
             text-align: center;
-            font-size: 1.1em;
+            font-size: 1.15em;
             font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 15px var(--shadow-medium);
             transition: all 0.3s ease;
             word-wrap: break-word;
             overflow-wrap: break-word;
             white-space: normal;
-            display: inline-block;
-            max-width: 100%;
+            min-height: 80px; /* Ensure consistent button height */
+            background: #6a11cb; /* Default for safety */
         }
 
         .link-button span.wrapped-text {
-            word-break: break-all;
-            display: block;
+            word-break: break-word; /* Ensure long words break */
+            display: inline; /* Keep on same line if possible */
         }
+
         .link-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 8px 20px var(--shadow-strong);
+            filter: brightness(1.1); /* Slightly brighten on hover */
         }
-        @media (max-width: 768px) {
-            #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            h1 {
+                font-size: 2.5em;
+            }
+            .tag-title {
+                font-size: 2em;
+            }
+            .group-title {
+                font-size: 1.5em;
+            }
+            .button-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 18px;
+            }
+            .link-button {
+                font-size: 1.1em;
+                padding: 18px 22px;
+                min-height: 75px;
             }
         }
-        @media (max-width: 480px) {
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 2.2em;
+                margin-bottom: 30px;
+            }
             #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                padding: 15px;
+                margin-bottom: 40px;
+            }
+            .generated-group-scroll-button {
+                padding: 10px 15px;
+                font-size: 0.95rem;
+                min-width: unset; /* Allow smaller width on small screens */
+            }
+            .tag-title {
+                font-size: 1.8em;
+                padding: 12px 15px;
+            }
+            .group-title {
+                font-size: 1.3em;
+                margin-top: 30px;
+                margin-bottom: 20px;
+            }
+            .button-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 15px;
+                padding: 0 10px;
+            }
+            .link-button {
+                font-size: 1em;
+                padding: 15px 18px;
+                min-height: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 25px;
+            }
+            #generatedGroupButtonsContainer {
+                flex-direction: column; /* Stack buttons on very small screens */
+                align-items: stretch; /* Stretch buttons to full width */
+                gap: 8px;
+                padding: 12px;
+                margin-bottom: 30px;
+            }
+            .generated-group-scroll-button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+            .tag-title {
+                font-size: 1.5em;
+                padding: 10px;
+                border-left-width: 4px;
+            }
+            .group-title {
+                font-size: 1.2em;
+                margin-top: 25px;
+                margin-bottom: 15px;
+            }
+            .group-title::after {
+                width: 60px;
+                height: 2px;
+            }
+            .button-grid {
+                grid-template-columns: 1fr; /* Single column layout */
+                gap: 12px;
+                padding: 0 5px;
+            }
+            .link-button {
+                font-size: 0.95em;
+                padding: 12px 15px;
+                min-height: 60px;
             }
         }
     </style>
@@ -145,341 +290,402 @@
         <button class="generated-group-scroll-button" onclick="document.getElementById('tag-脳トレ').scrollIntoView({ behavior: 'smooth', block: 'start' });">脳トレ</button>
         <button class="generated-group-scroll-button" onclick="document.getElementById('tag-仕事効率化').scrollIntoView({ behavior: 'smooth', block: 'start' });">仕事効率化</button>
     </div>
+
     <div class="tag-container" id="tag-ゲーム類">
         <h2 class="tag-title">ゲーム類</h2>
-    <div class="group-container">
-        <h3 class="group-title">3Dので始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/3droom/index.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">3Dの部屋</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">もぐらで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mysql/mogura/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">もぐらたたき</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">簡単なで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/tetorisu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">簡単なテトリス</a>
-        </div></div>
+        <div class="group-container">
+            <h3 class="group-title">3Dので始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/3droom/index.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">3Dの部屋</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">もぐらで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mysql/mogura/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">もぐらたたき</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">簡単なで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/tetorisu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">簡単なテトリス</a>
+            </div>
+        </div>
     </div>
+
     <div class="tag-container" id="tag-脳トレ">
         <h2 class="tag-title">脳トレ</h2>
-    <div class="group-container">
-        <h3 class="group-title">オセロで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/osero.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">オセロ ※レベル<span class="wrapped-text">５工事中</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">クリペで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/kiriperin" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">クリペリン検査</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ジオメで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/kaihatu1/8" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ジオメトリ 球体</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ステレで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/sutereo" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラムゲ<span class="wrapped-text">ーム</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/sutereo3" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラムゲ<span class="wrapped-text">ーム※色付きあり</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/sutereo4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム <span class="wrapped-text">※簡単版</span></a>
-        <a href="https://matunokihanten.github.io/g/ugoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム　<span class="wrapped-text">移動型</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ドッツで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/dotukado" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード</a>
-        <a href="https://matunokihanten.github.io/mojikioku/dotukado2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード改良<span class="wrapped-text">版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">はさみで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/hasami.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">はさみ将棋</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ヒットで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/hitto.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー <span class="wrapped-text">　※上級者用</span></a>
-        <a href="https://matunokihanten.github.io/g/hitto/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー　<span class="wrapped-text">練習用</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">フィボで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/fibo/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチパズ<span class="wrapped-text">ル</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/1.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">２</span></a>
-        <a href="https://matunokihanten.github.io/h/fibo/fibo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">３</span></a>
-        <a href="https://matunokihanten.github.io/h/fibo/fibo2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ立方<span class="wrapped-text">体</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/11.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/111.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改２</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型２</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/5" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラフル螺旋型</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/6" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ シ<span class="wrapped-text">ンプル螺旋型</span></a>
-        <a href="https://matunokihanten.github.io/kaihatu1/7" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラーボード</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">フラッで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/furassyu/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">フラッシュ暗算</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">移動すで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉※触<span class="wrapped-text">ると玉が消えるよ</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉※触<span class="wrapped-text">ると玉が消えるよ 改良版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">渦巻きで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/uzumaki.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き※心の疲れ<span class="wrapped-text">の消去効果</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/uzumaki2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き カラフル</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">円周率で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/ensyuu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">円周率記憶ゲーム<span class="wrapped-text"> 500桁数まで</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">間違いで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/matigai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">間違い探し</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">間違えで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/matigai2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">間違え探し　豪華<span class="wrapped-text">版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">記憶ので始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/kiokukyuuden.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 文字<span class="wrapped-text">記憶</span></a>
-        <a href="https://matunokihanten.github.io/h/kiokukyuuden2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 数字<span class="wrapped-text">記憶</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">逆算ゲで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/gyakusan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム改</a>
-        <a href="https://matunokihanten.github.io/mojikioku/gyakusan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">玉点滅で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅※ボタン多<span class="wrapped-text">数</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅※自己開発</a>
-        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅※新自己開<span class="wrapped-text">発</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅※設定可能</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">元素記で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/genso.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">元素記号記憶脳ト<span class="wrapped-text">レ</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">五目並で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/gomoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">五目並べ</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">光る電で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/dentakuhikaru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">光る電卓ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">時間感で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/jikan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">時間感覚</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">重複数で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/suujisagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">重複数字探しゲー<span class="wrapped-text">ム</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">瞬間記で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/syunkan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶 ３Dパ<span class="wrapped-text">ネル</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/syunnkann" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶ゲーム(<span class="wrapped-text">パネル)</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">順番記で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/jyunbankioku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">順番記憶ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">色彩感で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/sikisai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">色彩感覚ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">色探しで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/irosagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　※<span class="wrapped-text">少しずつ難しくなります</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/irosagasi2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　レ<span class="wrapped-text">ベル選択式</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/irosagasi3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム 進<span class="wrapped-text">化版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">神経衰で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/sinkei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱 (数字<span class="wrapped-text">)</span></a>
-        <a href="https://matunokihanten.github.io/h/sinkei2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱　絵柄</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">数字記で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">瞬間記憶型）</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/2suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">記憶追跡型）</span></a>
-        <a href="https://matunokihanten.github.io/mojikioku/3suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム <span class="wrapped-text">(追跡型改良版)</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">数字反で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/suujihannou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">数字反応</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">数独ゲで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/suudoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">数独ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">積み木で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/tumikikazoe.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム</a>
-        <a href="https://matunokihanten.github.io/h/tumikikazoe2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム<span class="wrapped-text">改良版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">担々麺で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/men2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">担々麺作りゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">注文記で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/tyouri.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">注文記憶ゲーム</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">追跡漢で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/kioku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">追跡漢字記憶ゲー<span class="wrapped-text">ム</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">動く棒で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/bouningen.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">動く棒人間を数え<span class="wrapped-text">る</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">動く立で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/rippoutai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">動く立方体認識ゲ<span class="wrapped-text">ーム</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">反応速で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/mojikioku/irokawari.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">反応速度チャレン<span class="wrapped-text">ジ</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">棒の長で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/h/bou/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム</span></a>
-        <a href="https://matunokihanten.github.io/h/bou/1" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム 改良版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">迷路で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/meiro.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">迷路</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">迷路　で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/meiro2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">迷路　３D</a>
-        </div></div>
+        <div class="group-container">
+            <h3 class="group-title">オセロで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/osero.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">オセロ <span class="wrapped-text">※レベル５工事中</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">クリペで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/kiriperin" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">クリペリン検査</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ジオメで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/kaihatu1/8" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ジオメトリ 球体</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ステレで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/sutereo" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム<span class="wrapped-text">ゲーム</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/sutereo3" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム<span class="wrapped-text">ゲーム※色付きあり</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/sutereo4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム <span class="wrapped-text">※簡単版</span></a>
+                <a href="https://matunokihanten.github.io/g/ugoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム　<span class="wrapped-text">移動型</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ドッツで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/dotukado" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード</a>
+                <a href="https://matunokihanten.github.io/mojikioku/dotukado2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード改良<span class="wrapped-text">版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">はさみで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/hasami.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">はさみ将棋</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ヒットで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/hitto.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー <span class="wrapped-text">　※上級者用</span></a>
+                <a href="https://matunokihanten.github.io/g/hitto/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー　<span class="wrapped-text">練習用</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">フィボで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/fibo/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチパズ<span class="wrapped-text">ル</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/1.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">２</span></a>
+                <a href="https://matunokihanten.github.io/h/fibo/fibo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">３</span></a>
+                <a href="https://matunokihanten.github.io/h/fibo/fibo2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ立方<span class="wrapped-text">体</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/11.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/111.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改２</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型２</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/5" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラフル螺旋型</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/6" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ シ<span class="wrapped-text">ンプル螺旋型</span></a>
+                <a href="https://matunokihanten.github.io/kaihatu1/7" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラーボード</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">フラッで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/furassyu/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">フラッシュ暗算</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">移動すで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉<span class="wrapped-text">※触ると玉が消えるよ</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/akadamaidou2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉<span class="wrapped-text">※触ると玉が消えるよ 改良版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">渦巻きで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/uzumaki.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き<span class="wrapped-text">※心の疲れの消去効果</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/uzumaki2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き カラフル</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">円周率で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/ensyuu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">円周率記憶ゲーム<span class="wrapped-text"> 500桁数まで</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">間違いで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/matigai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">間違い探し</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">間違えで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/matigai2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">間違え探し　豪華<span class="wrapped-text">版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">記憶ので始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/kiokukyuuden.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 文字<span class="wrapped-text">記憶</span></a>
+                <a href="https://matunokihanten.github.io/h/kiokukyuuden2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 数字<span class="wrapped-text">記憶</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">逆算ゲで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/gyakusan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム改</a>
+                <a href="https://matunokihanten.github.io/mojikioku/gyakusan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">玉点滅で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※ボタン多数</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※自己開発</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※新自己開発</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※設定可能</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">元素記で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/genso.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">元素記号記憶脳ト<span class="wrapped-text">レ</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">五目並で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/gomoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">五目並べ</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">光る電で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/dentakuhikaru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">光る電卓ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">時間感で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/jikan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">時間感覚</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">重複数で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/suujisagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">重複数字探しゲー<span class="wrapped-text">ム</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">瞬間記で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/syunkan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶 ３Dパ<span class="wrapped-text">ネル</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/syunnkann" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶ゲーム(<span class="wrapped-text">パネル)</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">順番記で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/jyunbankioku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">順番記憶ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">色彩感で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/sikisai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">色彩感覚ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">色探しで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/irosagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　<span class="wrapped-text">※少しずつ難しくなります</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/irosagasi2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　レ<span class="wrapped-text">ベル選択式</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/irosagasi3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム 進<span class="wrapped-text">化版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">神経衰で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/sinkei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱 (数字<span class="wrapped-text">)</span></a>
+                <a href="https://matunokihanten.github.io/h/sinkei2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱　絵柄</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">数字記で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">瞬間記憶型）</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/2suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">記憶追跡型）</span></a>
+                <a href="https://matunokihanten.github.io/mojikioku/3suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム <span class="wrapped-text">(追跡型改良版)</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">数字反で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/suujihannou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">数字反応</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">数独ゲで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/suudoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">数独ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">積み木で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/tumikikazoe.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム</a>
+                <a href="https://matunokihanten.github.io/h/tumikikazoe2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム<span class="wrapped-text">改良版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">担々麺で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/men2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">担々麺作りゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">注文記で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/tyouri.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">注文記憶ゲーム</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">追跡漢で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/kioku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">追跡漢字記憶ゲー<span class="wrapped-text">ム</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">動く棒で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/bouningen.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">動く棒人間を数え<span class="wrapped-text">る</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">動く立で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/rippoutai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">動く立方体認識ゲ<span class="wrapped-text">ーム</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">反応速で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/mojikioku/irokawari.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">反応速度チャレン<span class="wrapped-text">ジ</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">棒の長で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/h/bou/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム</span></a>
+                <a href="https://matunokihanten.github.io/h/bou/1" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム 改良版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">迷路で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/meiro.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">迷路</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">迷路　で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/meiro2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">迷路　３D</a>
+            </div>
+        </div>
     </div>
+
     <div class="tag-container" id="tag-仕事効率化">
         <h2 class="tag-title">仕事効率化</h2>
-    <div class="group-container">
-        <h3 class="group-title">HTMで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/ko-do.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成※HTMLコード入力で高速作成</span></a>
-        <a href="https://matunokihanten.github.io/g/ko-do2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">PDFで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/shomei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDF電子契約署<span class="wrapped-text">名ツール</span></a>
-        <a href="https://matunokihanten.github.io/sigoto/pdfsetugou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDFファイル接<span class="wrapped-text">合ツール</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">アイコで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/aikon" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">アイコン作成※ <span class="wrapped-text">SVG ＆ ICO 出力形式も対応</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">シールで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/si-ru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">シール作成　A4<span class="wrapped-text">サイズ用</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ショッで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/p/62/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">ショッピングサイ<span class="wrapped-text">ト</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">パスワで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/password.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">パスワード整理　<span class="wrapped-text">Google</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">ホームで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/ho-mu" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ホームページ修正<span class="wrapped-text">※少しだけ文字を変えるだけならこれ</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">メモ帳で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/keijiban" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳 マインド<span class="wrapped-text">マップ式掲示板</span></a>
-        <a href="https://matunokihanten.github.io/sigoto/kousokumemo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳※とにかく<span class="wrapped-text">速さ重視</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">飲食店で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/menyu2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成</span></a>
-        <a href="https://matunokihanten.github.io/sigoto/menyu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成 改良中</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">構成ジで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">実行ボで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/botansettei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">※PC用</span></a>
-        <a href="https://matunokihanten.github.io/sigoto/botansettei2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">　改良版</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">人生選で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/jinsei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">人生選択シュミレ<span class="wrapped-text">ーション</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">電卓※で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/dentaku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※横向き用</a>
-        <a href="https://matunokihanten.github.io/sigoto/dentaku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※時間計算付</a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">電話帳で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/renraku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">電話帳　※スマホ<span class="wrapped-text">の電話帳を整理</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">入出金で始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/nyuusyutu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">入出金伝票※若干<span class="wrapped-text">バグあり</span></a>
-        </div></div>
+        <div class="group-container">
+            <h3 class="group-title">HTMで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/ko-do.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成※HTMLコード入力で高速作成</span></a>
+                <a href="https://matunokihanten.github.io/g/ko-do2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">PDFで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/shomei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDF電子契約署<span class="wrapped-text">名ツール</span></a>
+                <a href="https://matunokihanten.github.io/sigoto/pdfsetugou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDFファイル接<span class="wrapped-text">合ツール</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">アイコで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/aikon" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">アイコン作成<span class="wrapped-text">※ SVG ＆ ICO 出力形式も対応</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">シールで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/si-ru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">シール作成　A4<span class="wrapped-text">サイズ用</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ショッで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/p/62/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">ショッピングサイ<span class="wrapped-text">ト</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">パスワで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/g/password.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">パスワード整理　<span class="wrapped-text">Google</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">ホームで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/ho-mu" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ホームページ修正<span class="wrapped-text">※少しだけ文字を変えるだけならこれ</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">メモ帳で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/keijiban" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳 マインド<span class="wrapped-text">マップ式掲示板</span></a>
+                <a href="https://matunokihanten.github.io/sigoto/kousokumemo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳<span class="wrapped-text">※とにかく速さ重視</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">飲食店で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/menyu2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成</span></a>
+                <a href="https://matunokihanten.github.io/sigoto/menyu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成 改良中</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">構成ジで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">実行ボで始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/botansettei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">※PC用</span></a>
+                <a href="https://matunokihanten.github.io/sigoto/botansettei2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">　改良版</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">人生選で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/jinsei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">人生選択シュミレ<span class="wrapped-text">ーション</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">電卓※で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/dentaku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※横向き用</a>
+                <a href="https://matunokihanten.github.io/sigoto/dentaku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※時間計算付</a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">電話帳で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/renraku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">電話帳　<span class="wrapped-text">※スマホの電話帳を整理</span></a>
+            </div>
+        </div>
+        <div class="group-container">
+            <h3 class="group-title">入出金で始まるリンク</h3>
+            <div class="button-grid">
+                <a href="https://matunokihanten.github.io/sigoto/nyuusyutu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">入出金伝票<span class="wrapped-text">※若干バグあり</span></a>
+            </div>
+        </div>
     </div>
 
 </body>
