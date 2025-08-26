@@ -1,694 +1,1817 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<script src="//accaii.com/matunoki/script.js" async></script><noscript><img src="//accaii.com/matunoki/script?guid=on"></noscript>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>脳トレ部屋 - リンク一覧</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <title>脳トレ 部屋 | 松乃木飯店</title>
+    <meta name="description" content="色々な、脳トレ アプリがあります。">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
-            --primary-blue: #007bff;
-            --primary-dark-blue: #0056b3;
-            --light-blue-bg: #e6f0fa;
-            --dark-text: #333;
-            --light-text: #fff;
-            --section-border: #b0d8f0;
-            --shadow-light: rgba(0, 0, 0, 0.1);
-            --shadow-medium: rgba(0, 0, 0, 0.15);
-            --shadow-strong: rgba(0, 0, 0, 0.25);
-            --gradient-green: linear-gradient(145deg, #4CAF50, #2E8B57);
-            --gradient-green-hover: linear-gradient(145deg, #2E8B57, #1E6C3B);
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #f59e0b;
+            --accent-color: #10b981;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --border-color: #e5e7eb;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
         }
 
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
-            color: var(--dark-text);
             line-height: 1.6;
-            scroll-behavior: smooth;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
 
-        h1 {
-            color: var(--primary-dark-blue);
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 2.8em;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 2px var(--shadow-light);
+            color: var(--primary-color);
+            text-decoration: none;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
         }
 
-        #generatedGroupButtonsContainer {
-            display: flex; /* Use flexbox for better alignment */
-            justify-content: center; /* Center the buttons */
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
-            gap: 15px;
-            margin-top: 20px;
-            margin-bottom: 50px;
-            padding: 20px;
-            background-color: var(--light-blue-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow-light);
-            max-width: 900px;
+        .logo i {
+            font-size: 2rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+
+        .nav-menu li a {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-menu li a:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            border: 1px solid #cce0f0;
         }
 
-        .generated-group-scroll-button {
-            background: var(--gradient-green);
-            color: var(--light-text);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px; /* Pill shape */
-            cursor: pointer;
-            font-size: 1.05rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px var(--shadow-medium);
-            text-align: center;
-            min-width: 120px; /* Ensure buttons have a minimum width */
-            flex-grow: 1; /* Allow buttons to grow */
+        .hero-quote {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .generated-group-scroll-button:hover {
-            background: var(--gradient-green-hover);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 18px var(--shadow-strong);
+        .hero-quote h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
         }
 
-        .tag-container {
-            margin-bottom: 50px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid var(--section-border);
-            scroll-margin-top: 100px; /* Adjust for fixed header/buttons if any */
-        }
-        .tag-container:last-of-type {
-            border-bottom: none;
-            margin-bottom: 0;
+        .hero-quote p {
+            font-size: 1.125rem;
+            line-height: 1.8;
         }
 
-        .tag-title {
-            font-size: 2.2em;
-            color: var(--primary-dark-blue);
-            margin-top: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-            font-weight: 700;
-            background-color: #e0f2ff;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px var(--shadow-light);
-            border-left: 6px solid var(--primary-blue);
-            text-transform: uppercase;
+        /* Main Content */
+        .main-content {
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            padding: 4rem 0;
         }
 
-        .group-container {
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-        }
-        .group-container:last-of-type {
-            margin-bottom: 0;
-        }
-
-        .group-title {
-            font-size: 1.7em;
-            color: var(--primary-blue);
-            margin-top: 40px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: 600;
-            position: relative;
-            padding-bottom: 10px;
-        }
-        .group-title::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background-color: var(--primary-blue);
-            border-radius: 2px;
-        }
-
-        .button-grid {
+        .featured-apps {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjusted min-width for better fit */
-            gap: 20px;
-            padding: 0 20px;
-            max-width: 1400px; /* Increased max-width for wider screens */
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
         }
 
-        .link-button {
-            display: flex; /* Use flex for content centering */
+        .featured-app {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+        }
+
+        .featured-app:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .featured-app img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            border: 3px solid var(--primary-color);
+        }
+
+        .featured-app a {
+            text-decoration: none;
+            color: var(--text-primary);
+            display: block;
+            font-weight: 500;
+        }
+
+        /* Game Sections */
+        .game-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: var(--bg-card);
+            border-radius: 15px;
+            box-shadow: var(--shadow-sm);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .section-header i {
+            font-size: 2rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .game-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .game-card a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .game-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--light-text);
-            padding: 20px 25px;
-            border-radius: 10px;
-            text-decoration: none;
-            text-align: center;
-            font-size: 1.15em;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .game-content {
+            flex: 1;
+        }
+
+        .game-title {
             font-weight: 600;
-            box-shadow: 0 5px 15px var(--shadow-medium);
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .game-arrow {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .game-arrow {
+            transform: translateX(5px);
+        }
+
+        /* Color variations for different sections */
+        .brain-training .game-icon { background: var(--gradient-1); }
+        .development .game-icon { background: var(--gradient-2); }
+        .ai-games .game-icon { background: var(--gradient-3); }
+        .visual-training .game-icon { background: var(--gradient-4); }
+        .work-tools .game-icon { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .other-games .game-icon { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+
+        /* Footer */
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            padding: 3rem 0 1rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .footer-contact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-contact a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-contact a:hover {
+            color: var(--secondary-color);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            text-decoration: none;
             transition: all 0.3s ease;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-            min-height: 80px; /* Ensure consistent button height */
-            background: #6a11cb; /* Default for safety */
         }
 
-        .link-button span.wrapped-text {
-            word-break: break-word; /* Ensure long words break */
-            display: inline; /* Keep on same line if possible */
+        .social-links a:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
         }
 
-        .link-button:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 8px 20px var(--shadow-strong);
-            filter: brightness(1.1); /* Slightly brighten on hover */
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1rem;
+            text-align: center;
+            opacity: 0.7;
         }
 
-        /* Responsive Adjustments */
-        @media (max-width: 1024px) {
-            h1 {
-                font-size: 2.5em;
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-            .tag-title {
-                font-size: 2em;
-            }
-            .group-title {
-                font-size: 1.5em;
-            }
-            .button-grid {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                gap: 18px;
-            }
-            .link-button {
-                font-size: 1.1em;
-                padding: 18px 22px;
-                min-height: 75px;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
+        .game-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .game-card:nth-child(n) {
+            animation-delay: calc(0.1s * var(--delay, 0));
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            body {
-                padding: 15px;
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
             }
-            h1 {
-                font-size: 2.2em;
-                margin-bottom: 30px;
+
+            .nav-menu {
+                justify-content: center;
+                flex-wrap: wrap;
             }
-            #generatedGroupButtonsContainer {
-                gap: 10px;
-                padding: 15px;
-                margin-bottom: 40px;
+
+            .hero h1 {
+                font-size: 2.5rem;
             }
-            .generated-group-scroll-button {
-                padding: 10px 15px;
-                font-size: 0.95rem;
-                min-width: unset; /* Allow smaller width on small screens */
+
+            .games-grid {
+                grid-template-columns: 1fr;
             }
-            .tag-title {
-                font-size: 1.8em;
-                padding: 12px 15px;
-            }
-            .group-title {
-                font-size: 1.3em;
-                margin-top: 30px;
-                margin-bottom: 20px;
-            }
-            .button-grid {
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 15px;
-                padding: 0 10px;
-            }
-            .link-button {
-                font-size: 1em;
-                padding: 15px 18px;
-                min-height: 70px;
+
+            .section-header {
+                flex-direction: column;
+                text-align: center;
             }
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
+            .container {
+                padding: 0 15px;
             }
-            h1 {
-                font-size: 1.8em;
-                margin-bottom: 25px;
+
+            .hero {
+                padding: 2rem 0;
             }
-            #generatedGroupButtonsContainer {
-                flex-direction: column; /* Stack buttons on very small screens */
-                align-items: stretch; /* Stretch buttons to full width */
-                gap: 8px;
-                padding: 12px;
-                margin-bottom: 30px;
+
+            .hero h1 {
+                font-size: 2rem;
             }
-            .generated-group-scroll-button {
-                font-size: 0.9rem;
-                padding: 10px;
-            }
-            .tag-title {
-                font-size: 1.5em;
-                padding: 10px;
-                border-left-width: 4px;
-            }
-            .group-title {
-                font-size: 1.2em;
-                margin-top: 25px;
-                margin-bottom: 15px;
-            }
-            .group-title::after {
-                width: 60px;
-                height: 2px;
-            }
-            .button-grid {
-                grid-template-columns: 1fr; /* Single column layout */
-                gap: 12px;
-                padding: 0 5px;
-            }
-            .link-button {
-                font-size: 0.95em;
-                padding: 12px 15px;
-                min-height: 60px;
+
+            .main-content {
+                padding: 2rem 0;
             }
         }
     </style>
 </head>
 <body>
-    <h1>脳トレ部屋 - リンク一覧</h1>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">
+                    <i class="fas fa-brain"></i>
+                    松乃木飯店 脳トレ部屋
+                </a>
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="/"><i class="fas fa-home"></i> トップ</a></li>
+                        <li><a href="/p/62/"><i class="fas fa-shopping-cart"></i> 買い物サイト一覧表示</a></li>
+                        <li><a href="https://cr-reserve.e-shops.jp/menu/2049/"><i class="fas fa-calendar-alt"></i> ご予約申し込み</a></li>
+                        <li><a href="/p/8/"><i class="fas fa-envelope"></i> お問い合わせ</a></li>
+                        <li><a href="/p/6/"><i class="fas fa-takeout-box"></i> 持ち帰り専用ページ</a></li>
+                        <li><a href="http://linoit.com/users/matunokihanten/canvases/%E6%9D%BE%E4%B9%83%E6%9C%A8%E9%A3%AF%E5%BA%97%E4%BB%98%E7%AE%8B"><i class="fas fa-sticky-note"></i> 付箋</a></li>
+                        <li><a href="/p/31/"><i class="fas fa-user-cog"></i> 管理人の部屋</a></li>
+                        <li><a href="/blog/"><i class="fas fa-blog"></i> ブログ</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
 
-    <div id="generatedGroupButtonsContainer">
-        <button class="generated-group-scroll-button" onclick="document.getElementById('tag-ゲーム類').scrollIntoView({ behavior: 'smooth', block: 'start' });">ゲーム類</button>
-        <button class="generated-group-scroll-button" onclick="document.getElementById('tag-脳トレ').scrollIntoView({ behavior: 'smooth', block: 'start' });">脳トレ</button>
-        <button class="generated-group-scroll-button" onclick="document.getElementById('tag-仕事効率化').scrollIntoView({ behavior: 'smooth', block: 'start' });">仕事効率化</button>
-    </div>
+    <section class="hero">
+        <div class="container">
+            <h1>🧠 脳トレ部屋</h1>
+            <p class="hero-subtitle">あなたの脳力を最大限に引き出す、多彩な脳トレゲーム集</p>
+            
+            <div class="hero-quote">
+                <h2>店主一言</h2>
+                <p>「人生死ぬまで<br>筋トレ脳トレ」<br><br>思いつく脳トレアプリ常に追加中</p>
+            </div>
 
-    <div class="tag-container" id="tag-ゲーム類">
-        <h2 class="tag-title">ゲーム類</h2>
-        <div class="group-container">
-            <h3 class="group-title">3Dので始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/3droom/index.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">3Dの部屋</a>
+            <div class="featured-apps">
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/100.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2746902/256_256.jpg" alt="脳トレアプリ">
+                        <div>メイン脳トレ</div>
+                    </a>
+                </div>
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/noutore.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2776764/256_256.jpg" alt="脳トレ">
+                        <div>脳トレ総合</div>
+                    </a>
+                </div>
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/ko-dorinku.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2745110/256_256.jpg" alt="コードリンク">
+                        <div>コードリンク</div>
+                    </a>
+                </div>
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/demo.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2745612/256_256.jpg" alt="デモ">
+                        <div>デモアプリ</div>
+                    </a>
+                </div>
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/sigoto.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2750751/256_256.jpg" alt="仕事">
+                        <div>仕事ツール</div>
+                    </a>
+                </div>
+                <div class="featured-app">
+                    <a href="https://matunokihanten.github.io/kaihatu1/rirakkusu.html" target="_blank" rel="noopener noreferrer">
+                        <img src="//crayonimg.e-shops.jp/cms-dimg/1124499/2755931/256_256.jpg" alt="リラックス">
+                        <div>リラックス</div>
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="group-container">
-            <h3 class="group-title">もぐらで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mysql/mogura/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">もぐらたたき</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">簡単なで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/tetorisu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">簡単なテトリス</a>
-            </div>
-        </div>
-    </div>
+    </section>
 
-    <div class="tag-container" id="tag-脳トレ">
-        <h2 class="tag-title">脳トレ</h2>
-        <div class="group-container">
-            <h3 class="group-title">オセロで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/osero.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">オセロ <span class="wrapped-text">※レベル５工事中</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">クリペで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/kiriperin" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">クリペリン検査</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ジオメで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/kaihatu1/8" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ジオメトリ 球体</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ステレで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/sutereo" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム<span class="wrapped-text">ゲーム</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/sutereo3" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム<span class="wrapped-text">ゲーム※色付きあり</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/sutereo4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム <span class="wrapped-text">※簡単版</span></a>
-                <a href="https://matunokihanten.github.io/g/ugoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">ステレオグラム　<span class="wrapped-text">移動型</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ドッツで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/dotukado" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード</a>
-                <a href="https://matunokihanten.github.io/mojikioku/dotukado2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ドッツカード改良<span class="wrapped-text">版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">はさみで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/hasami.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">はさみ将棋</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ヒットで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/hitto.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー <span class="wrapped-text">　※上級者用</span></a>
-                <a href="https://matunokihanten.github.io/g/hitto/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">ヒット＆ブロー　<span class="wrapped-text">練習用</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">フィボで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/fibo/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチパズ<span class="wrapped-text">ル</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/1.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">２</span></a>
-                <a href="https://matunokihanten.github.io/h/fibo/fibo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text">３</span></a>
-                <a href="https://matunokihanten.github.io/h/fibo/fibo2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ立方<span class="wrapped-text">体</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/11.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/111.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改２</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型２</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/5" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラフル螺旋型</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/6" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ シ<span class="wrapped-text">ンプル螺旋型</span></a>
-                <a href="https://matunokihanten.github.io/kaihatu1/7" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">フィボナッチ カ<span class="wrapped-text">ラーボード</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">フラッで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/furassyu/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">フラッシュ暗算</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">移動すで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉<span class="wrapped-text">※触ると玉が消えるよ</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/akadamaidou2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">移動する赤玉<span class="wrapped-text">※触ると玉が消えるよ 改良版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">渦巻きで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/uzumaki.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き<span class="wrapped-text">※心の疲れの消去効果</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/uzumaki2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">渦巻き カラフル</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">円周率で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/ensyuu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">円周率記憶ゲーム<span class="wrapped-text"> 500桁数まで</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">間違いで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/matigai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">間違い探し</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">間違えで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/matigai2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">間違え探し　豪華<span class="wrapped-text">版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">記憶ので始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/kiokukyuuden.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 文字<span class="wrapped-text">記憶</span></a>
-                <a href="https://matunokihanten.github.io/h/kiokukyuuden2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">記憶の宮殿 数字<span class="wrapped-text">記憶</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">逆算ゲで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/gyakusan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム改</a>
-                <a href="https://matunokihanten.github.io/mojikioku/gyakusan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">逆算ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">玉点滅で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※ボタン多数</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※自己開発</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall4.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※新自己開発</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">玉点滅<span class="wrapped-text">※設定可能</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">元素記で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/genso.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">元素記号記憶脳ト<span class="wrapped-text">レ</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">五目並で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/gomoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">五目並べ</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">光る電で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/dentakuhikaru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">光る電卓ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">時間感で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/jikan.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">時間感覚</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">重複数で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/suujisagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">重複数字探しゲー<span class="wrapped-text">ム</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">瞬間記で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/syunkan2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶 ３Dパ<span class="wrapped-text">ネル</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/syunnkann" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">瞬間記憶ゲーム(<span class="wrapped-text">パネル)</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">順番記で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/jyunbankioku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">順番記憶ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">色彩感で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/sikisai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">色彩感覚ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">色探しで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/irosagasi" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　<span class="wrapped-text">※少しずつ難しくなります</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/irosagasi2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム　レ<span class="wrapped-text">ベル選択式</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/irosagasi3.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">色探しゲーム 進<span class="wrapped-text">化版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">神経衰で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/sinkei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱 (数字<span class="wrapped-text">)</span></a>
-                <a href="https://matunokihanten.github.io/h/sinkei2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">神経衰弱　絵柄</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">数字記で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">瞬間記憶型）</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/2suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム（<span class="wrapped-text">記憶追跡型）</span></a>
-                <a href="https://matunokihanten.github.io/mojikioku/3suujikioku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">数字記憶ゲーム <span class="wrapped-text">(追跡型改良版)</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">数字反で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/suujihannou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">数字反応</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">数独ゲで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/suudoku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">数独ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">積み木で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/tumikikazoe.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム</a>
-                <a href="https://matunokihanten.github.io/h/tumikikazoe2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">積み木数えゲーム<span class="wrapped-text">改良版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">担々麺で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/men2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">担々麺作りゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">注文記で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/tyouri.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">注文記憶ゲーム</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">追跡漢で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/kioku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">追跡漢字記憶ゲー<span class="wrapped-text">ム</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">動く棒で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/bouningen.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">動く棒人間を数え<span class="wrapped-text">る</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">動く立で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/rippoutai.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">動く立方体認識ゲ<span class="wrapped-text">ーム</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">反応速で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/mojikioku/irokawari.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">反応速度チャレン<span class="wrapped-text">ジ</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">棒の長で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/h/bou/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム</span></a>
-                <a href="https://matunokihanten.github.io/h/bou/1" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">棒の長さ当てゲー<span class="wrapped-text">ム 改良版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">迷路で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/meiro.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">迷路</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">迷路　で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/meiro2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">迷路　３D</a>
-            </div>
-        </div>
-    </div>
+    <main class="main-content">
+        <div class="container">
+            <!-- 脳トレなど -->
+            <section class="game-section brain-training">
+                <div class="section-header">
+                    <i class="fas fa-brain"></i>
+                    <h2>脳トレなど</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://matunokihanten.github.io/h/soin.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-calculator"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">素因数分解ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://matunokihanten.github.io/h/batafurai.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-stopwatch"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">バタフライナイフ反応ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/h/tokei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-clock"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">時間読み取りゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 4">
+                        <a href="https://matunokihanten.github.io/h/dhuaru.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-layer-group"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">デュアルNバック</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 5">
+                        <a href="https://matunokihanten.github.io/h/ensyuu2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-circle"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">円周率記憶ゲーム※軽量版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 6">
+                        <a href="https://matunokihanten.github.io/h/soujiki2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-user-check"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">正直者を当てるゲーム 改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 7">
+                        <a href="https://matunokihanten.github.io/h/sanjigen.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cube"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">3次元Nバック</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 8">
+                        <a href="https://matunokihanten.github.io/h/saikoro.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-dice"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">サイコロの目を数えるゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 9">
+                        <a href="https://matunokihanten.github.io/h/tumikikazoe3.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cubes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">積み木数えゲーム 進化版 ※スマホ用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 10">
+                        <a href="https://matunokihanten.github.io/h/suujijyunban.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sort-numeric-up"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字順番押しゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 11">
+                        <a href="https://matunokihanten.github.io/h/boukazoe.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-ruler"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">棒数えゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 12">
+                        <a href="https://matunokihanten.github.io/h/bouidou.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-arrows-alt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">棒移動パズルゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 13">
+                        <a href="https://matunokihanten.github.io/h/sentunagi.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-project-diagram"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">線つなぎゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 14">
+                        <a href="https://matunokihanten.github.io/h/syoujiki.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-user-secret"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">正直者当てるゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 15">
+                        <a href="https://matunokihanten.github.io/h/suujihikaku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-greater-than"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字比較ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 16">
+                        <a href="https://matunokihanten.github.io/h/karabijon.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-eye"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">カラービジョン</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 17">
+                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi4.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-palette"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">色探しゲーム ※数字</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 18">
+                        <a href="https://matunokihanten.github.io/h/zukeituiseki.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-shapes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">図形追跡</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 19">
+                        <a href="https://matunokihanten.github.io/mojikioku/sikisai.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-tint"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">色彩感覚ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 20">
+                        <a href="https://matunokihanten.github.io/mojikioku/genso.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-atom"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">元素記号記憶脳トレ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 21">
+                        <a href="https://matunokihanten.github.io/mojikioku/gyakusan2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-undo"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">逆算ゲーム改</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 22">
+                        <a href="https://matunokihanten.github.io/h/suujihannou.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字反応</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 23">
+                        <a href="https://matunokihanten.github.io/mojikioku/hitto.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-bullseye"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ヒット＆ブロー　※上級者用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 24">
+                        <a href="https://matunokihanten.github.io/mojikioku/dentakuhikaru.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">光る電卓ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 25">
+                        <a href="https://matunokihanten.github.io/mojikioku/syunkan2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-th"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">瞬間記憶 ３Dパネル</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 26">
+                        <a href="https://matunokihanten.github.io/h/kiokukyuuden.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-building"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">記憶の宮殿 文字記憶</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 27">
+                        <a href="https://matunokihanten.github.io/h/kiokukyuuden2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-building"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">記憶の宮殿 数字記憶</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 28">
+                        <a href="https://matunokihanten.github.io/mojikioku/kioku2" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-language"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">追跡漢字記憶ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 29">
+                        <a href="https://matunokihanten.github.io/mojikioku/men2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-bowl-rice"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">担々麺作りゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 30">
+                        <a href="https://matunokihanten.github.io/mojikioku/sinkei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cards-blank"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">神経衰弱 (数字)</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 31">
+                        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html">
+                            <div class="game-icon"><i class="fas fa-dot-circle"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">移動する赤玉※触ると玉が消えるよ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 32">
+                        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-dot-circle"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">移動する赤玉※触ると玉が消えるよ 改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 33">
+                        <a href="https://matunokihanten.github.io/mojikioku/dotukado">
+                            <div class="game-icon"><i class="fas fa-braille"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ドッツカード</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 34">
+                        <a href="https://matunokihanten.github.io/mojikioku/dotukado2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-braille"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ドッツカード改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 35">
+                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi">
+                            <div class="game-icon"><i class="fas fa-search"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">色探しゲーム　※少しずつ難しくなります</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 36">
+                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi2">
+                            <div class="game-icon"><i class="fas fa-search"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">色探しゲーム　レベル選択式</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 37">
+                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi3.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-search"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">色探しゲーム 進化版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 38">
+                        <a href="https://matunokihanten.github.io/mojikioku/syunnkann">
+                            <div class="game-icon"><i class="fas fa-lightning-bolt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">瞬間記憶ゲーム(パネル)</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 39">
+                        <a href="https://matunokihanten.github.io/mojikioku/suujikioku">
+                            <div class="game-icon"><i class="fas fa-hashtag"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字記憶ゲーム（瞬間記憶型）</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 40">
+                        <a href="https://matunokihanten.github.io/mojikioku/2suujikioku" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-hashtag"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字記憶ゲーム（記憶追跡型）</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 41">
+                        <a href="https://matunokihanten.github.io/mojikioku/3suujikioku" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-hashtag"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字記憶ゲーム (追跡型改良版)</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 42">
+                        <a href="https://matunokihanten.github.io/mojikioku/suujisagasi" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-clone"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">重複数字探しゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 43">
+                        <a href="https://matunokihanten.github.io/mojikioku/kiriperin">
+                            <div class="game-icon"><i class="fas fa-plus"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">クリペリン検査</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 44">
+                        <a href="https://matunokihanten.github.io/mojikioku/sutereo" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-glasses"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ステレオグラムゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 45">
+                        <a href="https://matunokihanten.github.io/mojikioku/sutereo3" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-glasses"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ステレオグラムゲーム※色付きあり</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 46">
+                        <a href="https://matunokihanten.github.io/mojikioku/sutereo4.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-glasses"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ステレオグラム ※簡単版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 47">
+                        <a href="https://matunokihanten.github.io/mojikioku/irokawari.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">反応速度チャレンジ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 48">
+                        <a href="https://matunokihanten.github.io/mojikioku/gyakusan.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-undo-alt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">逆算ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 49">
+                        <a href="https://matunokihanten.github.io/g/jikan.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-hourglass-half"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">時間感覚</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 50">
+                        <a href="https://matunokihanten.github.io/g/tyouri.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">注文記憶ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 51">
+                        <a href="https://matunokihanten.github.io/g/jyunbankioku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-list-ol"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">順番記憶ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 52">
+                        <a href="https://matunokihanten.github.io/g/hitto/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-target"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ヒット＆ブロー　練習用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 53">
+                        <a href="https://matunokihanten.github.io/g/matigai.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-search-minus"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">間違い探し</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 54">
+                        <a href="https://matunokihanten.github.io/g/bouningen.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-running"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">動く棒人間を数える</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 55">
+                        <a href="https://matunokihanten.github.io/g/suudoku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-th-large"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数独ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 56">
+                        <a href="https://matunokihanten.github.io/g/meiro.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-maze"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">迷路</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 57">
+                        <a href="https://matunokihanten.github.io/g/rippoutai.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cube"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">動く立方体認識ゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 58">
+                        <a href="https://matunokihanten.github.io/h/furassyu/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-calculator"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フラッシュ暗算</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 59">
+                        <a href="https://matunokihanten.github.io/h/sinkei2/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cards-blank"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">神経衰弱　絵柄</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 60">
+                        <a href="https://matunokihanten.github.io/h/ensyuu.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-circle-notch"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">円周率記憶ゲーム 500桁数まで</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 61">
+                        <a href="https://matunokihanten.github.io/h/fibo/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-puzzle-piece"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチパズル</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 62">
+                        <a href="https://matunokihanten.github.io/h/bou/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-ruler-horizontal"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">棒の長さ当てゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 63">
+                        <a href="https://matunokihanten.github.io/h/tumikikazoe.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cubes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">積み木数えゲーム</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 64">
+                        <a href="https://matunokihanten.github.io/h/tumikikazoe2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cubes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">積み木数えゲーム改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 65">
+                        <a href="https://matunokihanten.github.io/g/matigai2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-search-plus"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">間違え探し　豪華版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 66">
+                        <a href="https://matunokihanten.github.io/h/bou/1" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-ruler-horizontal"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">棒の長さ当てゲーム 改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 67">
+                        <a href="https://matunokihanten.github.io/g/meiro2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cube"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">迷路　３D</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
 
-    <div class="tag-container" id="tag-仕事効率化">
-        <h2 class="tag-title">仕事効率化</h2>
-        <div class="group-container">
-            <h3 class="group-title">HTMで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/ko-do.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成※HTMLコード入力で高速作成</span></a>
-                <a href="https://matunokihanten.github.io/g/ko-do2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
+            <!-- コード作成用 -->
+            <section class="game-section development">
+                <div class="section-header">
+                    <i class="fas fa-code"></i>
+                    <h2>コード作成用</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-robot"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">Geminiに相談してみよう</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://matunokihanten.github.io/sigoto/josn.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-edit"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">JOSNエディタ ※ローカルストレージ保存可</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/sigoto/cli.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-terminal"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">CLIツール　※ターミナル練習用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 4">
+                        <a href="https://matunokihanten.github.io/sigoto/kousei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-mobile-alt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">構成ジェネレーター　※スマホ用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 5">
+                        <a href="https://matunokihanten.github.io/sigoto/kousei2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-desktop"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">構成ジェネレーター　※PC用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 6">
+                        <a href="https://matunokihanten.github.io/g/ko-do2/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-file-code"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">HTMLファイル作成　※無駄な機能なし</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 7">
+                        <a href="https://matunokihanten.github.io/sigoto/ko-do.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-code"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">HTMLファイル作成　※高機能</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AIと対戦ゲーム -->
+            <section class="game-section ai-games">
+                <div class="section-header">
+                    <i class="fas fa-robot"></i>
+                    <h2>AIと対戦ゲーム</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://matunokihanten.github.io/g/gomoku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-dot-circle"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">五目並べ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://matunokihanten.github.io/g/hasami.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-chess"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">はさみ将棋</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/h/osero.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-circle"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">オセロ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 見るだけ脳トレ -->
+            <section class="game-section visual-training">
+                <div class="section-header">
+                    <i class="fas fa-eye"></i>
+                    <h2>見るだけ脳トレ</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">玉点滅※ボタン多数</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall3.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">玉点滅※自己開発</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall4.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">玉点滅※新自己開発</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 4">
+                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-lightbulb"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">玉点滅※設定可能</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 5">
+                        <a href="https://matunokihanten.github.io/mojikioku/uzumaki.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-yin-yang"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">渦巻き※心の疲れの消去効果</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 6">
+                        <a href="https://matunokihanten.github.io/g/ugoku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-eye"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ステレオグラム　移動型</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 7">
+                        <a href="https://matunokihanten.github.io/kaihatu1/1.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sphere"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体 複雑型</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 8">
+                        <a href="https://matunokihanten.github.io/kaihatu1/2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sphere"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体２</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 9">
+                        <a href="https://matunokihanten.github.io/h/fibo/fibo.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sphere"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体３</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 10">
+                        <a href="https://matunokihanten.github.io/h/fibo/fibo2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cube"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ立方体</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 11">
+                        <a href="https://matunokihanten.github.io/kaihatu1/11.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sphere"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体 複雑型 改</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 12">
+                        <a href="https://matunokihanten.github.io/kaihatu1/111.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sphere"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体 複雑型 改２</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 13">
+                        <a href="https://matunokihanten.github.io/kaihatu1/3.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-donut"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体 ドーナツ型</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 14">
+                        <a href="https://matunokihanten.github.io/kaihatu1/4.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-donut"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ球体 ドーナツ型２</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 15">
+                        <a href="https://matunokihanten.github.io/kaihatu1/5" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-spiral"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ カラフル螺旋型</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 16">
+                        <a href="https://matunokihanten.github.io/kaihatu1/6" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-spiral"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ シンプル螺旋型</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 17">
+                        <a href="https://matunokihanten.github.io/kaihatu1/7" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-palette"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">フィボナッチ カラーボード</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 18">
+                        <a href="https://matunokihanten.github.io/kaihatu1/8" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-shapes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ジオメトリ 球体</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 19">
+                        <a href="https://matunokihanten.github.io/mojikioku/uzumaki2" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-yin-yang"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">渦巻き カラフル</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 仕事で使える小道具 -->
+            <section class="game-section work-tools">
+                <div class="section-header">
+                    <i class="fas fa-tools"></i>
+                    <h2>仕事で使える小道具</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://matunokihanten.github.io/sigoto/kousei2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-code"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">構成ジェネレーター※コード入力用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-robot"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">Geminiに相談してみよう</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/sigoto/keieibunseki.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">経営分析ダッシュボード</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 4">
+                        <a href="https://matunokihanten.github.io/h/saba.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-server"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">サーバー作成　試験中</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 5">
+                        <a href="https://matunokihanten.github.io/sigoto/renraku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-address-book"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">電話帳　※スマホの電話帳を整理</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 6">
+                        <a href="https://matunokihanten.github.io/sigoto/menyu2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">飲食店用 メニュー作成</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 7">
+                        <a href="https://matunokihanten.github.io/sigoto/menyu.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">飲食店用 メニュー作成 改良中</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 8">
+                        <a href="https://matunokihanten.github.io/sigoto/dentaku2" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-calculator"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">電卓※横向き用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 9">
+                        <a href="/p/62/">
+                            <div class="game-icon"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ショッピングサイト</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 10">
+                        <a href="https://matunokihanten.github.io/sigoto/dentaku" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-calculator"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">電卓※時間計算付</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 11">
+                        <a href="https://matunokihanten.github.io/sigoto/keijiban" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sticky-note"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">メモ帳 マインドマップ式掲示板</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 12">
+                        <a href="https://matunokihanten.github.io/sigoto/kousokumemo.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">メモ帳※とにかく速さ重視</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 13">
+                        <a href="https://matunokihanten.github.io/sigoto/botansettei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-mouse-pointer"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">実行ボタン製造機※PC用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 14">
+                        <a href="https://matunokihanten.github.io/sigoto/aikon" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-icons"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">アイコン作成※ SVG ＆ ICO 出力形式も対応</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 15">
+                        <a href="https://matunokihanten.github.io/sigoto/ko-do.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-file-code"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">HTMLファイル作成※HTMLコード入力で高速作成</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 16">
+                        <a href="https://matunokihanten.github.io/g/ko-do2/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-file-code"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">HTMLファイル作成改良版※無駄な機能無し</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 17">
+                        <a href="https://matunokihanten.github.io/sigoto/nyuusyutu.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-receipt"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">入出金伝票※若干バグあり</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 18">
+                        <a href="https://matunokihanten.github.io/sigoto/ho-mu" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-home"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">ホームページ修正※少しだけ文字を変えるだけならこれ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 19">
+                        <a href="https://matunokihanten.github.io/g/password.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-key"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">パスワード整理　Google</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 20">
+                        <a href="https://matunokihanten.github.io/sigoto/jinsei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-life-ring"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">人生選択シュミレーション</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 21">
+                        <a href="https://matunokihanten.github.io/sigoto/shomei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-file-signature"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">PDF電子契約署名ツール</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 22">
+                        <a href="https://matunokihanten.github.io/sigoto/pdfsetugou.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-file-pdf"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">PDFファイル接合ツール</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 23">
+                        <a href="https://matunokihanten.github.io/sigoto/kousei.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-sitemap"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">構成ジェネレーター ※マインドマップも簡単作成</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 24">
+                        <a href="https://matunokihanten.github.io/sigoto/botansettei2.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-mouse-pointer"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">実行ボタン製造機　改良版</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 25">
+                        <a href="https://matunokihanten.github.io/sigoto/si-ru.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-tags"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">シール作成　A4サイズ用</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- その他 -->
+            <section class="game-section other-games">
+                <div class="section-header">
+                    <i class="fas fa-gamepad"></i>
+                    <h2>その他 ※脳トレと関係無し</h2>
+                </div>
+                <div class="games-grid">
+                    <div class="game-card" style="--delay: 1">
+                        <a href="https://matunokihanten.github.io/g/suujiburokku.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-th-large"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">数字ブロック消しゲーム※同じ数字か10の倍数になるようになぞるだけ</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 2">
+                        <a href="https://matunokihanten.github.io/mysql/mogura/" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-hammer"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">もぐらたたき</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 3">
+                        <a href="https://matunokihanten.github.io/g/tetorisu.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-shapes"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">簡単なテトリス</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                    <div class="game-card" style="--delay: 4">
+                        <a href="https://matunokihanten.github.io/h/3droom/index.html" target="_blank" rel="noopener noreferrer">
+                            <div class="game-icon"><i class="fas fa-cube"></i></div>
+                            <div class="game-content">
+                                <div class="game-title">3Dの部屋</div>
+                            </div>
+                            <i class="fas fa-chevron-right game-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>松乃木飯店</h3>
+                    <div class="footer-contact">
+                        <a href="http://maps.google.co.jp/maps?q=静岡県袋井市山科3224-2" target="_blank">
+                            <i class="fas fa-map-marker-alt"></i>
+                            静岡県袋井市山科3224-2
+                        </a>
+                        <a href="tel:0538-43-3398">
+                            <i class="fas fa-phone"></i>
+                            0538-43-3398
+                        </a>
+                        <a href="mailto:matunokihanten@ybb.ne.jp">
+                            <i class="fas fa-envelope"></i>
+                            matunokihanten@ybb.ne.jp
+                        </a>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://twitter.com/matunokihanten" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/%E6%9D%BE%E4%B9%83%E6%9C%A8%E9%A3%AF%E5%BA%97-129272750454251/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        <a href="http://line.me/ti/p/%40ihp8156y" target="_blank"><i class="fab fa-line"></i></a>
+                        <a href="https://www.instagram.com/matunokihanten/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>開発者情報</h3>
+                    <div class="footer-contact">
+                        <a href="https://matunokihanten.github.io/kaihatu1/" target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-code"></i>
+                            開発アプリ一覧
+                        </a>
+                        <p>「人生死ぬまで筋トレ脳トレ」</p>
+                        <p>思いつく脳トレアプリ常に追加中</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 松乃木飯店 脳トレ部屋. All rights reserved.</p>
             </div>
         </div>
-        <div class="group-container">
-            <h3 class="group-title">PDFで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/shomei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDF電子契約署<span class="wrapped-text">名ツール</span></a>
-                <a href="https://matunokihanten.github.io/sigoto/pdfsetugou.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDFファイル接<span class="wrapped-text">合ツール</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">アイコで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/aikon" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">アイコン作成<span class="wrapped-text">※ SVG ＆ ICO 出力形式も対応</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">シールで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/si-ru.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">シール作成　A4<span class="wrapped-text">サイズ用</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ショッで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/p/62/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">ショッピングサイ<span class="wrapped-text">ト</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">パスワで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/g/password.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">パスワード整理　<span class="wrapped-text">Google</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">ホームで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/ho-mu" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #00c6fb, #005bea);">ホームページ修正<span class="wrapped-text">※少しだけ文字を変えるだけならこれ</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">メモ帳で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/keijiban" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳 マインド<span class="wrapped-text">マップ式掲示板</span></a>
-                <a href="https://matunokihanten.github.io/sigoto/kousokumemo.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">メモ帳<span class="wrapped-text">※とにかく速さ重視</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">飲食店で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/menyu2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成</span></a>
-                <a href="https://matunokihanten.github.io/sigoto/menyu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">飲食店用 メニュ<span class="wrapped-text">ー作成 改良中</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">構成ジで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #c79081, #dfa579);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">実行ボで始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/botansettei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">※PC用</span></a>
-                <a href="https://matunokihanten.github.io/sigoto/botansettei2.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">実行ボタン製造機<span class="wrapped-text">　改良版</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">人生選で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/jinsei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">人生選択シュミレ<span class="wrapped-text">ーション</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">電卓※で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/dentaku2" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※横向き用</a>
-                <a href="https://matunokihanten.github.io/sigoto/dentaku" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">電卓※時間計算付</a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">電話帳で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/renraku.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">電話帳　<span class="wrapped-text">※スマホの電話帳を整理</span></a>
-            </div>
-        </div>
-        <div class="group-container">
-            <h3 class="group-title">入出金で始まるリンク</h3>
-            <div class="button-grid">
-                <a href="https://matunokihanten.github.io/sigoto/nyuusyutu.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #34e89e, #0f3443);">入出金伝票<span class="wrapped-text">※若干バグあり</span></a>
-            </div>
-        </div>
-    </div>
-<a href="//accaii.com/matunoki/"><img src="//accaii.com/matunoki/counter.png" style="width:80px;height:15px;vertical-align:middle;" /></a>
+    </footer>
+
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.style.animationPlayState = 'paused';
+            observer.observe(card);
+        });
+
+        // Add loading states for external links
+        document.querySelectorAll('a[target="_blank"]').forEach(link => {
+            link.addEventListener('click', function() {
+                this.style.opacity = '0.7';
+                setTimeout(() => {
+                    this.style.opacity = '1';
+                }, 1000);
+            });
+        });
+
+        // Mobile menu handling
+        const navMenu = document.querySelector('.nav-menu');
+        let isScrolling = false;
+
+        window.addEventListener('scroll', () => {
+            isScrolling = true;
+            setTimeout(() => {
+                isScrolling = false;
+            }, 100);
+        });
+
+        // Add hover effects for touch devices
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('touchstart', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = 'var(--shadow-md)';
+            });
+            
+            card.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'var(--shadow-sm)';
+                }, 150);
+            });
+        });
+    </script>
 </body>
 </html>
