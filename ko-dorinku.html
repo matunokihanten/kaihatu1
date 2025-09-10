@@ -1,161 +1,97 @@
 
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>脳トレ部屋 - リンク一覧</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; }
-        h1 { color: #0056b3; text-align: center; margin-bottom: 30px; }
-
-        #generatedGroupButtonsContainer {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 30px;
-            padding: 15px;
-            background-color: #e6f0fa;
-            border-radius: 10px;
-            box-shadow: inset 0 1px 5px rgba(0,0,0,0.08);
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .generated-group-scroll-button {
-            background: linear-gradient(145deg, #4CAF50, #2E8B57);
-            color: white;
-            border: none;
-            padding: 10px 5px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            display: block;
-            width: 100%;
-        }
-
-        .generated-group-scroll-button:hover {
-            background: linear-gradient(145deg, #2E8B57, #1E6C3B);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
-        }
-
-        .tag-container {
-            margin-bottom: 35px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #b0d8f0;
-            scroll-margin-top: 80px; /* スクロール位置の調整 */
-        }
-        .tag-container:last-of-type {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-        .tag-title {
-            font-size: 1.6em;
-            color: #004085;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 700;
-            background-color: #e0f2ff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .group-container {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            /* group-container自体は直接スクロールターゲットにならないのでscroll-margin-topは不要 */
-        }
-        .group-container:last-of-type {
-            margin-bottom: 0;
-        }
-        .group-title {
-            font-size: 1.3em;
-            color: #0056b3;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: 600;
-        }
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 0 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        @media (min-width: 900px) {
-            .button-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        .link-button {
-            display: block;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            font-size: 1.1em;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-            display: inline-block;
-            max-width: 100%;
-        }
-
-        .link-button span.wrapped-text {
-            word-break: break-all;
-            display: block;
-        }
-        .link-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
-        }
-        @media (max-width: 768px) {
-            #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-            }
-        }
-        @media (max-width: 480px) {
-            #generatedGroupButtonsContainer {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-    </style>
-</head>
-<body>
-    <h1>脳トレ部屋 - リンク一覧</h1>
-
-    <div id="generatedGroupButtonsContainer">
-        <button class="generated-group-scroll-button" onclick="document.getElementById('tag-仕事支援').scrollIntoView({ behavior: 'smooth', block: 'start' });">仕事支援</button>
-    </div>
-    <div class="tag-container" id="tag-仕事支援">
-        <h2 class="tag-title">仕事支援</h2>
-    <div class="group-container">
-        <h3 class="group-title">HTMで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/g/ko-do2/" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
-        </div></div>
-    <div class="group-container">
-        <h3 class="group-title">構成ジで始まるリンク</h3>
-        <div class="button-grid">
-        <a href="https://matunokihanten.github.io/sigoto/kousei.html" class="link-button" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
-        </div></div>
-    </div>
-
-</body>
-</html>
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>コード作成</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            background-color: #f4f7f6;
+                            color: #333;
+                            padding: 20px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                        }
+                        .container {
+                            background-color: #ffffff;
+                            padding: 30px;
+                            border-radius: 12px;
+                            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+                            width: 100%;
+                            max-width: 800px;
+                            text-align: center;
+                        }
+                        h1 {
+                            color: #2c3e50;
+                            font-size: 2.2em;
+                            margin-bottom: 20px;
+                            border-bottom: 2px solid #e0e0e0;
+                            padding-bottom: 10px;
+                        }
+                        h2 {
+                            color: #0056b3;
+                            margin-top: 30px;
+                            margin-bottom: 15px;
+                            font-size: 1.8em;
+                            border-bottom: 1px solid #c0c0c0;
+                            padding-bottom: 5px;
+                        }
+                        .tag-section {
+                            margin-bottom: 40px;
+                        }
+                        .button-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                            gap: 15px;
+                            justify-content: center;
+                            margin: 20px 0;
+                        }
+                        .button-link {
+                            display: block;
+                            padding: 15px 25px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 1.1em;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+                            text-align: center;
+                            word-wrap: break-word;
+                        }
+                        .button-link:hover {
+                            transform: translateY(-5px);
+                            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                        }
+                        .wrapped-text {
+                            display: block;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>コード作成用</h1>
+                        
+                    <div class="tag-section">
+                        <h2>コード作成用</h2>
+                        <div class="button-grid">
+                
+                        <a href="https://gemini.google.com/app" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">Geminiに相<span class="wrapped-text">談してみよう</span></a>
+                    
+                        <a href="https://matunokihanten.github.io/g/ko-do2/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">HTMLファイル<span class="wrapped-text">作成　※無駄な機能なし</span></a>
+                    
+                        <a href="https://matunokihanten.github.io/sigoto/kousei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">構成ジェネレータ<span class="wrapped-text">ー　※PC用</span></a>
+                    
+                        <a href="https://matunokihanten.github.io/h/kousei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">構成ジェネレータ<span class="wrapped-text">ー２</span></a>
+                    
+                        </div>
+                    </div>
+                
+                    </div>
+                </body>
+                </html>
+            
