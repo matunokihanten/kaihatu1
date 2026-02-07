@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全画面進化：インフィニティ・ライフ</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let particles = [];
+    let sparks = [];
+
+    // 画面サイズに合わせて調整
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Spark {
+        constructor(x, y, color) {
+            this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 10;
+            this.vy = (Math.random() - 0.5) * 10;
+            this.life = 1.0;
+            this.color = color;
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy;
+            this.life -= 0.02;
+        }
+        draw() {
+            ctx.fillStyle = this.color.replace('0.8', this.life);
+            ctx.fillRect(this.x, this.y, 2, 2);
+        }
+    }
+
+    class FreeLife {
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.radius = 8 + Math.random() * 20;
+            this.vx = (Math.random() - 0.5) * 10;
+            this.vy = (Math.random() - 0.5) * 10;
+            this.hue = Math.random() * 360;
+            this.color = `hsla(${this.hue}, 80%, 60%, 0.8)`;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // 画面端での跳ね返り判定
+            let hit = false;
+            if (this.x - this.radius < 0 || this.x + this.radius > width) {
+                this.vx *= -1;
+                hit = true;
+            }
+            if (this.y - this.radius < 0 || this.y + this.radius > height) {
+                this.vy *= -1;
+                hit = true;
+            }
+
+            if (hit) {
+                // 衝突時の変化
+                this.hue = (this.hue + 30) % 360;
+                this.color = `hsla(${this.hue}, 80%, 60%, 0.8)`;
+                this.radius = 8 + Math.random() * 20;
+                // 火花を散らす
+                for(let i=0; i<5; i++) sparks.push(new Spark(this.x, this.y, this.color));
+            }
+
+            // パーティクル同士のゆるい反発
+            particles.forEach(other => {
+                if (this === other) return;
+                const dx = other.x - this.x;
+                const dy = other.y - this.y;
+                const d = Math.sqrt(dx*dx + dy*dy);
+                if (d < this.radius + other.radius) {
+                    this.vx -= dx * 0.01;
+                    this.vy -= dy * 0.01;
+                }
+            });
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = `hsl(${this.hue}, 80%, 50%)`;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    for(let i=0; i<40; i++) particles.push(new FreeLife());
+
+    function loop() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillRect(0, 0, width, height);
+
+        // 火花の更新と描画
+        sparks = sparks.filter(s => s.life > 0);
+        sparks.forEach(s => { s.update(); s.draw(); });
+
+        // 生命体の更新と描画
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+</script>
+</body>
+</html>
