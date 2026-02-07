@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>深化した光：グラビティ・マニピュレーター</title>
+    <title>ULTRA NEON COSMOS - NO GRID EDITION</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; cursor: crosshair; touch-action: none; }
-        canvas { display: block; }
+        canvas { display: block; filter: contrast(1.1) saturate(1.5); }
     </style>
 </head>
 <body>
@@ -18,7 +18,7 @@
 
     let width, height;
     let particles = [];
-    const particleCount = 70;
+    const particleCount = 65; 
     let mouse = { x: -1000, y: -1000, active: false };
 
     function resize() {
@@ -26,36 +26,23 @@
         height = canvas.height = window.innerHeight;
     }
 
-    // マウス/タッチイベントの統合管理
-    const updateMouse = (e) => {
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        mouse.x = clientX;
-        mouse.y = clientY;
+    const getPos = (e) => {
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        const y = e.touches ? e.touches[0].clientY : e.clientY;
+        mouse.x = x; mouse.y = y;
     };
 
     window.addEventListener('resize', resize);
-    
-    // マウスイベント
-    window.addEventListener('mousedown', (e) => { mouse.active = true; updateMouse(e); });
-    window.addEventListener('mousemove', (e) => { if(mouse.active) updateMouse(e); });
-    window.addEventListener('mouseup', () => { mouse.active = false; });
-
-    // タッチイベント（指の動きに追従）
-    window.addEventListener('touchstart', (e) => { 
-        mouse.active = true; 
-        updateMouse(e); 
-        e.preventDefault(); 
-    }, { passive: false });
-    window.addEventListener('touchmove', (e) => { 
-        if(mouse.active) updateMouse(e); 
-        e.preventDefault(); 
-    }, { passive: false });
-    window.addEventListener('touchend', () => { mouse.active = false; });
+    window.addEventListener('mousedown', (e) => { mouse.active = true; getPos(e); });
+    window.addEventListener('mousemove', (e) => getPos(e));
+    window.addEventListener('mouseup', () => mouse.active = false);
+    window.addEventListener('touchstart', (e) => { mouse.active = true; getPos(e); e.preventDefault(); }, {passive:false});
+    window.addEventListener('touchmove', (e) => { getPos(e); e.preventDefault(); }, {passive:false});
+    window.addEventListener('touchend', () => mouse.active = false);
 
     resize();
 
-    class LifeForm {
+    class Particle {
         constructor() {
             this.init();
         }
@@ -63,12 +50,12 @@
         init() {
             this.x = Math.random() * width;
             this.y = Math.random() * height;
-            this.vx = (Math.random() - 0.5) * 6;
-            this.vy = (Math.random() - 0.5) * 6;
-            this.radius = 2 + Math.random() * 12;
+            this.radius = 2 + Math.pow(Math.random(), 3) * 25; 
+            this.vx = (Math.random() - 0.5) * 10;
+            this.vy = (Math.random() - 0.5) * 10;
             this.hue = Math.random() * 360;
             this.history = [];
-            this.historyLimit = 20;
+            this.historyLimit = 12; 
         }
 
         update() {
@@ -76,83 +63,76 @@
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                // 吸引力の設定（指に近いほど強く）
-                const force = 1000 / (dist + 80);
+                const force = 2000 / (dist + 50); 
                 this.vx += (dx / dist) * force;
                 this.vy += (dy / dist) * force;
-                this.hue += 4;
-            } else {
-                // 自律的なゆらぎ
-                this.vx += (Math.random() - 0.5) * 0.3;
-                this.vy += (Math.random() - 0.5) * 0.3;
+                this.hue += 5;
             }
 
-            // 物理演算
+            // 自律移動
+            this.vx += (Math.random() - 0.5) * 0.5;
+            this.vy += (Math.random() - 0.5) * 0.5;
+
+            this.vx *= 0.99;
+            this.vy *= 0.99;
             this.x += this.vx;
             this.y += this.vy;
-            this.vx *= 0.97;
-            this.vy *= 0.97;
 
-            // 最低速度の維持（停滞防止）
+            // 最低速度の保証
             const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            if (speed < 1.5) {
-                this.vx *= 1.1;
-                this.vy *= 1.1;
+            if (speed < 2) {
+                this.vx *= 1.05;
+                this.vy *= 1.05;
             }
 
-            // 壁での反射
-            if (this.x < 0 || this.x > width) this.vx *= -1;
-            if (this.y < 0 || this.y > height) this.vy *= -1;
+            // 境界ループ
+            if (this.x < -50) this.x = width + 50;
+            if (this.x > width + 50) this.x = -50;
+            if (this.y < -50) this.y = height + 50;
+            if (this.y > height + 50) this.y = -50;
 
-            // 軌跡更新
-            this.history.push({ x: this.x, y: this.y });
+            this.history.push({x: this.x, y: this.y});
             if (this.history.length > this.historyLimit) this.history.shift();
-            
-            this.hue += 0.5;
+            this.hue += 1;
         }
 
         draw() {
+            ctx.globalCompositeOperation = 'lighter'; 
+
             if (this.history.length > 1) {
                 ctx.beginPath();
                 ctx.moveTo(this.history[0].x, this.history[0].y);
-                for (let i = 1; i < this.history.length; i++) {
+                for(let i=1; i<this.history.length; i++) {
                     ctx.lineTo(this.history[i].x, this.history[i].y);
                 }
-                ctx.lineWidth = this.radius * 0.7;
-                ctx.strokeStyle = `hsla(${this.hue}, 80%, 60%, 0.2)`;
-                ctx.lineCap = 'round';
+                ctx.strokeStyle = `hsla(${this.hue}, 100%, 50%, 0.3)`;
+                ctx.lineWidth = this.radius * 0.5;
                 ctx.stroke();
             }
 
+            const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+            grad.addColorStop(0, '#fff'); 
+            grad.addColorStop(0.2, `hsla(${this.hue}, 100%, 70%, 1)`);
+            grad.addColorStop(1, `hsla(${this.hue}, 100%, 50%, 0)`);
+
+            ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `white`;
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = `hsl(${this.hue}, 100%, 50%)`;
+            ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
         }
     }
 
-    for (let i = 0; i < particleCount; i++) particles.push(new LifeForm());
+    for(let i=0; i<particleCount; i++) particles.push(new Particle());
 
-    function loop() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    function render() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(0, 0, 3, 0.15)'; 
         ctx.fillRect(0, 0, width, height);
 
-        if (mouse.active) {
-            // ブラックホールの視覚化エフェクト
-            ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 50, 0, Math.PI * 2);
-            ctx.strokeStyle = `hsla(${Date.now() % 360}, 100%, 50%, 0.4)`;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
-            ctx.fill();
+        // 背景の微細な星（グリッド描画を削除しました）
+        ctx.fillStyle = "#fff";
+        for(let i=0; i<5; i++) {
+            ctx.fillRect(Math.random()*width, Math.random()*height, 1, 1);
         }
 
         particles.forEach(p => {
@@ -160,10 +140,10 @@
             p.draw();
         });
 
-        requestAnimationFrame(loop);
+        requestAnimationFrame(render);
     }
 
-    loop();
+    render();
 </script>
 </body>
 </html>
