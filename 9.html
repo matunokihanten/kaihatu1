@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>深化した光：グラビティ・マニピュレーター</title>
+    <title>深化した光：マルチ・グラビティ</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; cursor: crosshair; touch-action: none; }
         canvas { display: block; }
@@ -19,39 +19,53 @@
     let width, height;
     let particles = [];
     const particleCount = 70;
-    let mouse = { x: -1000, y: -1000, active: false };
+    // 複数の指やマウスの座標を保持する配列
+    let touchPoints = [];
 
     function resize() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
     }
 
-    // マウス/タッチイベントの統合管理
-    const updateMouse = (e) => {
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        mouse.x = clientX;
-        mouse.y = clientY;
-    };
+    // 入力情報を更新する関数
+    function updateInputs(e) {
+        touchPoints = [];
+        if (e.touches && e.touches.length > 0) {
+            // マルチタッチ：全ての指の座標を取得
+            for (let i = 0; i < e.touches.length; i++) {
+                touchPoints.push({
+                    x: e.touches[i].clientX,
+                    y: e.touches[i].clientY
+                });
+            }
+        } else if (e.type.includes('mouse') && (e.buttons > 0 || e.type === 'mousedown')) {
+            // マウス：クリック中の座標を取得
+            touchPoints.push({
+                x: e.clientX,
+                y: e.clientY
+            });
+        }
+    }
 
     window.addEventListener('resize', resize);
     
     // マウスイベント
-    window.addEventListener('mousedown', (e) => { mouse.active = true; updateMouse(e); });
-    window.addEventListener('mousemove', (e) => { if(mouse.active) updateMouse(e); });
-    window.addEventListener('mouseup', () => { mouse.active = false; });
+    window.addEventListener('mousedown', (e) => { updateInputs(e); });
+    window.addEventListener('mousemove', (e) => { updateInputs(e); });
+    window.addEventListener('mouseup', () => { touchPoints = []; });
 
-    // タッチイベント（指の動きに追従）
+    // タッチイベント（マルチタッチ対応）
     window.addEventListener('touchstart', (e) => { 
-        mouse.active = true; 
-        updateMouse(e); 
+        updateInputs(e); 
         e.preventDefault(); 
     }, { passive: false });
     window.addEventListener('touchmove', (e) => { 
-        if(mouse.active) updateMouse(e); 
+        updateInputs(e); 
         e.preventDefault(); 
     }, { passive: false });
-    window.addEventListener('touchend', () => { mouse.active = false; });
+    window.addEventListener('touchend', (e) => { 
+        updateInputs(e); 
+    });
 
     resize();
 
@@ -72,15 +86,28 @@
         }
 
         update() {
-            if (mouse.active) {
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+            if (touchPoints.length > 0) {
+                // 最も近いタッチポイントを探す
+                let closestPoint = null;
+                let minDist = Infinity;
+
+                touchPoints.forEach(p => {
+                    const dx = p.x - this.x;
+                    const dy = p.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestPoint = p;
+                    }
+                });
+
+                const dx = closestPoint.x - this.x;
+                const dy = closestPoint.y - this.y;
                 
-                // 吸引力の設定（指に近いほど強く）
-                const force = 1000 / (dist + 80);
-                this.vx += (dx / dist) * force;
-                this.vy += (dy / dist) * force;
+                // 吸引力の設定
+                const force = 1000 / (minDist + 80);
+                this.vx += (dx / minDist) * force;
+                this.vy += (dy / minDist) * force;
                 this.hue += 4;
             } else {
                 // 自律的なゆらぎ
@@ -141,19 +168,19 @@
         ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
         ctx.fillRect(0, 0, width, height);
 
-        if (mouse.active) {
-            // ブラックホールの視覚化エフェクト
+        // 全てのタッチポイントの視覚化
+        touchPoints.forEach(p => {
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 50, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 50, 0, Math.PI * 2);
             ctx.strokeStyle = `hsla(${Date.now() % 360}, 100%, 50%, 0.4)`;
             ctx.lineWidth = 2;
             ctx.stroke();
             
             ctx.beginPath();
-            ctx.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
-        }
+        });
 
         particles.forEach(p => {
             p.update();
