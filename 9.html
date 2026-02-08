@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>深化した光：マルチ・グラビティ</title>
+    <title>深化した光：コズミック・シンフォニー</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; cursor: crosshair; touch-action: none; }
         canvas { display: block; }
@@ -18,8 +18,8 @@
 
     let width, height;
     let particles = [];
+    let trailStars = []; // 粒子が残していく星
     const particleCount = 70;
-    // 複数の指やマウスの座標を保持する配列
     let touchPoints = [];
 
     function resize() {
@@ -27,47 +27,24 @@
         height = canvas.height = window.innerHeight;
     }
 
-    // 入力情報を更新する関数
     function updateInputs(e) {
         touchPoints = [];
         if (e.touches && e.touches.length > 0) {
-            // マルチタッチ：全ての指の座標を取得
             for (let i = 0; i < e.touches.length; i++) {
-                touchPoints.push({
-                    x: e.touches[i].clientX,
-                    y: e.touches[i].clientY
-                });
+                touchPoints.push({ x: e.touches[i].clientX, y: e.touches[i].clientY });
             }
         } else if (e.type.includes('mouse') && (e.buttons > 0 || e.type === 'mousedown')) {
-            // マウス：クリック中の座標を取得
-            touchPoints.push({
-                x: e.clientX,
-                y: e.clientY
-            });
+            touchPoints.push({ x: e.clientX, y: e.clientY });
         }
     }
 
     window.addEventListener('resize', resize);
-    
-    // マウスイベント
     window.addEventListener('mousedown', (e) => { updateInputs(e); });
     window.addEventListener('mousemove', (e) => { updateInputs(e); });
     window.addEventListener('mouseup', () => { touchPoints = []; });
-
-    // タッチイベント（マルチタッチ対応）
-    window.addEventListener('touchstart', (e) => { 
-        updateInputs(e); 
-        e.preventDefault(); 
-    }, { passive: false });
-    window.addEventListener('touchmove', (e) => { 
-        updateInputs(e); 
-        e.preventDefault(); 
-    }, { passive: false });
-    window.addEventListener('touchend', (e) => { 
-        updateInputs(e); 
-    });
-
-    resize();
+    window.addEventListener('touchstart', (e) => { updateInputs(e); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { updateInputs(e); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchend', (e) => { updateInputs(e); });
 
     class LifeForm {
         constructor() {
@@ -79,18 +56,16 @@
             this.y = Math.random() * height;
             this.vx = (Math.random() - 0.5) * 6;
             this.vy = (Math.random() - 0.5) * 6;
-            this.radius = 2 + Math.random() * 12;
+            this.radius = 2 + Math.random() * 10;
             this.hue = Math.random() * 360;
             this.history = [];
-            this.historyLimit = 20;
+            this.historyLimit = 15;
         }
 
         update() {
             if (touchPoints.length > 0) {
-                // 最も近いタッチポイントを探す
                 let closestPoint = null;
                 let minDist = Infinity;
-
                 touchPoints.forEach(p => {
                     const dx = p.x - this.x;
                     const dy = p.y - this.y;
@@ -100,42 +75,37 @@
                         closestPoint = p;
                     }
                 });
-
                 const dx = closestPoint.x - this.x;
                 const dy = closestPoint.y - this.y;
-                
-                // 吸引力の設定
                 const force = 1000 / (minDist + 80);
                 this.vx += (dx / minDist) * force;
                 this.vy += (dy / minDist) * force;
                 this.hue += 4;
+
+                // 粒子が動いた跡に星を生成
+                if (Math.random() > 0.8) {
+                    trailStars.push(new TrailStar(this.x, this.y, this.hue));
+                }
             } else {
-                // 自律的なゆらぎ
                 this.vx += (Math.random() - 0.5) * 0.3;
                 this.vy += (Math.random() - 0.5) * 0.3;
             }
 
-            // 物理演算
             this.x += this.vx;
             this.y += this.vy;
             this.vx *= 0.97;
             this.vy *= 0.97;
 
-            // 最低速度の維持（停滞防止）
             const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             if (speed < 1.5) {
-                this.vx *= 1.1;
-                this.vy *= 1.1;
+                this.vx *= 1.1; this.vy *= 1.1;
             }
 
-            // 壁での反射
             if (this.x < 0 || this.x > width) this.vx *= -1;
             if (this.y < 0 || this.y > height) this.vy *= -1;
 
-            // 軌跡更新
             this.history.push({ x: this.x, y: this.y });
             if (this.history.length > this.historyLimit) this.history.shift();
-            
             this.hue += 0.5;
         }
 
@@ -146,9 +116,8 @@
                 for (let i = 1; i < this.history.length; i++) {
                     ctx.lineTo(this.history[i].x, this.history[i].y);
                 }
-                ctx.lineWidth = this.radius * 0.7;
-                ctx.strokeStyle = `hsla(${this.hue}, 80%, 60%, 0.2)`;
-                ctx.lineCap = 'round';
+                ctx.lineWidth = this.radius * 0.5;
+                ctx.strokeStyle = `hsla(${this.hue}, 80%, 60%, 0.15)`;
                 ctx.stroke();
             }
 
@@ -162,24 +131,63 @@
         }
     }
 
+    // 粒子が残す星のクラス
+    class TrailStar {
+        constructor(x, y, hue) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 2;
+            this.opacity = 1.0;
+            this.hue = hue;
+            this.life = 1.0;
+            this.decay = 0.01 + Math.random() * 0.02; // 消える速さ
+        }
+        update() {
+            this.life -= this.decay;
+        }
+        draw() {
+            ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, ${this.life})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    resize();
     for (let i = 0; i < particleCount; i++) particles.push(new LifeForm());
 
+    function drawDynamicBackground() {
+        if (touchPoints.length > 0) {
+            touchPoints.forEach(p => {
+                // タッチ位置を中心とした淡い色の広がり
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 300);
+                grad.addColorStop(0, `hsla(${Date.now() / 20 % 360}, 60%, 20%, 0.15)`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, width, height);
+            });
+        }
+    }
+
     function loop() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.fillRect(0, 0, width, height);
 
-        // 全てのタッチポイントの視覚化
+        drawDynamicBackground();
+
+        // 軌跡の星を更新・描画
+        trailStars = trailStars.filter(s => s.life > 0);
+        trailStars.forEach(s => {
+            s.update();
+            s.draw();
+        });
+
         touchPoints.forEach(p => {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 50, 0, Math.PI * 2);
             ctx.strokeStyle = `hsla(${Date.now() % 360}, 100%, 50%, 0.4)`;
             ctx.lineWidth = 2;
             ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
-            ctx.fill();
         });
 
         particles.forEach(p => {
