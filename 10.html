@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老眼対策トレーニング Pro - Complete</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --blue-light: #3498db;
+            --blue-dark: #003366;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            transition: background-color 0.1s;
+        }
+
+        .flashing { animation: flash-bg 0.2s infinite; }
+        @keyframes flash-bg {
+            0%, 100% { background-color: #000; }
+            50% { background-color: #222; }
+        }
+
+        .nav-panel {
+            position: absolute;
+            top: 10px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+        }
+        .btn-group { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+        button {
+            padding: 6px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            background: #222;
+            color: #ccc;
+            border-radius: 4px;
+        }
+        button.active { background: #e74c3c; color: white; }
+        .target-btn.active { background: #2ecc71; color: white; }
+
+        #display-area {
+            width: 100%;
+            height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .target-container {
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .zoom-animation {
+            animation: zoom-loop 3.5s ease-in-out infinite !important;
+        }
+        @keyframes zoom-loop {
+            0%, 100% { transform: scale(0.2); }
+            50% { transform: scale(1.3); }
+        }
+
+        .hidden { display: none !important; }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            backdrop-filter: blur(8px);
+        }
+        input[type="range"] { width: 100%; margin: 8px 0; }
+        .option-toggle {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #333;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        .option-toggle.on { background: #f1c40f; color: #000; font-weight: bold; }
+        .description { font-size: 0.75rem; color: #bbb; line-height: 1.3; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-panel">
+        <div class="btn-group">
+            <button id="btn-stereo" class="active" onclick="switchMode('stereo')">3点視</button>
+            <button id="btn-zoom" onclick="switchMode('zoom')">遠近</button>
+            <button id="btn-move" onclick="switchMode('move')">眼球運動</button>
+        </div>
+        <div class="btn-group">
+            <button id="target-stream" class="target-btn active" onclick="setTargetType('stream')">流線渦巻き</button>
+            <button id="target-vortex" class="target-btn" onclick="setTargetType('vortex')">幾何学渦巻き</button>
+            <button id="target-circle" class="target-btn" onclick="setTargetType('circle')">普通の円</button>
+        </div>
+    </div>
+
+    <div id="display-area">
+        <div id="stereo-mode" style="display: flex; gap: 60px;">
+            <div class="target-container"><canvas class="vortex-canvas"></canvas></div>
+            <div class="target-container"><canvas class="vortex-canvas"></canvas></div>
+        </div>
+        <div id="zoom-mode" class="hidden">
+            <div class="target-container zoom-animation"><canvas class="vortex-canvas"></canvas></div>
+        </div>
+        <div id="eye-move-mode" class="hidden">
+            <div id="moving-box" class="target-container" style="position: absolute; left: 50%; top: 50%;">
+                <canvas class="vortex-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div id="flash-toggle" class="option-toggle" onclick="toggleFlash()">⚡ 明滅 OFF</div>
+        <div id="stereo-controls">
+            <input type="range" id="gapRange" min="10" max="220" value="60">
+            <p class="description">画像が3つ重なって見えるように調整してください。</p>
+        </div>
+        <div id="zoom-controls" class="hidden">
+            <p class="description">伸縮するターゲットにピントを合わせ続けてください。</p>
+        </div>
+        <div id="move-controls" class="hidden">
+            <p class="description">目だけでターゲットの動きを追いかけます。</p>
+        </div>
+    </div>
+
+    <script>
+        const canvases = document.querySelectorAll('.vortex-canvas');
+        let currentTargetType = 'stream'; 
+        let rotationAngle = 0;
+        let isFlashing = false;
+        let moveX = 50, moveY = 50, velX = 0.5, velY = 0.4;
+        let animationFrame;
+
+        function draw() {
+            rotationAngle += 0.05;
+            canvases.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width = 300;
+                const h = canvas.height = 300;
+                const cx = w / 2;
+                const cy = h / 2;
+
+                ctx.clearRect(0, 0, w, h);
+
+                if (currentTargetType === 'stream') {
+                    // 流線渦巻き（画像再現）
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 145, 0, Math.PI * 2);
+                    ctx.fillStyle = '#3498db';
+                    ctx.fill();
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rotationAngle);
+                    ctx.fillStyle = '#003366';
+                    for (let j = 0; j < 6; j++) {
+                        ctx.rotate((Math.PI * 2) / 6);
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        for (let i = 0; i <= 150; i += 2) {
+                            ctx.lineTo(Math.cos(i/40)*i, Math.sin(i/40)*i);
+                        }
+                        for (let i = 150; i >= 0; i -= 2) {
+                            ctx.lineTo(Math.cos(i/40-(i/150)*0.8)*i, Math.sin(i/40-(i/150)*0.8)*i);
+                        }
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                } else if (currentTargetType === 'vortex') {
+                    // 幾何学渦巻き（幾何学的パターン）
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rotationAngle);
+                    for (let i = 0; i < 24; i++) {
+                        ctx.beginPath();
+                        ctx.rotate((Math.PI * 2) / 24);
+                        ctx.moveTo(0, 0);
+                        ctx.arc(0, 0, 150, 0, (Math.PI * 2) / 48);
+                        ctx.fillStyle = i % 2 === 0 ? '#3498db' : '#003366';
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                } else {
+                    // 普通の円
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 140, 0, Math.PI * 2);
+                    ctx.fillStyle = '#3498db';
+                    ctx.fill();
+                }
+            });
+            requestAnimationFrame(draw);
+        }
+
+        function setTargetType(type) {
+            currentTargetType = type;
+            const btns = document.querySelectorAll('.target-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            document.getElementById(`target-${type}`).classList.add('active');
+        }
+
+        function switchMode(mode) {
+            cancelAnimationFrame(animationFrame);
+            const modes = ['stereo', 'zoom', 'eye-move'];
+            const ctrls = ['stereo', 'zoom', 'move'];
+            const btns = ['btn-stereo', 'btn-zoom', 'btn-move'];
+            modes.forEach((m, i) => {
+                document.getElementById(`${m}-mode`).classList.toggle('hidden', m !== (mode === 'move' ? 'eye-move' : mode));
+                document.getElementById(`${ctrls[i]}-controls`).classList.toggle('hidden', ctrls[i] !== (mode === 'move' ? 'move' : mode));
+                document.getElementById(btns[i]).classList.toggle('active', btns[i] === `btn-${mode}`);
+            });
+            if (mode === 'move') animateMove();
+        }
+
+        function toggleFlash() {
+            isFlashing = !isFlashing;
+            document.body.classList.toggle('flashing', isFlashing);
+            document.getElementById('flash-toggle').innerText = isFlashing ? '⚡ 明滅 ON' : '⚡ 明滅 OFF';
+            document.getElementById('flash-toggle').classList.toggle('on', isFlashing);
+        }
+
+        function animateMove() {
+            const ball = document.getElementById('moving-box');
+            moveX += velX; moveY += velY;
+            if (moveX <= 5 || moveX >= 75) velX *= -1;
+            if (moveY <= 5 || moveY >= 75) velY *= -1;
+            ball.style.left = moveX + '%';
+            ball.style.top = moveY + '%';
+            animationFrame = requestAnimationFrame(animateMove);
+        }
+
+        document.getElementById('gapRange').addEventListener('input', (e) => {
+            document.getElementById('stereo-mode').style.gap = `${e.target.value}px`;
+        });
+
+        draw();
+    </script>
+</body>
+</html>
