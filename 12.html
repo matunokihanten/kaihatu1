@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心理覚醒エンジン - 認知科学的視覚誘導システム</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; overflow: hidden; 
+            background: radial-gradient(circle at center, #000, #111); 
+            font-family: 'Meiryo', 'Hiragino Sans', sans-serif; 
+            user-select: none;
+        }
+        canvas { display: block; filter: contrast(1.1) brightness(1.05); }
+        
+        .ui-panel {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(10, 10, 20, 0.95); padding: 25px; border-radius: 20px;
+            display: flex; flex-direction: column; gap: 20px; color: #e0e0e0;
+            border: 2px solid rgba(100, 150, 255, 0.3); z-index: 100; 
+            backdrop-filter: blur(20px); width: 480px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+        }
+        .ui-panel.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(100px); }
+
+        .header {
+            text-align: center; font-size: 18px; font-weight: bold;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 2px; margin-bottom: 10px;
+        }
+
+        .toggle-ui {
+            position: absolute; bottom: 15px; right: 15px; z-index: 101;
+            background: rgba(70, 130, 255, 0.2); color: white; 
+            border: 2px solid rgba(100, 150, 255, 0.5);
+            padding: 10px 22px; border-radius: 30px; cursor: pointer; 
+            font-size: 12px; font-weight: 600; letter-spacing: 1px;
+            transition: all 0.3s; backdrop-filter: blur(10px);
+        }
+        .toggle-ui:hover { background: rgba(70, 130, 255, 0.4); transform: scale(1.05); }
+
+        .mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        button.mode-btn { 
+            background: linear-gradient(135deg, #1a1a2e, #16213e); 
+            border: 2px solid #2a2a4e; color: #b0b0d0; 
+            padding: 15px 10px; font-size: 11px; cursor: pointer; 
+            border-radius: 12px; transition: all 0.3s;
+            font-weight: 600; letter-spacing: 0.5px;
+            position: relative; overflow: hidden;
+        }
+        button.mode-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.5s;
+        }
+        button.mode-btn:hover::before { left: 100%; }
+        button.mode-btn:hover { border-color: #4a7fc8; transform: translateY(-2px); }
+        button.mode-btn.active { 
+            background: linear-gradient(135deg, #4facfe, #00f2fe); 
+            color: #000; font-weight: bold; 
+            box-shadow: 0 0 25px rgba(79, 172, 254, 0.6), inset 0 0 15px rgba(255,255,255,0.3);
+            border-color: #4facfe;
+        }
+        
+        .controls-section { 
+            background: rgba(30, 30, 50, 0.5); padding: 15px; 
+            border-radius: 12px; border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .slider-box { 
+            display: flex; align-items: center; gap: 15px; 
+            font-size: 13px; margin-bottom: 10px;
+        }
+        .slider-label { 
+            min-width: 120px; font-weight: 600; color: #a0c0ff;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .slider-value { 
+            min-width: 45px; text-align: right; 
+            color: #4facfe; font-weight: bold; font-size: 12px;
+        }
+        input[type=range] { 
+            flex-grow: 1; cursor: pointer; height: 6px;
+            -webkit-appearance: none; background: rgba(100, 150, 255, 0.2);
+            border-radius: 5px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.8);
+        }
+
+        .mode-description {
+            font-size: 11px; line-height: 1.6; color: #8090b0;
+            padding: 12px; background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px; border-left: 3px solid #4facfe;
+            min-height: 60px; transition: all 0.3s;
+        }
+        .mode-description strong { color: #4facfe; }
+
+        .stats {
+            position: absolute; top: 20px; right: 20px; z-index: 100;
+            background: rgba(0, 0, 0, 0.7); padding: 15px; border-radius: 12px;
+            color: #4facfe; font-size: 11px; font-family: 'Courier New', monospace;
+            border: 1px solid rgba(100, 150, 255, 0.3); backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+        .stats-item { display: flex; justify-content: space-between; margin: 5px 0; }
+        .stats-label { color: #8090b0; }
+        .stats-value { color: #00f2fe; font-weight: bold; }
+
+        .breathing-guide {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 3px solid rgba(79, 172, 254, 0.5);
+            pointer-events: none; z-index: 50;
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .breathing-guide.active { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <button class="toggle-ui" onclick="toggleUI()">🎛️ 操作パネル</button>
+
+    <div class="stats" id="stats">
+        <div class="stats-item">
+            <span class="stats-label">現在のモード:</span>
+            <span class="stats-value" id="currentModeName">集中深化</span>
+        </div>
+        <div class="stats-item">
+            <span class="stats-label">心理状態:</span>
+            <span class="stats-value" id="psychState">覚醒中</span>
+        </div>
+        <div class="stats-item">
+            <span class="stats-label">FPS:</span>
+            <span class="stats-value" id="fps">60</span>
+        </div>
+        <div class="stats-item">
+            <span class="stats-label">呼吸同調:</span>
+            <span class="stats-value" id="breathing">OFF</span>
+        </div>
+    </div>
+
+    <div class="breathing-guide" id="breathingGuide"></div>
+
+    <div class="ui-panel" id="uiPanel">
+        <div class="header">🧠 心理覚醒ビジュアルエンジン</div>
+        
+        <div class="mode-grid" id="modeButtons">
+            <button class="mode-btn active" onclick="setMode(0)">🎯 集中深化<br><small>フロー誘導</small></button>
+            <button class="mode-btn" onclick="setMode(1)">🌊 瞑想鎮静<br><small>α波同調</small></button>
+            <button class="mode-btn" onclick="setMode(2)">⚡ 覚醒活性<br><small>β波刺激</small></button>
+            <button class="mode-btn" onclick="setMode(3)">🌀 催眠導入<br><small>θ波誘導</small></button>
+            <button class="mode-btn" onclick="setMode(4)">💎 認知拡張<br><small>ゲシュタルト</small></button>
+            <button class="mode-btn" onclick="setMode(5)">🔥 情動昂揚<br><small>感情活性化</small></button>
+            <button class="mode-btn" onclick="setMode(6)">❄️ 不安軽減<br><small>安心誘導</small></button>
+            <button class="mode-btn" onclick="setMode(7)">🌌 超越体験<br><small>変性意識</small></button>
+        </div>
+
+        <div class="mode-description" id="modeDesc">
+            <strong>集中深化モード:</strong> チクセントミハイのフロー理論に基づき、注意を一点に収束させることで深い没入状態を誘導します。
+        </div>
+
+        <div class="controls-section">
+            <div class="slider-box">
+                <span class="slider-label">🚀 速度</span>
+                <input type="range" id="speedRange" min="1" max="500" value="150" oninput="updateSliders()">
+                <span class="slider-value" id="speedValue">150</span>
+            </div>
+            <div class="slider-box">
+                <span class="slider-label">🎨 色彩強度</span>
+                <input type="range" id="colorIntensity" min="0" max="100" value="70" oninput="updateSliders()">
+                <span class="slider-value" id="colorValue">70%</span>
+            </div>
+            <div class="slider-box">
+                <span class="slider-label">🌟 複雑度</span>
+                <input type="range" id="complexityRange" min="20" max="200" value="100" oninput="updateSliders()">
+                <span class="slider-value" id="complexityValue">100</span>
+            </div>
+            <div class="slider-box">
+                <span class="slider-label">🫁 呼吸ガイド</span>
+                <input type="range" id="breathingGuide" min="0" max="1" value="0" oninput="updateSliders()">
+                <span class="slider-value" id="breathingValue">OFF</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="c"></canvas>
+
+<script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const speedInput = document.getElementById('speedRange');
+    const colorIntensityInput = document.getElementById('colorIntensity');
+    const complexityInput = document.getElementById('complexityRange');
+    const breathingInput = document.getElementById('breathingGuide');
+    const uiPanel = document.getElementById('uiPanel');
+    const buttons = document.querySelectorAll('.mode-btn');
+    const modeDesc = document.getElementById('modeDesc');
+    const breathingGuide = document.getElementById('breathingGuide');
+    
+    let w, h, phase = 0, currentMode = 0;
+    let breathingPhase = 0;
+    let lastTime = Date.now();
+    let fps = 60;
+
+    // モード別の心理学的設定
+    const modeConfigs = [
+        {
+            name: '集中深化',
+            state: 'フロー状態',
+            desc: '<strong>集中深化モード:</strong> チクセントミハイのフロー理論に基づき、注意を一点に収束させることで深い没入状態を誘導します。',
+            colors: ['#ffffff', '#000000'],
+            frequency: 15, // Hz (β波下限)
+            pattern: 'convergent'
+        },
+        {
+            name: '瞑想鎮静',
+            state: 'リラックス',
+            desc: '<strong>瞑想鎮静モード:</strong> α波(8-13Hz)を誘導し、覚醒しながらもリラックスした瞑想状態を実現します。青色の心理的鎮静効果を活用。',
+            colors: ['#1a4a7a', '#4fa3d1', '#87ceeb'],
+            frequency: 10, // Hz (α波)
+            pattern: 'wave'
+        },
+        {
+            name: '覚醒活性',
+            state: '高覚醒',
+            desc: '<strong>覚醒活性モード:</strong> β波(13-30Hz)を刺激し、認知機能と alertness を最大化。赤とオレンジの暖色系で交感神経を活性化します。',
+            colors: ['#ff4500', '#ff8c00', '#ffff00'],
+            frequency: 20, // Hz (β波)
+            pattern: 'radial'
+        },
+        {
+            name: '催眠導入',
+            state: '深層弛緩',
+            desc: '<strong>催眠導入モード:</strong> θ波(4-8Hz)領域へ誘導し、深い瞑想状態や創造的洞察を促進。ゆっくりとした螺旋運動で意識を内側へ。',
+            colors: ['#4b0082', '#8b00ff', '#9370db'],
+            frequency: 6, // Hz (θ波)
+            pattern: 'spiral'
+        },
+        {
+            name: '認知拡張',
+            state: 'ゲシュタルト',
+            desc: '<strong>認知拡張モード:</strong> 図と地の反転、ゲシュタルト崩壊と再構築を繰り返し、認知的柔軟性と創造性を高めます。',
+            colors: ['#ffffff', '#000000', '#808080'],
+            frequency: 12, // Hz
+            pattern: 'gestalt'
+        },
+        {
+            name: '情動昂揚',
+            state: '感情活性',
+            desc: '<strong>情動昂揚モード:</strong> 暖色系の高速変化により扁桃体を刺激し、ポジティブな感情エネルギーを喚起します。',
+            colors: ['#ff1493', '#ff69b4', '#ffd700'],
+            frequency: 18, // Hz
+            pattern: 'explosive'
+        },
+        {
+            name: '不安軽減',
+            state: '安心誘導',
+            desc: '<strong>不安軽減モード:</strong> 寒色系の柔らかな動きと対称性により、安全感と秩序を提供。副交感神経を優位にします。',
+            colors: ['#00ced1', '#20b2aa', '#48d1cc'],
+            frequency: 8, // Hz (α波下限)
+            pattern: 'symmetric'
+        },
+        {
+            name: '超越体験',
+            state: '変性意識',
+            desc: '<strong>超越体験モード:</strong> 複雑な多層パターンと高コントラストにより、日常的な意識状態を超えた体験領域へ誘導します。',
+            colors: ['#00ff00', '#0000ff', '#ff00ff', '#ffff00'],
+            frequency: 4, // Hz (δ波境界)
+            pattern: 'transcendent'
+        }
+    ];
+
+    function resize() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function setMode(m) {
+        currentMode = m;
+        buttons.forEach((btn, i) => btn.className = (i === m ? 'mode-btn active' : 'mode-btn'));
+        modeDesc.innerHTML = modeConfigs[m].desc;
+        document.getElementById('currentModeName').textContent = modeConfigs[m].name;
+        document.getElementById('psychState').textContent = modeConfigs[m].state;
+    }
+
+    function toggleUI() { 
+        uiPanel.classList.toggle('hidden'); 
+    }
+
+    function updateSliders() {
+        document.getElementById('speedValue').textContent = speedInput.value;
+        document.getElementById('colorValue').textContent = colorIntensityInput.value + '%';
+        document.getElementById('complexityValue').textContent = complexityInput.value;
+        document.getElementById('breathingValue').textContent = breathingInput.value == 1 ? 'ON' : 'OFF';
+        document.getElementById('breathing').textContent = breathingInput.value == 1 ? 'ON' : 'OFF';
+    }
+
+    function getColorForMode(index, total, config) {
+        const colorIntensity = colorIntensityInput.value / 100;
+        const colors = config.colors;
+        const colorIndex = Math.floor((index / total) * colors.length) % colors.length;
+        let baseColor = colors[colorIndex];
+        
+        // 色彩強度の調整
+        if (colorIntensity < 1) {
+            const rgb = hexToRgb(baseColor);
+            const gray = (rgb.r + rgb.g + rgb.b) / 3;
+            return `rgb(${lerp(gray, rgb.r, colorIntensity)}, ${lerp(gray, rgb.g, colorIntensity)}, ${lerp(gray, rgb.b, colorIntensity)})`;
+        }
+        return baseColor;
+    }
+
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 255, g: 255, b: 255 };
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function drawBreathingGuide() {
+        if (breathingInput.value == 0) {
+            breathingGuide.classList.remove('active');
+            return;
+        }
+        
+        breathingGuide.classList.add('active');
+        // 4秒吸う、4秒吐く（α波誘導の呼吸法）
+        breathingPhase = (breathingPhase + 0.01) % 1;
+        const breathScale = Math.sin(breathingPhase * Math.PI * 2) * 0.5 + 0.5;
+        const size = 80 + breathScale * 60;
+        breathingGuide.style.width = size + 'px';
+        breathingGuide.style.height = size + 'px';
+        breathingGuide.style.borderColor = breathScale > 0.5 ? 
+            'rgba(79, 172, 254, 0.8)' : 'rgba(0, 242, 254, 0.8)';
+    }
+
+    function animate() {
+        // FPS計算
+        const now = Date.now();
+        const delta = now - lastTime;
+        fps = Math.round(1000 / delta);
+        lastTime = now;
+        document.getElementById('fps').textContent = fps;
+
+        // 背景 - グラデーション効果
+        const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h)/1.5);
+        gradient.addColorStop(0, '#000000');
+        gradient.addColorStop(1, '#0a0a14');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        const cx = w / 2, cy = h / 2;
+        const config = modeConfigs[currentMode];
+        const speed = speedInput.value * 0.00018 * (config.frequency / 15); // 周波数に基づく速度調整
+        phase = (phase + speed) % 1.0; 
+
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        const numLayers = Math.floor(complexityInput.value);
+        const layerInterval = 1.0 / numLayers;
+
+        // パターン別描画
+        switch(config.pattern) {
+            case 'convergent': // 集中深化
+                drawConvergent(numLayers, layerInterval, config);
+                break;
+            case 'wave': // 瞑想鎮静
+                drawWave(numLayers, layerInterval, config);
+                break;
+            case 'radial': // 覚醒活性
+                drawRadial(numLayers, layerInterval, config);
+                break;
+            case 'spiral': // 催眠導入
+                drawSpiral(numLayers, layerInterval, config);
+                break;
+            case 'gestalt': // 認知拡張
+                drawGestalt(numLayers, layerInterval, config);
+                break;
+            case 'explosive': // 情動昂揚
+                drawExplosive(numLayers, layerInterval, config);
+                break;
+            case 'symmetric': // 不安軽減
+                drawSymmetric(numLayers, layerInterval, config);
+                break;
+            case 'transcendent': // 超越体験
+                drawTranscendent(numLayers, layerInterval, config);
+                break;
+        }
+
+        ctx.restore();
+        drawBreathingGuide();
+        requestAnimationFrame(animate);
+    }
+
+    // ===== 各パターンの描画関数 =====
+    
+    function drawConvergent(numLayers, layerInterval, config) {
+        // フロー状態: 中心への収束と拡散の繰り返し
+        for (let i = numLayers; i >= 0; i--) {
+            let progress = (i * layerInterval + phase) % 1.0;
+            const scale = Math.pow(progress, 8);
+            const radius = scale * Math.max(w, h) * 3;
+            
+            if (radius < 1 || radius > Math.max(w, h) * 2.5) continue;
+
+            ctx.globalAlpha = 0.8 - progress * 0.5;
+            ctx.fillStyle = getColorForMode(i, numLayers, config);
+            
+            const sides = 16;
+            const rotation = phase * 10 * (i % 2 === 0 ? 1 : -1);
+            
+            ctx.beginPath();
+            for(let a = 0; a < sides * 2; a++) {
+                const angle = (a / (sides * 2)) * Math.PI * 2 + rotation;
+                const r = (a % 2 === 0) ? radius : radius * 0.4;
+                ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            }
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawWave(numLayers, layerInterval, config) {
+        // α波同調: ゆったりとした波動
+        for (let i = 0; i < numLayers; i++) {
+            let progress = (i * layerInterval + phase * 0.5) % 1.0;
+            const y = (progress - 0.5) * h * 1.5;
+            
+            ctx.globalAlpha = 0.3;
+            ctx.strokeStyle = getColorForMode(i, numLayers, config);
+            ctx.lineWidth = 3;
+            
+            ctx.beginPath();
+            for(let x = -w/2; x < w/2; x += 5) {
+                const wave = Math.sin(x * 0.01 + progress * Math.PI * 2 + i * 0.5) * 100;
+                if (x === -w/2) {
+                    ctx.moveTo(x, y + wave);
+                } else {
+                    ctx.lineTo(x, y + wave);
+                }
+            }
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawRadial(numLayers, layerInterval, config) {
+        // β波刺激: 高速放射状パターン
+        for (let i = 0; i < numLayers; i++) {
+            let progress = (i * layerInterval + phase * 2) % 1.0;
+            const radius = progress * Math.max(w, h) * 0.8;
+            
+            ctx.globalAlpha = 0.6;
+            ctx.strokeStyle = getColorForMode(i, numLayers, config);
+            ctx.lineWidth = 2;
+            
+            const spokes = 24;
+            for(let a = 0; a < spokes; a++) {
+                const angle = (a / spokes) * Math.PI * 2 + phase * 15;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+                ctx.stroke();
+            }
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawSpiral(numLayers, layerInterval, config) {
+        // θ波誘導: 催眠的螺旋
+        ctx.globalAlpha = 0.7;
+        for (let i = 0; i < numLayers * 2; i++) {
+            let progress = (i * layerInterval * 0.5 + phase * 0.3) % 1.0;
+            const maxRadius = Math.max(w, h) * 0.6;
+            
+            ctx.strokeStyle = getColorForMode(i, numLayers * 2, config);
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for(let t = 0; t < Math.PI * 6; t += 0.1) {
+                const r = (t / (Math.PI * 6)) * maxRadius * progress;
+                const angle = t + phase * 5 + i * 0.3;
+                const x = Math.cos(angle) * r;
+                const y = Math.sin(angle) * r;
+                if (t === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawGestalt(numLayers, layerInterval, config) {
+        // ゲシュタルト: 図と地の反転
+        for (let i = 0; i < numLayers; i++) {
+            let progress = (i * layerInterval + phase) % 1.0;
+            const radius = (0.3 + progress * 0.5) * Math.min(w, h) * 0.4;
+            
+            ctx.globalAlpha = 0.8;
+            ctx.fillStyle = getColorForMode(i, numLayers, config);
+            
+            const angle = (i / numLayers) * Math.PI * 2 + phase * 3;
+            const offsetX = Math.cos(angle) * radius * 0.5;
+            const offsetY = Math.sin(angle) * radius * 0.5;
+            
+            ctx.beginPath();
+            ctx.arc(offsetX, offsetY, radius * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawExplosive(numLayers, layerInterval, config) {
+        // 感情活性化: 爆発的な拡散
+        for (let i = 0; i < numLayers; i++) {
+            let progress = (i * layerInterval + phase * 1.5) % 1.0;
+            const scale = Math.pow(progress, 2);
+            const radius = scale * Math.max(w, h) * 0.8;
+            
+            if (progress < 0.05) continue;
+            
+            ctx.globalAlpha = 1 - progress;
+            ctx.fillStyle = getColorForMode(i, numLayers, config);
+            
+            const particles = 12;
+            for(let p = 0; p < particles; p++) {
+                const angle = (p / particles) * Math.PI * 2 + i;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                ctx.beginPath();
+                ctx.arc(x, y, 10 + progress * 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawSymmetric(numLayers, layerInterval, config) {
+        // 安心誘導: 対称的な秩序
+        ctx.globalAlpha = 0.6;
+        for (let i = 0; i < numLayers; i++) {
+            let progress = (i * layerInterval + phase * 0.5) % 1.0;
+            const size = (0.5 + progress * 0.5) * Math.min(w, h) * 0.3;
+            
+            ctx.strokeStyle = getColorForMode(i, numLayers, config);
+            ctx.lineWidth = 2;
+            
+            const symmetry = 6;
+            for(let s = 0; s < symmetry; s++) {
+                const angle = (s / symmetry) * Math.PI * 2;
+                ctx.save();
+                ctx.rotate(angle);
+                ctx.strokeRect(-size/2, 0, size, size * 0.1);
+                ctx.restore();
+            }
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    function drawTranscendent(numLayers, layerInterval, config) {
+        // 変性意識: 多層的複雑パターン
+        for (let i = numLayers; i >= 0; i--) {
+            let progress = (i * layerInterval + phase) % 1.0;
+            const scale = Math.pow(progress, 6);
+            const radius = scale * Math.max(w, h) * 4;
+            
+            if (radius < 5 || radius > Math.max(w, h) * 3) continue;
+
+            ctx.globalAlpha = 0.4;
+            const sides = 8 + (i % 4) * 4;
+            const rotation = phase * 20 + i * Math.PI / sides;
+            
+            // 外側: 多角形
+            ctx.strokeStyle = getColorForMode(i, numLayers, config);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let a = 0; a < sides; a++) {
+                const angle = (a / sides) * Math.PI * 2 + rotation;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                if (a === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            
+            // 内側: 星型
+            ctx.fillStyle = getColorForMode(i, numLayers, config);
+            ctx.beginPath();
+            for(let a = 0; a < sides * 2; a++) {
+                const angle = (a / (sides * 2)) * Math.PI * 2 + rotation;
+                const r = (a % 2 === 0) ? radius * 0.5 : radius * 0.2;
+                const x = Math.cos(angle) * r;
+                const y = Math.sin(angle) * r;
+                if (a === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    // 初期化
+    setMode(0);
+    updateSliders();
+    animate();
+</script>
+</body>
+</html>
