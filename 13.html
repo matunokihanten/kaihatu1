@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老眼対策トレーニング Ultimate</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent: #00d2ff;
+            --secondary: #3a7bd5;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* UI Panel Styling */
+        .ui-panel {
+            position: absolute;
+            z-index: 100;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none; /* Let clicks pass through empty spaces */
+        }
+        .ui-top { top: 10px; }
+        .ui-bottom { bottom: 20px; }
+
+        .control-box {
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            pointer-events: auto;
+            margin-bottom: 8px;
+            text-align: center;
+            max-width: 90%;
+            width: 360px;
+        }
+
+        .btn-group { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-bottom: 5px; }
+        button {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #444;
+            background: #222;
+            color: #aaa;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        button:hover { background: #333; }
+        button.active { background: var(--secondary); color: white; border-color: var(--accent); box-shadow: 0 0 10px rgba(58, 123, 213, 0.4); }
+
+        /* Display Area */
+        #display-area {
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        canvas {
+            border-radius: 50%; /* Optional: make gabor circular */
+        }
+
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .row { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 5px 0; font-size: 0.8rem; }
+        input[type="range"] { flex: 1; margin-left: 10px; cursor: pointer; accent-color: var(--accent); }
+        
+        /* Guide Dots for Stereo */
+        .guide-dots {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 70px; /* Adjust based on canvas size */
+            box-sizing: border-box;
+        }
+        .dot { width: 8px; height: 8px; background: red; border-radius: 50%; box-shadow: 0 0 5px red;}
+
+    </style>
+</head>
+<body>
+
+    <div class="ui-panel ui-top">
+        <div class="control-box">
+            <div class="btn-group">
+                <button id="mode-stereo" class="active" onclick="setMode('stereo')">3点視 (Stereo)</button>
+                <button id="mode-zoom" onclick="setMode('zoom')">遠近 (Zoom)</button>
+                <button id="mode-move" onclick="setMode('move')">眼球運動 (Move)</button>
+            </div>
+            <div class="btn-group">
+                <button id="type-gabor" class="active" onclick="setTarget('gabor')">ガボール</button>
+                <button id="type-stream" onclick="setTarget('stream')">流線渦</button>
+                <button id="type-sharp" onclick="setTarget('sharp')">高コントラスト</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="display-area">
+        <div id="container-stereo" style="display: flex; gap: 60px; position: relative;">
+            <div class="guide-dots hidden" id="stereo-guide">
+                <div class="dot"></div><div class="dot"></div>
+            </div>
+            <div class="canvas-wrapper"><canvas id="cvs1" width="300" height="300"></canvas></div>
+            <div class="canvas-wrapper"><canvas id="cvs2" width="300" height="300"></canvas></div>
+        </div>
+
+        <div id="container-single" class="hidden" style="position: absolute;">
+            <div class="canvas-wrapper"><canvas id="cvs-single" width="300" height="300"></canvas></div>
+        </div>
+    </div>
+
+    <div class="ui-panel ui-bottom">
+        <div class="control-box">
+            <div class="row">
+                <span>回転速度</span>
+                <input type="range" id="speedRange" min="0" max="100" value="20">
+            </div>
+            
+            <div id="ctrl-stereo" class="ctrl-group">
+                <div class="row">
+                    <span>画像間隔</span>
+                    <input type="range" id="gapRange" min="0" max="200" value="60">
+                </div>
+                <div class="row">
+                    <button onclick="toggleGuide()">🔴 ガイド表示</button>
+                </div>
+            </div>
+
+            <div id="ctrl-zoom" class="ctrl-group hidden">
+                <div class="row">
+                    <span>伸縮速度</span>
+                    <input type="range" id="zoomSpeedRange" min="1" max="100" value="30">
+                </div>
+            </div>
+
+            <div id="ctrl-move" class="ctrl-group hidden">
+                <div class="row">
+                    <span>移動速度</span>
+                    <input type="range" id="moveSpeedRange" min="1" max="100" value="30">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            mode: 'stereo', // stereo, zoom, move
+            target: 'gabor', // gabor, stream, sharp
+            rotation: 0,
+            rotationSpeed: 0.02,
+            gap: 60,
+            zoomScale: 1,
+            zoomDir: 1,
+            zoomSpeed: 0.01,
+            moveX: 50, moveY: 50, velX: 0.5, velY: 0.4,
+            width: 300, height: 300
+        };
+
+        // DOM Elements
+        const containers = {
+            stereo: document.getElementById('container-stereo'),
+            single: document.getElementById('container-single')
+        };
+        const ctrls = {
+            stereo: document.getElementById('ctrl-stereo'),
+            zoom: document.getElementById('ctrl-zoom'),
+            move: document.getElementById('ctrl-move')
+        };
+        const canvases = [
+            document.getElementById('cvs1'),
+            document.getElementById('cvs2'),
+            document.getElementById('cvs-single')
+        ];
+
+        // --- Core Logic ---
+
+        function init() {
+            loop();
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        function update() {
+            // Rotation
+            state.rotation += state.rotationSpeed;
+
+            // Zoom Mode Logic
+            if (state.mode === 'zoom') {
+                state.zoomScale += state.zoomSpeed * state.zoomDir;
+                if (state.zoomScale > 1.5 || state.zoomScale < 0.2) state.zoomDir *= -1;
+                
+                // Update CSS transform
+                const wrapper = containers.single.querySelector('.canvas-wrapper');
+                wrapper.style.transform = `scale(${state.zoomScale})`;
+            }
+
+            // Move Mode Logic
+            if (state.mode === 'move') {
+                const area = document.getElementById('display-area');
+                const maxX = area.clientWidth - state.width/2;
+                const maxY = area.clientHeight - state.height/2;
+                
+                // Logical coordinates (%) to Pixels mapping
+                // Note: Simplified logic for demo. 
+                // Actual moving logic:
+                let px = state.moveX; 
+                let py = state.moveY;
+
+                px += state.velX * (document.getElementById('moveSpeedRange').value / 20);
+                py += state.velY * (document.getElementById('moveSpeedRange').value / 20);
+
+                if (px < 5 || px > 95) state.velX *= -1;
+                if (py < 5 || py > 95) state.velY *= -1;
+
+                state.moveX = px;
+                state.moveY = py;
+
+                containers.single.style.left = `${px}%`;
+                containers.single.style.top = `${py}%`;
+                containers.single.style.transform = `translate(-50%, -50%)`; // Center anchor
+            }
+        }
+
+        function draw() {
+            canvases.forEach(canvas => {
+                // Optimization: Don't draw hidden canvases
+                if (canvas.offsetParent === null) return;
+
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+
+                ctx.clearRect(0, 0, w, h);
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(state.rotation);
+
+                if (state.target === 'gabor') {
+                    drawGabor(ctx, 140);
+                } else if (state.target === 'stream') {
+                    drawStream(ctx, 140);
+                } else {
+                    drawSharp(ctx, 140);
+                }
+
+                ctx.restore();
+            });
+        }
+
+        // --- Drawing Functions ---
+
+        // Gabor Patch Approximation (Sine wave + Radial Gradient Mask)
+        function drawGabor(ctx, radius) {
+            // Draw Stripes
+            ctx.fillStyle = '#fff';
+            const stripeWidth = 20;
+            for(let i = -radius; i < radius; i+=stripeWidth*2) {
+                ctx.fillRect(i, -radius, stripeWidth, radius*2);
+            }
+            
+            // Apply blur to make it "Gabor-like" sine wave
+            ctx.filter = 'blur(8px)'; 
+            
+            // Masking (Creating the Gaussian window effect)
+            ctx.globalCompositeOperation = 'destination-in';
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // Reset composite
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.filter = 'none';
+        }
+
+        function drawStream(ctx, radius) {
+            for (let i = 0; i < 12; i++) {
+                ctx.rotate(Math.PI / 6);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(radius/2, 0, radius, radius*0.5);
+                ctx.lineTo(0,0);
+                ctx.fillStyle = i % 2 === 0 ? '#3a7bd5' : '#00d2ff';
+                ctx.fill();
+            }
+        }
+
+        function drawSharp(ctx, radius) {
+            // High contrast Landolt-C like shapes or geometric
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            for(let i=0; i<4; i++) {
+                ctx.rotate(Math.PI/2);
+                ctx.fillRect(10, -10, radius, 20);
+            }
+        }
+
+
+        // --- UI & Events ---
+
+        function setMode(mode) {
+            state.mode = mode;
+            
+            // Button states
+            document.querySelectorAll('#mode-stereo, #mode-zoom, #mode-move').forEach(b => b.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+
+            // Visibility
+            containers.stereo.classList.toggle('hidden', mode !== 'stereo');
+            containers.single.classList.toggle('hidden', mode === 'stereo');
+
+            // Controls
+            Object.keys(ctrls).forEach(k => ctrls[k].classList.add('hidden'));
+            ctrls[mode].classList.remove('hidden');
+
+            // Reset positions for cleanliness
+            if(mode === 'zoom') {
+                containers.single.style.left = '50%';
+                containers.single.style.top = '50%';
+                containers.single.style.transform = 'translate(-50%, -50%)';
+            }
+        }
+
+        function setTarget(type) {
+            state.target = type;
+            document.querySelectorAll('#type-gabor, #type-stream, #type-sharp').forEach(b => b.classList.remove('active'));
+            document.getElementById(`type-${type}`).classList.add('active');
+        }
+
+        function toggleGuide() {
+            document.getElementById('stereo-guide').classList.toggle('hidden');
+        }
+
+        // Event Listeners
+        document.getElementById('speedRange').addEventListener('input', e => {
+            state.rotationSpeed = e.target.value / 500; // Scale 0-100 to appropriate speed
+        });
+
+        document.getElementById('gapRange').addEventListener('input', e => {
+            state.gap = e.target.value;
+            containers.stereo.style.gap = `${state.gap}px`;
+        });
+
+        document.getElementById('zoomSpeedRange').addEventListener('input', e => {
+            state.zoomSpeed = e.target.value / 1000;
+        });
+
+        document.getElementById('moveSpeedRange').addEventListener('input', e => {
+            // Value is read directly in update loop
+        });
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
