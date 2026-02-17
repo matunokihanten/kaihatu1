@@ -2,18 +2,20 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>老眼対策トレーニング Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>老眼対策トレーニング Ultimate v2</title>
     <style>
         :root {
             --bg-color: #000000;
             --accent: #00d2ff;
             --secondary: #3a7bd5;
+            --text-color: #eee;
+            --panel-bg: rgba(20, 20, 20, 0.85);
         }
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
-            color: white;
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -21,58 +23,105 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            touch-action: none; /* Prevent scroll on mobile */
         }
 
-        /* UI Panel Styling */
-        .ui-panel {
+        /* --- UI Components --- */
+        
+        .ui-layer {
             position: absolute;
             z-index: 100;
             width: 100%;
+            pointer-events: none;
             display: flex;
             flex-direction: column;
             align-items: center;
-            pointer-events: none; /* Let clicks pass through empty spaces */
+            transition: opacity 0.3s;
         }
         .ui-top { top: 10px; }
         .ui-bottom { bottom: 20px; }
 
         .control-box {
-            background: rgba(20, 20, 20, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 10px 15px;
-            border-radius: 16px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            padding: 10px;
+            border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.1);
             pointer-events: auto;
-            margin-bottom: 8px;
             text-align: center;
-            max-width: 90%;
-            width: 360px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        .btn-group { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; margin-bottom: 5px; }
+        /* Toggle Button */
+        #ui-toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 200;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(50, 50, 50, 0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            backdrop-filter: blur(4px);
+        }
+        #ui-toggle-btn:hover { background: var(--secondary); }
+
+        /* Buttons Grid */
+        .mode-group { display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; }
+        .target-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 4px; 
+            margin-bottom: 4px; 
+        }
+
         button {
-            padding: 8px 12px;
-            font-size: 0.8rem;
+            padding: 6px 4px;
+            font-size: 0.75rem;
             cursor: pointer;
             border: 1px solid #444;
             background: #222;
             color: #aaa;
-            border-radius: 6px;
+            border-radius: 4px;
             transition: 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         button:hover { background: #333; }
-        button.active { background: var(--secondary); color: white; border-color: var(--accent); box-shadow: 0 0 10px rgba(58, 123, 213, 0.4); }
+        button.active { 
+            background: var(--secondary); 
+            color: white; 
+            border-color: var(--accent); 
+            box-shadow: 0 0 8px rgba(58, 123, 213, 0.4); 
+        }
 
-        /* Display Area */
+        /* Sliders */
+        .row { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 4px 0; font-size: 0.8rem; }
+        input[type="range"] { flex: 1; margin-left: 10px; cursor: pointer; accent-color: var(--accent); }
+
+        /* --- Display Area & Canvas --- */
+        
         #display-area {
             width: 100%;
-            height: 60vh;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
         }
 
+        /* Responsive Canvas Wrapper */
         .canvas-wrapper {
             display: flex;
             align-items: center;
@@ -81,49 +130,81 @@
         }
 
         canvas {
-            border-radius: 50%; /* Optional: make gabor circular */
+            border-radius: 50%;
+            /* Default desktop size */
+            width: 300px;
+            height: 300px;
+            /* Responsive: Max 42% of viewport width to fit 2 side-by-side on mobile */
+            max-width: 42vw;
+            max-height: 42vw;
         }
 
-        /* Utility classes */
-        .hidden { display: none !important; }
-        .row { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: 5px 0; font-size: 0.8rem; }
-        input[type="range"] { flex: 1; margin-left: 10px; cursor: pointer; accent-color: var(--accent); }
-        
-        /* Guide Dots for Stereo */
+        /* --- Specific Modes --- */
+        #container-stereo {
+            display: flex;
+            /* Dynamic gap handled by JS, but prevent wrapping */
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+
         .guide-dots {
             position: absolute;
-            top: -20px;
+            top: -25px;
             width: 100%;
             display: flex;
-            justify-content: space-between;
-            padding: 0 70px; /* Adjust based on canvas size */
-            box-sizing: border-box;
+            justify-content: center;
+            gap: 0; /* Controlled by JS to match canvas centers */
+            pointer-events: none;
         }
-        .dot { width: 8px; height: 8px; background: red; border-radius: 50%; box-shadow: 0 0 5px red;}
+        .dot { 
+            width: 10px; height: 10px; 
+            background: #ff3333; 
+            border-radius: 50%; 
+            box-shadow: 0 0 5px #ff0000;
+        }
 
+        /* Utilities */
+        .hidden { display: none !important; opacity: 0; pointer-events: none; }
+        
     </style>
 </head>
 <body>
 
-    <div class="ui-panel ui-top">
+    <button id="ui-toggle-btn" onclick="toggleUI()">👁️</button>
+
+    <div id="ui-top" class="ui-layer ui-top">
         <div class="control-box">
-            <div class="btn-group">
-                <button id="mode-stereo" class="active" onclick="setMode('stereo')">3点視 (Stereo)</button>
-                <button id="mode-zoom" onclick="setMode('zoom')">遠近 (Zoom)</button>
-                <button id="mode-move" onclick="setMode('move')">眼球運動 (Move)</button>
+            <div class="mode-group">
+                <button id="mode-stereo" class="active" onclick="setMode('stereo')">3点視</button>
+                <button id="mode-zoom" onclick="setMode('zoom')">遠近</button>
+                <button id="mode-move" onclick="setMode('move')">眼球運動</button>
             </div>
-            <div class="btn-group">
+            
+            <div class="target-grid">
                 <button id="type-gabor" class="active" onclick="setTarget('gabor')">ガボール</button>
-                <button id="type-stream" onclick="setTarget('stream')">流線渦</button>
-                <button id="type-sharp" onclick="setTarget('sharp')">高コントラスト</button>
+                <button id="type-stream" onclick="setTarget('stream')">流線渦巻き</button>
+                <button id="type-contrast" onclick="setTarget('contrast')">高コントラスト</button>
+                
+                <button id="type-geo" onclick="setTarget('geo')">幾何学渦巻き</button>
+                <button id="type-circle" onclick="setTarget('circle')">普通の円</button>
+                <button id="type-landolt" onclick="setTarget('landolt')">ランドルト</button>
+
+                <button id="type-radial" onclick="setTarget('radial')">放射光</button>
+                <button id="type-bullseye" onclick="setTarget('bullseye')">ターゲット</button>
+                <button id="type-mandala" onclick="setTarget('mandala')">万華鏡</button>
             </div>
         </div>
     </div>
 
     <div id="display-area">
-        <div id="container-stereo" style="display: flex; gap: 60px; position: relative;">
+        <div id="container-stereo">
             <div class="guide-dots hidden" id="stereo-guide">
-                <div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div>
+                <div id="dot-spacer" style="width: 60px;"></div> 
+                <div class="dot"></div>
             </div>
             <div class="canvas-wrapper"><canvas id="cvs1" width="300" height="300"></canvas></div>
             <div class="canvas-wrapper"><canvas id="cvs2" width="300" height="300"></canvas></div>
@@ -134,7 +215,7 @@
         </div>
     </div>
 
-    <div class="ui-panel ui-bottom">
+    <div id="ui-bottom" class="ui-layer ui-bottom">
         <div class="control-box">
             <div class="row">
                 <span>回転速度</span>
@@ -144,10 +225,10 @@
             <div id="ctrl-stereo" class="ctrl-group">
                 <div class="row">
                     <span>画像間隔</span>
-                    <input type="range" id="gapRange" min="0" max="200" value="60">
+                    <input type="range" id="gapRange" min="0" max="150" value="40">
                 </div>
-                <div class="row">
-                    <button onclick="toggleGuide()">🔴 ガイド表示</button>
+                <div class="row" style="justify-content: center;">
+                    <button onclick="toggleGuide()" style="width:100%">🔴 ガイド表示</button>
                 </div>
             </div>
 
@@ -168,21 +249,22 @@
     </div>
 
     <script>
-        // State
+        // --- Application State ---
         const state = {
             mode: 'stereo', // stereo, zoom, move
-            target: 'gabor', // gabor, stream, sharp
+            target: 'gabor', 
             rotation: 0,
             rotationSpeed: 0.02,
-            gap: 60,
+            gap: 40,
             zoomScale: 1,
             zoomDir: 1,
             zoomSpeed: 0.01,
             moveX: 50, moveY: 50, velX: 0.5, velY: 0.4,
-            width: 300, height: 300
+            width: 300, height: 300,
+            uiVisible: true
         };
 
-        // DOM Elements
+        // --- DOM Elements ---
         const containers = {
             stereo: document.getElementById('container-stereo'),
             single: document.getElementById('container-single')
@@ -197,10 +279,14 @@
             document.getElementById('cvs2'),
             document.getElementById('cvs-single')
         ];
+        const uiLayers = [
+            document.getElementById('ui-top'),
+            document.getElementById('ui-bottom')
+        ];
 
-        // --- Core Logic ---
-
+        // --- Core Loop ---
         function init() {
+            updateGap(state.gap);
             loop();
         }
 
@@ -214,30 +300,22 @@
             // Rotation
             state.rotation += state.rotationSpeed;
 
-            // Zoom Mode Logic
+            // Zoom Mode
             if (state.mode === 'zoom') {
                 state.zoomScale += state.zoomSpeed * state.zoomDir;
                 if (state.zoomScale > 1.5 || state.zoomScale < 0.2) state.zoomDir *= -1;
-                
-                // Update CSS transform
                 const wrapper = containers.single.querySelector('.canvas-wrapper');
                 wrapper.style.transform = `scale(${state.zoomScale})`;
             }
 
-            // Move Mode Logic
+            // Move Mode
             if (state.mode === 'move') {
-                const area = document.getElementById('display-area');
-                const maxX = area.clientWidth - state.width/2;
-                const maxY = area.clientHeight - state.height/2;
-                
-                // Logical coordinates (%) to Pixels mapping
-                // Note: Simplified logic for demo. 
-                // Actual moving logic:
                 let px = state.moveX; 
                 let py = state.moveY;
+                const speedMult = document.getElementById('moveSpeedRange').value / 20;
 
-                px += state.velX * (document.getElementById('moveSpeedRange').value / 20);
-                py += state.velY * (document.getElementById('moveSpeedRange').value / 20);
+                px += state.velX * speedMult;
+                py += state.velY * speedMult;
 
                 if (px < 5 || px > 95) state.velX *= -1;
                 if (py < 5 || py > 95) state.velY *= -1;
@@ -247,113 +325,188 @@
 
                 containers.single.style.left = `${px}%`;
                 containers.single.style.top = `${py}%`;
-                containers.single.style.transform = `translate(-50%, -50%)`; // Center anchor
+                containers.single.style.transform = `translate(-50%, -50%)`;
             }
         }
 
         function draw() {
             canvases.forEach(canvas => {
-                // Optimization: Don't draw hidden canvases
-                if (canvas.offsetParent === null) return;
+                if (canvas.offsetParent === null) return; // Optimization
 
                 const ctx = canvas.getContext('2d');
                 const w = canvas.width;
                 const h = canvas.height;
                 const cx = w / 2;
                 const cy = h / 2;
+                const radius = 140;
 
                 ctx.clearRect(0, 0, w, h);
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(state.rotation);
 
-                if (state.target === 'gabor') {
-                    drawGabor(ctx, 140);
-                } else if (state.target === 'stream') {
-                    drawStream(ctx, 140);
-                } else {
-                    drawSharp(ctx, 140);
+                // Dispatch Drawing based on Target Type
+                switch(state.target) {
+                    case 'gabor': drawGabor(ctx, radius); break;
+                    case 'stream': drawStream(ctx, radius); break;
+                    case 'contrast': drawContrast(ctx, radius); break;
+                    case 'geo': drawGeo(ctx, radius); break;
+                    case 'circle': drawCircle(ctx, radius); break;
+                    case 'landolt': drawLandolt(ctx, radius); break;
+                    case 'radial': drawRadial(ctx, radius); break;
+                    case 'bullseye': drawBullseye(ctx, radius); break;
+                    case 'mandala': drawMandala(ctx, radius); break;
+                    default: drawGabor(ctx, radius);
                 }
 
                 ctx.restore();
             });
         }
 
-        // --- Drawing Functions ---
+        // --- Drawing Functions (9 Types) ---
 
-        // Gabor Patch Approximation (Sine wave + Radial Gradient Mask)
-        function drawGabor(ctx, radius) {
-            // Draw Stripes
+        // 1. Gabor (Blurred Stripes)
+        function drawGabor(ctx, r) {
+            const stripeW = 20;
             ctx.fillStyle = '#fff';
-            const stripeWidth = 20;
-            for(let i = -radius; i < radius; i+=stripeWidth*2) {
-                ctx.fillRect(i, -radius, stripeWidth, radius*2);
+            for(let i = -r; i < r; i+=stripeW*2) {
+                ctx.fillRect(i, -r, stripeW, r*2);
             }
-            
-            // Apply blur to make it "Gabor-like" sine wave
             ctx.filter = 'blur(8px)'; 
-            
-            // Masking (Creating the Gaussian window effect)
+            // Mask
             ctx.globalCompositeOperation = 'destination-in';
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.5, 'rgba(255,255,255,0.8)');
-            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            
-            // Reset composite
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+            g.addColorStop(0, 'rgba(255,255,255,1)');
+            g.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fillStyle = g; ctx.fill();
             ctx.globalCompositeOperation = 'source-over';
             ctx.filter = 'none';
         }
 
-        function drawStream(ctx, radius) {
-            for (let i = 0; i < 12; i++) {
-                ctx.rotate(Math.PI / 6);
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.quadraticCurveTo(radius/2, 0, radius, radius*0.5);
-                ctx.lineTo(0,0);
-                ctx.fillStyle = i % 2 === 0 ? '#3a7bd5' : '#00d2ff';
+        // 2. Stream (Classic Fluid Vortex)
+        function drawStream(ctx, r) {
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.fillStyle = '#3498db'; ctx.fill();
+            ctx.fillStyle = '#003366';
+            for (let j = 0; j < 6; j++) {
+                ctx.rotate((Math.PI * 2) / 6);
+                ctx.beginPath(); ctx.moveTo(0, 0);
+                for (let i = 0; i <= r; i += 2) ctx.lineTo(Math.cos(i/40)*i, Math.sin(i/40)*i);
+                for (let i = r; i >= 0; i -= 2) ctx.lineTo(Math.cos(i/40-(i/r)*0.8)*i, Math.sin(i/40-(i/r)*0.8)*i);
                 ctx.fill();
             }
         }
 
-        function drawSharp(ctx, radius) {
-            // High contrast Landolt-C like shapes or geometric
+        // 3. Contrast (High Contrast Shapes)
+        function drawContrast(ctx, r) {
             ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI*2);
-            ctx.fill();
-            
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
             ctx.fillStyle = '#000';
             for(let i=0; i<4; i++) {
                 ctx.rotate(Math.PI/2);
-                ctx.fillRect(10, -10, radius, 20);
+                ctx.fillRect(10, -10, r, 20);
             }
         }
 
+        // 4. Geometric (Sharp Triangles - Restored)
+        function drawGeo(ctx, r) {
+             for (let i = 0; i < 24; i++) {
+                ctx.beginPath();
+                ctx.rotate((Math.PI * 2) / 24);
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, r, 0, (Math.PI * 2) / 48);
+                ctx.fillStyle = i % 2 === 0 ? '#3498db' : '#003366';
+                ctx.fill();
+            }
+        }
 
-        // --- UI & Events ---
+        // 5. Circle (Simple Blue - Restored)
+        function drawCircle(ctx, r) {
+            ctx.beginPath();
+            ctx.arc(0, 0, r, 0, Math.PI * 2);
+            ctx.fillStyle = '#3498db';
+            ctx.fill();
+            // Add a small center dot for focus
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+        }
+
+        // 6. Landolt (C Ring)
+        function drawLandolt(ctx, r) {
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(0, 0, r*0.8, 0, Math.PI*2);
+            ctx.arc(0, 0, r*0.5, 0, Math.PI*2, true); // Hole
+            ctx.fill();
+            // Cutout
+            ctx.fillStyle = '#000'; // BG color
+            ctx.beginPath();
+            ctx.fillRect(r*0.4, -r*0.15, r*0.5, r*0.3);
+        }
+
+        // 7. Radial (Starburst)
+        function drawRadial(ctx, r) {
+            ctx.strokeStyle = '#00d2ff';
+            ctx.lineWidth = 4;
+            for(let i=0; i<16; i++) {
+                ctx.rotate(Math.PI/8);
+                ctx.beginPath();
+                ctx.moveTo(20, 0);
+                ctx.lineTo(r, 0);
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
+        }
+
+        // 8. Bullseye (Concentric)
+        function drawBullseye(ctx, r) {
+            const colors = ['#fff', '#3a7bd5', '#fff', '#3a7bd5', '#fff', '#3a7bd5'];
+            for(let i=0; i<6; i++) {
+                ctx.beginPath();
+                ctx.arc(0, 0, r - (i*(r/6)), 0, Math.PI*2);
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+            }
+        }
+
+        // 9. Mandala (Kaleidoscope)
+        function drawMandala(ctx, r) {
+            ctx.strokeStyle = 'rgba(0, 210, 255, 0.6)';
+            ctx.lineWidth = 2;
+            for(let i=0; i<12; i++) {
+                ctx.rotate(Math.PI/6);
+                ctx.beginPath();
+                ctx.ellipse(r/2, 0, r/2, r/4, 0, 0, Math.PI*2);
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+        }
+
+
+        // --- UI & Logic Functions ---
+
+        function toggleUI() {
+            state.uiVisible = !state.uiVisible;
+            uiLayers.forEach(el => el.classList.toggle('hidden', !state.uiVisible));
+            document.getElementById('ui-toggle-btn').style.opacity = state.uiVisible ? '1' : '0.3';
+        }
 
         function setMode(mode) {
             state.mode = mode;
-            
-            // Button states
-            document.querySelectorAll('#mode-stereo, #mode-zoom, #mode-move').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.mode-group button').forEach(b => b.classList.remove('active'));
             document.getElementById(`mode-${mode}`).classList.add('active');
 
-            // Visibility
             containers.stereo.classList.toggle('hidden', mode !== 'stereo');
             containers.single.classList.toggle('hidden', mode === 'stereo');
 
-            // Controls
             Object.keys(ctrls).forEach(k => ctrls[k].classList.add('hidden'));
             ctrls[mode].classList.remove('hidden');
 
-            // Reset positions for cleanliness
             if(mode === 'zoom') {
                 containers.single.style.left = '50%';
                 containers.single.style.top = '50%';
@@ -363,33 +516,36 @@
 
         function setTarget(type) {
             state.target = type;
-            document.querySelectorAll('#type-gabor, #type-stream, #type-sharp').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.target-grid button').forEach(b => b.classList.remove('active'));
             document.getElementById(`type-${type}`).classList.add('active');
+        }
+
+        function updateGap(val) {
+            state.gap = val;
+            containers.stereo.style.gap = `${val}px`;
+            // Update guide dots spacer
+            document.getElementById('dot-spacer').style.width = `${val}px`;
         }
 
         function toggleGuide() {
             document.getElementById('stereo-guide').classList.toggle('hidden');
         }
 
-        // Event Listeners
+        // Events
         document.getElementById('speedRange').addEventListener('input', e => {
-            state.rotationSpeed = e.target.value / 500; // Scale 0-100 to appropriate speed
+            state.rotationSpeed = e.target.value / 500;
         });
-
         document.getElementById('gapRange').addEventListener('input', e => {
-            state.gap = e.target.value;
-            containers.stereo.style.gap = `${state.gap}px`;
+            updateGap(e.target.value);
         });
-
         document.getElementById('zoomSpeedRange').addEventListener('input', e => {
             state.zoomSpeed = e.target.value / 1000;
         });
-
         document.getElementById('moveSpeedRange').addEventListener('input', e => {
-            // Value is read directly in update loop
+            // Read in loop
         });
 
-        // Start
+        // Initialize
         init();
 
     </script>
