@@ -1,417 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脳トレ部屋 ポータルサイト</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* スムーズスクロール */
+        html { scroll-behavior: smooth; }
+        /* カードのホバーエフェクト用 */
+        .link-card { transition: all 0.2s ease-in-out; }
+        .link-card:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
 
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- タイトル -->
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <h1 class="text-xl font-bold tracking-tight">脳トレ部屋 ポータル</h1>
+                </div>
+                
+                <!-- ダークモード切り替えボタン -->
+                <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" aria-label="Toggle Dark Mode">
+                    <svg id="sunIcon" class="w-5 h-5 hidden text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg id="moonIcon" class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
 
-                <!DOCTYPE html>
-                <html lang="ja">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>リンク抽出ツール - リンク集</title>
-                    <style>
-                        body {
-                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                            background-color: #f4f7f6;
-                            color: #333;
-                            padding: 20px;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                        }
-                        .container {
-                            background-color: #ffffff;
-                            padding: 30px;
-                            border-radius: 12px;
-                            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                            width: 100%;
-                            max-width: 800px;
-                            text-align: center;
-                        }
-                        h1 {
-                            color: #2c3e50;
-                            font-size: 2.2em;
-                            margin-bottom: 20px;
-                            border-bottom: 2px solid #e0e0e0;
-                            padding-bottom: 10px;
-                        }
-                        h2 {
-                            color: #0056b3;
-                            margin-top: 30px;
-                            margin-bottom: 15px;
-                            font-size: 1.8em;
-                            border-bottom: 1px solid #c0c0c0;
-                            padding-bottom: 5px;
-                        }
-                        .tag-section {
-                            margin-bottom: 40px;
-                        }
-                        .button-grid {
-                            display: grid;
-                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                            gap: 15px;
-                            justify-content: center;
-                            margin: 20px 0;
-                        }
-                        .button-link {
-                            display: block;
-                            padding: 15px 25px;
-                            border-radius: 10px;
-                            text-decoration: none;
-                            color: white;
-                            font-weight: bold;
-                            font-size: 1.1em;
-                            transition: all 0.3s ease;
-                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-                            text-align: center;
-                            word-wrap: break-word;
-                        }
-                        .button-link:hover {
-                            transform: translateY(-5px);
-                            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-                        }
-                        .wrapped-text {
-                            display: block;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>リンク抽出ツール - リンク集</h1>
-                        
-                    <div class="tag-section">
-                        <h2>ゲーム類</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/h/3droom/index.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">3Dの部屋</a>
-                    
-                        <a href="http://matunokihanten.com/mogura6/dist/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">もぐらたたき t<span class="wrapped-text">ypescriptのコード製</span></a>
-                    
-                        <a href="http://matunokihanten.com/mogura5/index.php" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">もぐらたたき　茶<span class="wrapped-text">：普通モグラ　黄：ボーナスモグラ　黒：爆弾モグラ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/tetorisu.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">簡単なテトリス</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/suujiburokku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">数字ブロック消し<span class="wrapped-text">ゲーム※同じ数字か10の倍数になるようになぞるだけ</span></a>
-                    
-                        </div>
+            <!-- 検索バーとカテゴリタブ -->
+            <div class="py-3 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <!-- タブ -->
+                <div class="flex space-x-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide" id="categoryTabs">
+                    <button data-category="すべて" class="tab-btn active px-4 py-2 text-sm font-medium rounded-full bg-indigo-600 text-white whitespace-nowrap transition-colors">すべて</button>
+                    <button data-category="脳トレ" class="tab-btn px-4 py-2 text-sm font-medium rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 whitespace-nowrap transition-colors">脳トレ・その他</button>
+                    <button data-category="仕事系" class="tab-btn px-4 py-2 text-sm font-medium rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 whitespace-nowrap transition-colors">仕事系</button>
+                    <button data-category="ゲーム系" class="tab-btn px-4 py-2 text-sm font-medium rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 whitespace-nowrap transition-colors">ゲーム系</button>
+                </div>
+
+                <!-- 検索バー (インクリメンタルサーチ) -->
+                <div class="relative w-full sm:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                
-                    <div class="tag-section">
-                        <h2>コード作成用</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://gemini.google.com/app" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">Geminiに相<span class="wrapped-text">談してみよう</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/ko-do2/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">HTMLファイル<span class="wrapped-text">作成　※無駄な機能なし</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/kousei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">構成ジェネレータ<span class="wrapped-text">ー　※PC用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/kousei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">構成ジェネレータ<span class="wrapped-text">ー２</span></a>
-                    
-                        </div>
-                    </div>
-                
-                    <div class="tag-section">
-                        <h2>デモ用</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/kaihatu1/8" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ジオメトリ 球体</a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/7" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ カ<span class="wrapped-text">ラーボード</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/5" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ カ<span class="wrapped-text">ラフル螺旋型</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/6" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ シ<span class="wrapped-text">ンプル螺旋型</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/fibo/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチパズ<span class="wrapped-text">ル</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/3.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/4.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text"> ドーナツ型２</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/1.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text"> 複雑型</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/11.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/111.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text"> 複雑型 改２</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/kaihatu1/2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text">２</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/fibo/fibo.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ球体<span class="wrapped-text">３</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/fibo/fibo2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">フィボナッチ立方<span class="wrapped-text">体</span></a>
-                    
-                        </div>
-                    </div>
-                
-                    <div class="tag-section">
-                        <h2>ホームページ作成用</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/sigoto/aikon2" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">アイコン作成 改<span class="wrapped-text">良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/ho-mu" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">ホームページ修正<span class="wrapped-text">※少しだけ文字を変えるだけならこれ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/botansettei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">実行ボタン製造機<span class="wrapped-text">※PC用</span></a>
-                    
-                        </div>
-                    </div>
-                
-                    <div class="tag-section">
-                        <h2>リンク</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/p/8/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">お問い合わせ</a>
-                    
-                        <a href="https://cr-reserve.e-shops.jp/menu/2049/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">ご予約申し込み</a>
-                    
-                        <a href="https://matunokihanten.github.io/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">トップ</a>
-                    
-                        <a href="https://matunokihanten.github.io/blog/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">ブログ</a>
-                    
-                        <a href="https://matunokihanten.github.io/p/31/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">管理人の部屋</a>
-                    
-                        <a href="https://matunokihanten.github.io/p/6/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">持ち帰り専用ペー<span class="wrapped-text">ジ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/p/61/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">脳トレ 部屋</a>
-                    
-                        <a href="https://matunokihanten.github.io/p/62/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">買い物サイト一覧<span class="wrapped-text">表示</span></a>
-                    
-                        </div>
-                    </div>
-                
-                    <div class="tag-section">
-                        <h2>仕事効率化</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/sigoto/cli.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">CLIツール　※<span class="wrapped-text">ターミナル練習用</span></a>
-                    
-                        <a href="https://gemini.google.com/app" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">Geminiに相<span class="wrapped-text">談してみよう</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/ko-do.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">HTMLファイル<span class="wrapped-text">作成　※高機能</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/ko-do.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">HTMLファイル<span class="wrapped-text">作成※HTMLコード入力で高速作成</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/ko-do2/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">HTMLファイル<span class="wrapped-text">作成改良版※無駄な機能無し</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/josn.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">JOSNエディタ<span class="wrapped-text"> ※ローカルストレージ保存可</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/pdfsetugou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDFファイル接<span class="wrapped-text">合ツール</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/shomei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">PDF電子契約署<span class="wrapped-text">名ツール</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/aikon" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">アイコン作成※ <span class="wrapped-text">SVG ＆ ICO 出力形式も対応</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/saba.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">サーバー作成　試<span class="wrapped-text">験中</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/si-ru.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">シール作成　A4<span class="wrapped-text">サイズ用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/p/62/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">ショッピングサイ<span class="wrapped-text">ト</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/password.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">パスワード整理　<span class="wrapped-text">Google</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/password2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">パスワード整理 <span class="wrapped-text">google 修正版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/keijiban" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">メモ帳 マインド<span class="wrapped-text">マップ式掲示板</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/kousokumemo.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">メモ帳※とにかく<span class="wrapped-text">速さ重視</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/menyu2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">飲食店用 メニュ<span class="wrapped-text">ー作成</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/menyu.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">飲食店用 メニュ<span class="wrapped-text">ー作成 改良中</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/keieibunseki.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">経営分析ダッシュ<span class="wrapped-text">ボード</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/kousei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">構成ジェネレータ<span class="wrapped-text">ー　※スマホ用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/kousei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">構成ジェネレータ<span class="wrapped-text">ー ※マインドマップも簡単作成</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/kousei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">構成ジェネレータ<span class="wrapped-text">ー※コード入力用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/botansettei2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">実行ボタン製造機<span class="wrapped-text">　改良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/jinsei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">人生選択シュミレ<span class="wrapped-text">ーション</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/dentaku2" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">電卓※横向き用</a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/dentaku" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">電卓※時間計算付</a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/renraku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">電話帳　※スマホ<span class="wrapped-text">の電話帳を整理</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/sigoto/nyuusyutu.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">入出金伝票※若干<span class="wrapped-text">バグあり</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/fusen" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">付箋</a>
-                    
-                        </div>
-                    </div>
-                
-                    <div class="tag-section">
-                        <h2>脳トレ</h2>
-                        <div class="button-grid">
-                
-                        <a href="https://matunokihanten.github.io/h/sanjigen.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">3次元Nバック</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/osero.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">オセロ</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/karabijon.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">カラービジョン</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/kiriperin" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">クリペリン検査</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/saikoro.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">サイコロの目を数<span class="wrapped-text">えるゲーム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/sutereo4.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ステレオグラム <span class="wrapped-text">※簡単版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/ugoku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ステレオグラム　<span class="wrapped-text">移動型</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/sutereo" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ステレオグラムゲ<span class="wrapped-text">ーム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/sutereo3" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">ステレオグラムゲ<span class="wrapped-text">ーム※色付きあり</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/taip" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">タイピングゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/dhuaru.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">デュアルNバック</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/dotukado" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">ドッツカード</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/dotukado2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">ドッツカード改良<span class="wrapped-text">版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/hasami.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">はさみ将棋</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/batafurai.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">バタフライナイフ<span class="wrapped-text">反応ゲーム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/hitto.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">ヒット＆ブロー <span class="wrapped-text">　※上級者用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/hitto/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">ヒット＆ブロー　<span class="wrapped-text">練習用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/furassyu/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">フラッシュ暗算</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/meisou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">マインドフルネス<span class="wrapped-text">・スキャン</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">移動する赤玉※触<span class="wrapped-text">ると玉が消えるよ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/akadamaidou2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">移動する赤玉※触<span class="wrapped-text">ると玉が消えるよ 改良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/uzumaki2" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">渦巻き カラフル</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/uzumaki.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">渦巻き※心の疲れ<span class="wrapped-text">の消去効果</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/ensyuu.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">円周率記憶ゲーム<span class="wrapped-text"> 500桁数まで</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/ensyuu2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">円周率記憶ゲーム<span class="wrapped-text">※軽量版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/matigai.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">間違い探し</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/matigai2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">間違え探し　豪華<span class="wrapped-text">版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/kiokukyuuden2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">記憶の宮殿 数字<span class="wrapped-text">記憶</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/kiokukyuuden.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">記憶の宮殿 文字<span class="wrapped-text">記憶</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/gyakusan.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">逆算ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/gyakusan2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">逆算ゲーム改</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">玉点滅※ボタン多<span class="wrapped-text">数</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall3.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">玉点滅※自己開発</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall4.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">玉点滅※新自己開<span class="wrapped-text">発</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/blinkingBall2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">玉点滅※設定可能</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/genso.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">元素記号記憶脳ト<span class="wrapped-text">レ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/gomoku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">五目並べ</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/dentakuhikaru.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">光る電卓ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/jikan.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">時間感覚</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/tokei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">時間読み取りゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/suujisagasi" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">重複数字探しゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/syunkan2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">瞬間記憶 ３Dパ<span class="wrapped-text">ネル</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/syunnkann" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">瞬間記憶ゲーム(<span class="wrapped-text">パネル)</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/jyunbankioku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">順番記憶ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/sikisai.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">色彩感覚ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">色探しゲーム　※<span class="wrapped-text">少しずつ難しくなります</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi4.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">色探しゲーム ※<span class="wrapped-text">数字</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi2" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">色探しゲーム　レ<span class="wrapped-text">ベル選択式</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/irosagasi3.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">色探しゲーム 進<span class="wrapped-text">化版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/sinkei.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">神経衰弱 (数字<span class="wrapped-text">)</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/sinkei2/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">神経衰弱　絵柄</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/zukeituiseki.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">図形追跡</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/nbaku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">数字と図形のNバ<span class="wrapped-text">ックゲーム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/2suujikioku" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">数字記憶ゲーム　<span class="wrapped-text">(N-back)</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/3suujikioku" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">数字記憶ゲーム <span class="wrapped-text">(追跡型改良版)</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/suujikioku" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">数字記憶ゲーム（<span class="wrapped-text">瞬間記憶型）</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/suujijyunban.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">数字順番押しゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/suujihannou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">数字反応</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/suujihikaku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">数字比較ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/suudoku.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">数独ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/soujiki2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">正直者を当てるゲ<span class="wrapped-text">ーム 改良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/syoujiki.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">正直者当てるゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/tumikikazoe.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">積み木数えゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/tumikikazoe3.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">積み木数えゲーム<span class="wrapped-text"> 進化版 ※スマホ用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/tumikikazoe2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">積み木数えゲーム<span class="wrapped-text">改良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/sentunagi.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">線つなぎゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/h/soin.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">素因数分解ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/men2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">担々麺作りゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/tyouri.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ee9ca7, #ffdde1);">注文記憶ゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/kioku2" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a18cd1, #fbc2eb);">追跡漢字記憶ゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/bouningen.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #00c6fb, #005bea);">動く棒人間を数え<span class="wrapped-text">る</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/rippoutai.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fccb90, #d57eeb);">動く立方体認識ゲ<span class="wrapped-text">ーム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/nouryou2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">脳梁鍛錬ゲーム <span class="wrapped-text">※PC用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/g/nouryou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #84fab0, #8fd3f4);">脳梁鍛錬ゲーム　<span class="wrapped-text">※スマホ用</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/mojikioku/irokawari.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #c79081, #dfa579);">反応速度チャレン<span class="wrapped-text">ジ</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/bou/" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">棒の長さ当てゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/bou/1" target="_blank" class="button-link" style="background: linear-gradient(145deg, #a3a3a3, #6a6a6a);">棒の長さ当てゲー<span class="wrapped-text">ム 改良版</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/bouidou.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #ff4b1f, #ff9068);">棒移動パズルゲー<span class="wrapped-text">ム</span></a>
-                    
-                        <a href="https://matunokihanten.github.io/h/boukazoe.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #6a11cb, #2575fc);">棒数えゲーム</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/meiro.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #fc6076, #ff9a44);">迷路</a>
-                    
-                        <a href="https://matunokihanten.github.io/g/meiro2.html" target="_blank" class="button-link" style="background: linear-gradient(145deg, #34e89e, #0f3443);">迷路　３D</a>
-                    
-                        </div>
-                    </div>
-                
-                    </div>
-                </body>
-                </html>
+                    <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors" placeholder="リンクを検索...">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="resultsCount" class="text-sm text-slate-500 dark:text-slate-400 mb-4 font-medium"></div>
+        
+        <!-- カードグリッド -->
+        <div id="linksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- JSで動的に生成 -->
+        </div>
+
+        <!-- 検索結果なし表示 -->
+        <div id="noResults" class="hidden flex-col items-center justify-center py-20 text-center">
+            <svg class="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100">見つかりませんでした</h3>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">別のキーワードでお試しください。</p>
+        </div>
+    </main>
+
+    <script>
+        // データの定義 (すべてのリンクを網羅)
+        const linksData = [
+            // --- 脳トレ・その他 ---
+            { title: "松乃木飯店", url: "https://matunokihanten.github.io/h/memori", category: "脳トレ" },
+            { title: "図形マスター", url: "https://matunokihanten.github.io/h/dukei", category: "脳トレ" },
+            { title: "アハ体験：変化した色を見つける脳トレ", url: "https://matunokihanten.github.io/mojikioku/aha2/", category: "脳トレ" },
+            { title: "アハ体験：変化した図形を見つける脳トレ", url: "https://matunokihanten.github.io/mojikioku/aha", category: "脳トレ" },
+            { title: "数字探し 動く３D※未完成", url: "https://matunokihanten.com/suujisagasi5", category: "脳トレ" },
+            { title: "孤高のロジック 簡単版", url: "https://matunokihanten.com/kodeku/1.html", category: "脳トレ" },
+            { title: "孤高のロジック 複雑版", url: "https://matunokihanten.com/kodeku/", category: "脳トレ" },
+            { title: "建築パズル", url: "https://matunokihanten.github.io/h/kentiku/", category: "脳トレ" },
+            { title: "振り子の玉を円に入れるゲーム", url: "https://matunokihanten.github.io/h/furiko/", category: "脳トレ" },
+            { title: "クリペリン検査２", url: "https://matunokihanten.github.io/mojikioku/kuriperin2/", category: "脳トレ" },
+            { title: "2048", url: "https://matunokihanten.github.io/mojikioku/2048/", category: "脳トレ" },
+            { title: "✨ステレオグラム ※簡単版", url: "https://matunokihanten.com/sutereo/", category: "脳トレ" },
+            { title: "✨数独ゲーム", url: "https://matunokihanten.com/suudoku/", category: "脳トレ" },
+            { title: "✨左右同時タップ ２", url: "https://matunokihanten.com/renda/", category: "脳トレ" },
+            { title: "✨光る電卓ゲーム", url: "https://matunokihanten.github.io/mojikioku/dentakuhikaru.html", category: "脳トレ" },
+            { title: "✨数字探し カラービジョン", url: "https://matunokihanten.github.io/h/karabijon.html", category: "脳トレ" },
+            { title: "色名テスト", url: "https://matunokihanten.github.io/mojikioku/irona", category: "脳トレ" },
+            { title: "記憶の宮殿※バージョン１１", url: "https://matunokihanten.github.io/mojikioku/kyuuden/", category: "脳トレ" },
+            { title: "記憶の宮殿※オーダー編", url: "https://matunokihanten.github.io/mojikioku/syunkan3.html", category: "脳トレ" },
+            { title: "老眼改善", url: "https://matunokihanten.github.io/mojikioku/rougan.html", category: "脳トレ" },
+            { title: "記憶の宮殿※練習用", url: "https://matunokihanten.github.io/h/kiokukyuuden3.html", category: "脳トレ" },
+            { title: "移動する赤玉 多種多彩", url: "https://matunokihanten.github.io/mojikioku/akadamaidou3.html", category: "脳トレ" },
+            { title: "並び替えゲーム(漢字)", url: "https://matunokihanten.github.io/mojikioku/yonmoji.html", category: "脳トレ" },
+            { title: "並び替えゲーム（ひらがな)", url: "https://matunokihanten.github.io/mojikioku/hiragana.html", category: "脳トレ" },
+            { title: "左右同時タップ", url: "https://matunokihanten.github.io/g/tyoute", category: "脳トレ" },
+            { title: "脳梁鍛錬ゲーム 多種", url: "https://matunokihanten.github.io/mojikioku/nouryou2.html", category: "脳トレ" },
+            { title: "数字探し ３D", url: "https://matunokihanten.com/suujisagasi4", category: "脳トレ" },
+            { title: "数字探し 整列配置", url: "https://matunokihanten.github.io/mojikioku/suujisagasi3.html", category: "脳トレ" },
+            { title: "数字と図形のNバックゲーム", url: "https://matunokihanten.github.io/g/nbaku.html", category: "脳トレ" },
+            { title: "脳梁鍛錬ゲーム ※PC用", url: "https://matunokihanten.github.io/g/nouryou2.html", category: "脳トレ" },
+            { title: "脳梁鍛錬ゲーム ※スマホ用", url: "https://matunokihanten.github.io/g/nouryou.html", category: "脳トレ" },
+            { title: "タイピングゲーム", url: "https://matunokihanten.github.io/g/taip", category: "脳トレ" },
+            { title: "素因数分解ゲーム", url: "https://matunokihanten.github.io/h/soin.html", category: "脳トレ" },
+            { title: "バタフライナイフ反応ゲーム", url: "https://matunokihanten.github.io/h/batafurai.html", category: "脳トレ" },
+            { title: "時間読み取りゲーム", url: "https://matunokihanten.github.io/h/tokei.html", category: "脳トレ" },
+            { title: "デュアルNバック", url: "https://matunokihanten.github.io/h/dhuaru.html", category: "脳トレ" },
+            { title: "円周率記憶ゲーム※軽量版", url: "https://matunokihanten.github.io/h/ensyuu2.html", category: "脳トレ" },
+            { title: "正直者を当てるゲーム 改良版", url: "https://matunokihanten.github.io/h/soujiki2.html", category: "脳トレ" },
+            { title: "3次元Nバック", url: "https://matunokihanten.github.io/h/sanjigen.html", category: "脳トレ" },
+            { title: "サイコロの目を数えるゲーム", url: "https://matunokihanten.github.io/h/saikoro.html", category: "脳トレ" },
+            { title: "積み木数えゲーム 進化版 ※スマホ用", url: "https://matunokihanten.github.io/h/tumikikazoe3.html", category: "脳トレ" },
+            { title: "数字順番押しゲーム", url: "https://matunokihanten.github.io/h/suujijyunban.html", category: "脳トレ" },
+            { title: "棒数えゲーム", url: "https://matunokihanten.github.io/h/boukazoe.html", category: "脳トレ" },
+            { title: "棒移動パズルゲーム", url: "https://matunokihanten.github.io/h/bouidou.html", category: "脳トレ" },
+            { title: "線つなぎゲーム", url: "https://matunokihanten.github.io/h/sentunagi.html", category: "脳トレ" },
+            { title: "正直者当てるゲーム", url: "https://matunokihanten.github.io/h/syoujiki.html", category: "脳トレ" },
+            { title: "数字比較ゲーム", url: "https://matunokihanten.github.io/h/suujihikaku.html", category: "脳トレ" },
+            { title: "数字探し 異なる色", url: "https://matunokihanten.github.io/mojikioku/irosagasi4.html", category: "脳トレ" },
+            { title: "図形追跡", url: "https://matunokihanten.github.io/h/zukeituiseki.html", category: "脳トレ" },
+            { title: "色彩感覚ゲーム", url: "https://matunokihanten.github.io/mojikioku/sikisai.html", category: "脳トレ" },
+            { title: "元素記号記憶脳トレ", url: "https://matunokihanten.github.io/mojikioku/genso.html", category: "脳トレ" },
+            { title: "逆算ゲーム改", url: "https://matunokihanten.github.io/mojikioku/gyakusan2.html", category: "脳トレ" },
+            { title: "数字反応", url: "https://matunokihanten.github.io/h/suujihannou.html", category: "脳トレ" },
+            { title: "ヒット＆ブロー ※上級者用", url: "https://matunokihanten.github.io/mojikioku/hitto.html", category: "脳トレ" },
+            { title: "瞬間記憶 ３Dパネル", url: "https://matunokihanten.github.io/mojikioku/syunkan2.html", category: "脳トレ" },
+            { title: "記憶の宮殿 文字記憶", url: "https://matunokihanten.github.io/h/kiokukyuuden.html", category: "脳トレ" },
+            { title: "記憶の宮殿 数字記憶", url: "https://matunokihanten.github.io/h/kiokukyuuden2.html", category: "脳トレ" },
+            { title: "追跡漢字記憶ゲーム", url: "https://matunokihanten.github.io/mojikioku/kioku2", category: "脳トレ" },
+            { title: "担々麺作りゲーム", url: "https://matunokihanten.github.io/mojikioku/men4.html", category: "脳トレ" },
+            { title: "神経衰弱 (数字)", url: "https://matunokihanten.github.io/mojikioku/sinkei.html", category: "脳トレ" },
+            { title: "移動する赤玉※触ると玉が消えるよ", url: "https://matunokihanten.github.io/mojikioku/akadamaidou.html", category: "脳トレ" },
+            { title: "移動する赤玉※触ると玉が消えるよ 改良版", url: "https://matunokihanten.github.io/mojikioku/akadamaidou2.html", category: "脳トレ" },
+            { title: "ドッツカード", url: "https://matunokihanten.github.io/mojikioku/dotukado", category: "脳トレ" },
+            { title: "ドッツカード改良版", url: "https://matunokihanten.github.io/mojikioku/dotukado2.html", category: "脳トレ" },
+            { title: "色探しゲーム ※少しずつ難しくなります", url: "https://matunokihanten.github.io/mojikioku/irosagasi", category: "脳トレ" },
+            { title: "色探しゲーム レベル選択式", url: "https://matunokihanten.github.io/mojikioku/irosagasi2", category: "脳トレ" },
+            { title: "色探しゲーム 進化版", url: "https://matunokihanten.github.io/mojikioku/irosagasi3.html", category: "脳トレ" },
+            { title: "瞬間記憶ゲーム(パネル)", url: "https://matunokihanten.github.io/mojikioku/syunnkann", category: "脳トレ" },
+            { title: "数字記憶ゲーム（瞬間記憶型）", url: "https://matunokihanten.github.io/mojikioku/suujikioku", category: "脳トレ" },
+            { title: "数字記憶ゲーム (N-back)", url: "https://matunokihanten.github.io/mojikioku/2suujikioku", category: "脳トレ" },
+            { title: "数字記憶ゲーム (追跡型改良版)", url: "https://matunokihanten.github.io/mojikioku/3suujikioku", category: "脳トレ" },
+            { title: "数字探し 重複", url: "https://matunokihanten.github.io/mojikioku/suujisagasi", category: "脳トレ" },
+            { title: "クリペリン検査", url: "https://matunokihanten.github.io/mojikioku/kiriperin", category: "脳トレ" },
+            { title: "ステレオグラムゲーム", url: "https://matunokihanten.github.io/mojikioku/sutereo", category: "脳トレ" },
+            { title: "ステレオグラムゲーム※色付きあり", url: "https://matunokihanten.github.io/mojikioku/sutereo3", category: "脳トレ" },
+            { title: "反応速度チャレンジ", url: "https://matunokihanten.github.io/mojikioku/irokawari.html", category: "脳トレ" },
+            { title: "逆算ゲーム", url: "https://matunokihanten.github.io/mojikioku/gyakusan.html", category: "脳トレ" },
+            { title: "時間感覚", url: "https://matunokihanten.github.io/g/jikan.html", category: "脳トレ" },
+            { title: "注文記憶ゲーム", url: "https://matunokihanten.github.io/g/tyouri.html", category: "脳トレ" },
+            { title: "順番記憶ゲーム", url: "https://matunokihanten.github.io/g/jyunbankioku.html", category: "脳トレ" },
+            { title: "ヒット＆ブロー 練習用", url: "https://matunokihanten.github.io/g/hitto/", category: "脳トレ" },
+            { title: "間違い探し", url: "https://matunokihanten.github.io/g/matigai.html", category: "脳トレ" },
+            { title: "動く棒人間を数える", url: "https://matunokihanten.github.io/g/bouningen.html", category: "脳トレ" },
+            { title: "迷路", url: "https://matunokihanten.github.io/g/meiro.html", category: "脳トレ" },
+            { title: "動く立方体認識ゲーム", url: "https://matunokihanten.github.io/g/rippoutai.html", category: "脳トレ" },
+            { title: "フラッシュ暗算", url: "https://matunokihanten.github.io/h/furassyu/", category: "脳トレ" },
+            { title: "神経衰弱 絵柄", url: "https://matunokihanten.github.io/h/sinkei2/", category: "脳トレ" },
+            { title: "円周率記憶ゲーム 500桁数まで", url: "https://matunokihanten.github.io/h/ensyuu.html", category: "脳トレ" },
+            { title: "フィボナッチパズル", url: "https://matunokihanten.github.io/h/fibo/", category: "脳トレ" },
+            { title: "棒の長さ当てゲーム", url: "https://matunokihanten.github.io/h/bou/", category: "脳トレ" },
+            { title: "積み木数えゲーム", url: "https://matunokihanten.github.io/h/tumikikazoe.html", category: "脳トレ" },
+            { title: "積み木数えゲーム改良版", url: "https://matunokihanten.github.io/h/tumikikazoe2.html", category: "脳トレ" },
+            { title: "間違え探し 豪華版", url: "https://matunokihanten.github.io/g/matigai2.html", category: "脳トレ" },
+            { title: "棒の長さ当てゲーム 改良版", url: "https://matunokihanten.github.io/h/bou/1", category: "脳トレ" },
+            { title: "迷路 ３D", url: "https://matunokihanten.github.io/g/meiro2.html", category: "脳トレ" },
+            { title: "MDファイルの読み込み表示", url: "https://matunokihanten.github.io/sigoto/md", category: "脳トレ" },
+            { title: "クリップボード", url: "https://matunokihanten.github.io/sigoto/kurippu.html", category: "脳トレ" },
+            { title: "HTMLファイル作成 PC用", url: "https://matunokihanten.github.io/sigoto/ko-do2.html", category: "脳トレ" },
+            { title: "構成ジェネレーター２", url: "https://matunokihanten.github.io/h/kousei2.html", category: "脳トレ" },
+            { title: "Geminiに相談してみよう", url: "https://gemini.google.com/app", category: "脳トレ" },
+            { title: "JOSNエディタ ※ローカルストレージ保存可", url: "https://matunokihanten.github.io/sigoto/josn.html", category: "脳トレ" },
+            { title: "CLIツール ※ターミナル練習用", url: "https://matunokihanten.github.io/sigoto/cli.html", category: "脳トレ" },
+            { title: "構成ジェネレーター ※スマホ用", url: "https://matunokihanten.github.io/sigoto/kousei.html", category: "脳トレ" },
+            { title: "構成ジェネレーター ※PC用", url: "https://matunokihanten.github.io/sigoto/kousei2.html", category: "脳トレ" },
+            { title: "HTMLファイル作成 ※無駄な機能なし", url: "https://matunokihanten.github.io/g/ko-do3/", category: "脳トレ" },
+            { title: "HTMLファイル作成 ※高機能", url: "https://matunokihanten.com/html/", category: "脳トレ" },
+            { title: "コード抽出＆分解ツール", url: "https://www.matunokihanten.com/tyuusyutu2/", category: "脳トレ" },
+            { title: "どんなファイルでも編集ツール 工事中", url: "https://matunokihanten.com/fairu2/", category: "脳トレ" },
+            { title: "（テキストなし）", url: "https://px.a8.net/svt/ejp?a8mat=35UE1S+6V2WTU+CO4+6L9O1", category: "脳トレ" },
+            { title: "五目並べ", url: "https://matunokihanten.github.io/g/gomoku.html", category: "脳トレ" },
+            { title: "はさみ将棋", url: "https://matunokihanten.github.io/g/hasami.html", category: "脳トレ" },
+            { title: "オセロ", url: "https://matunokihanten.github.io/h/osero.html", category: "脳トレ" },
+            { title: "睡眠導入シミュレーター", url: "https://matunokihanten.github.io/g/nemui", category: "脳トレ" },
+            { title: "運動誘発盲", url: "https://matunokihanten.github.io/g/kaiten/", category: "脳トレ" },
+            { title: "脳疲労回復トレーニング", url: "https://matunokihanten.github.io/g/tukare", category: "脳トレ" },
+            { title: "ラケットで玉を打ち返す", url: "https://matunokihanten.com/g/rari/", category: "脳トレ" },
+            { title: "目で追う黄色い玉", url: "https://matunokihanten.github.io/h/kiiro/", category: "脳トレ" },
+            { title: "スマホで聴力検査", url: "https://matunokihanten.com/tyouryoku/", category: "脳トレ" },
+            { title: "バイノーラルビート", url: "https://matunokihanten.github.io/g/baino/", category: "脳トレ" },
+            { title: "老眼改善３", url: "https://matunokihanten.github.io/kaihatu1/13", category: "脳トレ" },
+            { title: "心理覚醒エンジン - 認知科学的視覚誘導システム", url: "https://matunokihanten.github.io/kaihatu1/12", category: "脳トレ" },
+            { title: "老眼改善２", url: "https://matunokihanten.github.io/kaihatu1/10", category: "脳トレ" },
+            { title: "動き回る玉", url: "https://matunokihanten.github.io/kaihatu1/9", category: "脳トレ" },
+            { title: "マインドフルネス・スキャン", url: "https://matunokihanten.github.io/g/meisou.html", category: "脳トレ" },
+            { title: "玉点滅※ボタン多数", url: "https://matunokihanten.github.io/mojikioku/blinkingBall.html", category: "脳トレ" },
+            { title: "玉点滅※音の周波数変更可", url: "https://matunokihanten.github.io/mojikioku/blinkingBall3.html", category: "脳トレ" },
+            { title: "玉点滅※自己開発", url: "https://matunokihanten.github.io/mojikioku/blinkingBall4.html", category: "脳トレ" },
+            { title: "玉点滅※自己開発２", url: "https://matunokihanten.github.io/mojikioku/blinkingBall6.html", category: "脳トレ" },
+            { title: "玉点滅※設定可能", url: "https://matunokihanten.github.io/mojikioku/blinkingBall2.html", category: "脳トレ" },
+            { title: "渦巻き※心の疲れの消去効果", url: "https://matunokihanten.github.io/mojikioku/uzumaki.html", category: "脳トレ" },
+            { title: "ステレオグラム 移動型", url: "https://matunokihanten.github.io/g/ugoku.html", category: "脳トレ" },
+            { title: "フィボナッチ球体 複雑型", url: "https://matunokihanten.github.io/kaihatu1/1.html", category: "脳トレ" },
+            { title: "フィボナッチ球体２", url: "https://matunokihanten.github.io/kaihatu1/2.html", category: "脳トレ" },
+            { title: "フィボナッチ球体３", url: "https://matunokihanten.github.io/h/fibo/fibo.html", category: "脳トレ" },
+            { title: "フィボナッチ立方体", url: "https://matunokihanten.github.io/h/fibo/fibo2.html", category: "脳トレ" },
+            { title: "フィボナッチ球体 複雑型 改", url: "https://matunokihanten.github.io/kaihatu1/11.html", category: "脳トレ" },
+            { title: "フィボナッチ球体 複雑型 改２", url: "https://matunokihanten.github.io/kaihatu1/111.html", category: "脳トレ" },
+            { title: "フィボナッチ球体 ドーナツ型", url: "https://matunokihanten.github.io/kaihatu1/3.html", category: "脳トレ" },
+            { title: "フィボナッチ球体 ドーナツ型２", url: "https://matunokihanten.github.io/kaihatu1/4.html", category: "脳トレ" },
+            { title: "フィボナッチ カラフル螺旋型", url: "https://matunokihanten.github.io/kaihatu1/5", category: "脳トレ" },
+            { title: "フィボナッチ シンプル螺旋型", url: "https://matunokihanten.github.io/kaihatu1/6", category: "脳トレ" },
+            { title: "フィボナッチ カラーボード", url: "https://matunokihanten.github.io/kaihatu1/7", category: "脳トレ" },
+            { title: "ジオメトリ 球体", url: "https://matunokihanten.github.io/kaihatu1/8", category: "脳トレ" },
+            { title: "渦巻き カラフル", url: "https://matunokihanten.github.io/mojikioku/uzumaki2", category: "脳トレ" },
+            { title: "渦巻き 複雑", url: "https://matunokihanten.github.io/mojikioku/uzumaki3.html", category: "脳トレ" },
+            { title: "３Dキューブ", url: "https://matunokihanten.github.io/kaihatu1/14", category: "脳トレ" },
+            { title: "（テキストなし）", url: "https://px.a8.net/svt/ejp?a8mat=35UE1S+6V2WTU+CO4+6L9O1", category: "脳トレ" },
+
+            // --- 仕事系 ---
+            { title: "フォルダーのPDF表示", url: "https://matunokihanten.github.io/sigoto/pdf2", category: "仕事系" },
+            { title: "封筒、はがき印刷", url: "https://matunokihanten.github.io/sigoto/yuubin/", category: "仕事系" },
+            { title: "QRコード作成", url: "https://matunokihanten.github.io/sigoto/qr/", category: "仕事系" },
+            { title: "フォルダを整理 ※PC用", url: "https://matunokihanten.github.io/sigoto/seiri/index.html", category: "仕事系" },
+            { title: "ゆうちょ口座番号 相互変換", url: "https://matunokihanten.github.io/sigoto/yuutyo/", category: "仕事系" },
+            { title: "中華料理店経営シミュレーション", url: "https://matunokihanten.github.io/sigoto/syumi/", category: "仕事系" },
+            { title: "西暦⇔和暦 変換ツール", url: "https://matunokihanten.github.io/sigoto/seireki/", category: "仕事系" },
+            { title: "アイコン作成 額縁付", url: "https://matunokihanten.github.io/sigoto/aikon", category: "仕事系" },
+            { title: "PDF → PNG / JPG 変換ツール", url: "https://matunokihanten.github.io/sigoto/pdf-png.html", category: "仕事系" },
+            { title: "レシート入力アプリ", url: "https://matunokihanten.github.io/sigoto/resi-to.html", category: "仕事系" },
+            { title: "画像縮小", url: "https://matunokihanten.github.io/sigoto/gazou.html", category: "仕事系" },
+            { title: "シンプルメニュー作成", url: "https://matunokihanten.github.io/sigoto/nomiho/", category: "仕事系" },
+            { title: "CSV → XLSX コンバータ", url: "https://matunokihanten.github.io/sigoto/konba/", category: "仕事系" },
+            { title: "ZIPファイル圧縮ツール", url: "https://matunokihanten.github.io/sigoto/zip/", category: "仕事系" },
+            { title: "飲食店 メニュー作成HTML保存機能付き", url: "https://matunokihanten.github.io/sigoto/menyu3.html", category: "仕事系" },
+            { title: "CSVファイル 製造", url: "https://matunokihanten.github.io/sigoto/csv.html", category: "仕事系" },
+            { title: "金種計算機", url: "https://matunokihanten.github.io/sigoto/kinsyu.html", category: "仕事系" },
+            { title: "飲食店用 電卓 ダウンロード版", url: "https://matunokihanten.com/dentaku2/", category: "仕事系" },
+            { title: "レシピ比率計算", url: "https://matunokihanten.com/resipi/", category: "仕事系" },
+            { title: "売上データ分析ダッシュボード", url: "https://matunokihanten.com/de-ta-", category: "仕事系" },
+            { title: "パスワード整理 google 修正版", url: "https://matunokihanten.github.io/g/password2.html", category: "仕事系" },
+            { title: "アイコン作成 改良版", url: "https://matunokihanten.com/aikon/index.html", category: "仕事系" },
+            { title: "構成ジェネレーター※コード入力用", url: "https://matunokihanten.github.io/sigoto/kousei2.html", category: "仕事系" },
+            { title: "経営分析ダッシュボード", url: "https://matunokihanten.github.io/sigoto/keieibunseki.html", category: "仕事系" },
+            { title: "サーバー作成 試験中", url: "https://matunokihanten.github.io/h/saba.html", category: "仕事系" },
+            { title: "電話帳 ※スマホの電話帳を整理", url: "https://matunokihanten.github.io/sigoto/renraku.html", category: "仕事系" },
+            { title: "飲食店用 メニュー作成", url: "https://matunokihanten.github.io/sigoto/menyu2.html", category: "仕事系" },
+            { title: "飲食店用 メニュー作成 改良中", url: "https://matunokihanten.github.io/sigoto/menyu.html", category: "仕事系" },
+            { title: "電卓 飲食店用", url: "https://matunokihanten.com/dentaku5/", category: "仕事系" },
+            { title: "ショッピングサイト", url: "https://ldbyq.crayonsite.com/p/62/", category: "仕事系" },
+            { title: "電卓 進化版", url: "https://matunokihanten.com/dentaku5/", category: "仕事系" },
+            { title: "メモ帳 マインドマップ式掲示板", url: "https://matunokihanten.github.io/sigoto/keijiban", category: "仕事系" },
+            { title: "メモ帳※とにかく速さ重視", url: "https://matunokihanten.github.io/sigoto/kousokumemo.html", category: "仕事系" },
+            { title: "実行ボタン製造機 ※PC用", url: "https://matunokihanten.github.io/sigoto/botansettei.html", category: "仕事系" },
+            { title: "アイコン作成※ SVG ＆ ICO 出力形式も対応", url: "https://matunokihanten.github.io/sigoto/aikon4", category: "仕事系" },
+            { title: "HTMLファイル作成※HTMLコード入力で高速作成", url: "https://matunokihanten.github.io/sigoto/ko-do.html", category: "仕事系" },
+            { title: "HTMLファイル作成改良版※無駄な機能無し", url: "https://matunokihanten.github.io/g/ko-do2/", category: "仕事系" },
+            { title: "入出金伝票", url: "https://matunokihanten.com/nyuusyutu/", category: "仕事系" },
+            { title: "ホームページ修正※少しだけ文字を変えるだけならこれ", url: "https://matunokihanten.github.io/sigoto/ho-mu2", category: "仕事系" },
+            { title: "パスワード整理 Google", url: "https://matunokihanten.github.io/g/password.html", category: "仕事系" },
+            { title: "人生選択シュミレーション", url: "https://matunokihanten.github.io/sigoto/jinsei.html", category: "仕事系" },
+            { title: "PDF電子契約署名ツール", url: "https://matunokihanten.github.io/sigoto/shomei.html", category: "仕事系" },
+            { title: "PDFファイル接合ツール", url: "https://matunokihanten.github.io/sigoto/pdfsetugou2.html", category: "仕事系" },
+            { title: "構成ジェネレーター ※マインドマップも簡単作成", url: "https://matunokihanten.github.io/sigoto/kousei.html", category: "仕事系" },
+            { title: "実行ボタン製造機 Excelで楽々編集", url: "https://matunokihanten.github.io/sigoto/botansettei2.html", category: "仕事系" },
+            { title: "シール作成 A4サイズ用", url: "https://matunokihanten.github.io/sigoto/si-ru.html", category: "仕事系" },
+            { title: "付箋", url: "https://matunokihanten.github.io/g/fusen", category: "仕事系" },
+            { title: "TEXT保存ツール", url: "https://www.matunokihanten.com/txt", category: "仕事系" },
+
+            // --- ゲーム系 ---
+            { title: "将棋・山崩し", url: "https://matunokihanten.github.io/g/yama", category: "ゲーム系" },
+            { title: "3D風 アイコンマッチングパズル", url: "https://matunokihanten.github.io/g/3daikon", category: "ゲーム系" },
+            { title: "ブロック積み上げ", url: "https://matunokihanten.github.io/g/tawa", category: "ゲーム系" },
+            { title: "数字ブロック消しゲーム※同じ数字か10の倍数", url: "https://matunokihanten.github.io/g/suujiburokku.html", category: "ゲーム系" },
+            { title: "もぐらたたき 茶：普通 黄：ボーナス 黒：爆弾", url: "http://matunokihanten.com/mogura5/index.php", category: "ゲーム系" },
+            { title: "簡単なテトリス", url: "https://matunokihanten.github.io/g/tetorisu.html", category: "ゲーム系" },
+            { title: "3Dの部屋", url: "https://matunokihanten.github.io/h/3droom/index.html", category: "ゲーム系" }
+        ];
+
+        let currentCategory = 'すべて';
+        let searchQuery = '';
+
+        const gridElement = document.getElementById('linksGrid');
+        const searchInput = document.getElementById('searchInput');
+        const noResultsElement = document.getElementById('noResults');
+        const resultsCountElement = document.getElementById('resultsCount');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        function renderLinks() {
+            gridElement.innerHTML = '';
             
+            // フィルタリング処理
+            const filtered = linksData.filter(link => {
+                const matchCategory = currentCategory === 'すべて' || link.category === currentCategory;
+                const matchSearch = link.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    link.url.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchCategory && matchSearch;
+            });
+
+            // 結果件数表示
+            resultsCountElement.textContent = `表示中: ${filtered.length} 件`;
+
+            if (filtered.length === 0) {
+                gridElement.classList.add('hidden');
+                noResultsElement.classList.remove('hidden');
+                noResultsElement.classList.add('flex');
+            } else {
+                gridElement.classList.remove('hidden');
+                noResultsElement.classList.add('hidden');
+                noResultsElement.classList.remove('flex');
+                
+                filtered.forEach(link => {
+                    const card = document.createElement('a');
+                    card.href = link.url;
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                    card.className = 'link-card block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 group flex flex-col h-full';
+                    
+                    // アイコンカラーの動的設定
+                    let iconBg = 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400';
+                    if (link.category === '仕事系') iconBg = 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400';
+                    if (link.category === 'ゲーム系') iconBg = 'bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400';
+
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="p-2 rounded-lg ${iconBg}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                            </div>
+                            <span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 ring-1 ring-inset ring-slate-500/10 dark:ring-slate-400/20">
+                                ${link.category}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                            ${link.title}
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-auto">
+                            ${link.url}
+                        </p>
+                    `;
+                    gridElement.appendChild(card);
+                });
+            }
+        }
+
+        // 検索イベント (インクリメンタルサーチ)
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderLinks();
+        });
+
+        // タブ切り替えイベント
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentCategory = button.getAttribute('data-category');
+                
+                // アクティブ状態のスタイリング更新
+                tabButtons.forEach(btn => {
+                    if (btn === button) {
+                        btn.className = 'tab-btn active px-4 py-2 text-sm font-medium rounded-full bg-indigo-600 text-white whitespace-nowrap transition-colors';
+                    } else {
+                        btn.className = 'tab-btn px-4 py-2 text-sm font-medium rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 whitespace-nowrap transition-colors';
+                    }
+                });
+                
+                renderLinks();
+            });
+        });
+
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        // ダークモードの状態を切り替える
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // 初期ロード時のテーマとデータ描画
+        function init() {
+            // OS設定やlocalStorageに基づくテーマの初期設定
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+            
+            // リンクの初回描画
+            renderLinks();
+        }
+
+        init();
+    </script>
+</body>
+</html>
